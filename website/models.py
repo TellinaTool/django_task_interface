@@ -4,6 +4,7 @@ from channels import Channel
 import docker
 import requests
 import os
+import time
 
 class Container(models.Model):
     '''
@@ -48,6 +49,7 @@ def create_docker_container():
     cli.start(container=container_id)
     info = cli.inspect_container(container_id)
     port = info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort']
+    time.sleep(1)
     return (container_id, port)
 
 def create_container():

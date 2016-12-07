@@ -1,16 +1,11 @@
 # Tellina Task Interface
 
-Build the Docker image:
-
-```bash
-cd tellina_task_interface/docker_image
-docker build -t tellina .
-```
-
-Run the web application:
+Start the VM which runs the web application:
 
 ```bash
 cd tellina_task_interface
-pip3 install -r requirements.txt
-python3 manage.py runserver 0.0.0.0:10411
+vagrant destroy -f # destroy the existing VM, if any
+vagrant up
 ```
+
+Test that the server works by visiting http://127.0.0.1:10411.

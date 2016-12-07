@@ -16,4 +16,4 @@ def test(request):
     container.refresh_from_db()
     print(container.stdout) # expect: this should print the result of 'ls'
 
-    return HttpResponse("Test done. Check server output for results.")
+    return HttpResponse("Test done. Received following STDOUT: {}".format(container.stdout))
