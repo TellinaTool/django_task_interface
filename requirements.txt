@@ -1,2 +1,4 @@
 Django==1.10.4
 channels==0.17.3
+docker-py==1.10.6
+requests==2.12.3
