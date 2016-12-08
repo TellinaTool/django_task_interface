@@ -5,6 +5,7 @@ import docker
 import requests
 import os
 import time
+import subprocess
 
 class Container(models.Model):
     '''
@@ -36,12 +37,24 @@ class Container(models.Model):
                 break
             os.sched_yield()
 
-def create_docker_container():
+def create_filesystem(name):
+    subprocess.run(['/bin/bash', 'make_filesystem.bash', name])
+
+def create_docker_container(name):
+    create_filesystem(name)
     cli = docker.Client(base_url='unix://var/run/docker.sock')
     container = cli.create_container(
         image='tellina',
         ports=[10411],
+        volumes=['/home/myuser'],
+        detach=True,
         host_config=cli.create_host_config(
+            binds={
+                '/{}/home'.format(name): {
+                    'bind': '/home/myuser',
+                    'mode': 'rw',
+                },
+            },
             port_bindings={10411: ('127.0.0.1',)},
         ),
     )
@@ -52,7 +65,17 @@ def create_docker_container():
     time.sleep(1)
     return (container_id, port)
 
-def create_container():
-    container_id, port = create_docker_container()
+def start_container(container_id):
+    cli = docker.Client(base_url='unix://var/run/docker.sock')
+    cli.start(container=container_id)
+
+def create_container(name):
+    # Race condition: Must create entry in DB before creating container,
+    # so that websocket connect from container will be able to access that
+    # entry in the DB.
+    container_id, port = create_docker_container(name)
+    container = Container.objects.create(container_id=container_id)
+    start_container(container_id)
+
     r = requests.get('http://127.0.0.1:{}/{}'.format(port, container_id))
-    return Container.objects.create(container_id=container_id)
+    return container
