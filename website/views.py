@@ -16,5 +16,6 @@ def test(request):
     time.sleep(2) # wait for container to send STDOUT
     container.refresh_from_db()
     print(container.stdout) # expect: this should print the result of 'ls'
+    container.destroy()
 
     return HttpResponse("Test done. Received following STDOUT: {}".format(container.stdout))

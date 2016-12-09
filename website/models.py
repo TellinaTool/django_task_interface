@@ -24,6 +24,10 @@ class Container(models.Model):
     # This is the name of the channel that sends STDIN to the container.
     stdin_channel_name = models.TextField()
 
+    # The username that created this container. Used as the name of the virtual
+    # FS created for the container.
+    name = models.TextField()
+
     def write_stdin(self, text):
         while True:
             # Busy wait for stdin channel to be registered
@@ -37,6 +41,11 @@ class Container(models.Model):
                 break
             os.sched_yield()
 
+    def destroy(self):
+        subprocess.run(['docker', 'rm', '-f', self.container_id]) # remove container
+        subprocess.run(['/bin/bash', 'delete_filesystem.bash', self.name]) # remove FS
+        self.delete() # remove table entry
+
 def create_filesystem(name):
     subprocess.run(['/bin/bash', 'make_filesystem.bash', name])
 
@@ -45,6 +54,7 @@ def create_docker_container(name):
     cli = docker.Client(base_url='unix://var/run/docker.sock')
     container = cli.create_container(
         image='tellina',
+        name=name,
         ports=[10411],
         volumes=['/home/myuser'],
         detach=True,
@@ -74,7 +84,7 @@ def create_container(name):
     # so that websocket connect from container will be able to access that
     # entry in the DB.
     container_id, port = create_docker_container(name)
-    container = Container.objects.create(container_id=container_id)
+    container = Container.objects.create(name=name, container_id=container_id)
     start_container(container_id)
 
     r = requests.get('http://127.0.0.1:{}/{}'.format(port, container_id))
