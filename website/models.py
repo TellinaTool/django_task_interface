@@ -79,3 +79,18 @@ def create_container(name):
 
     r = requests.get('http://127.0.0.1:{}/{}'.format(port, container_id))
     return container
+
+class Task(models.Model):
+    description = models.TextField()
+    type = models.TextField()
+    initial_filesystem = models.TextField()
+    answer = models.TextField()
+    duration = models.DurationField()
+
+class TaskResult(models.Model):
+    task = models.ForeignKey('Task', on_delete=models.CASCADE)
+    stdout = models.TextField()
+    stdin = models.TextField()
+    end_time = models.DateTimeField()
+    state = models.TextField() # 'not_started' | 'timed_out' | passed
+    time_spent = models.DurationField()
