@@ -8,35 +8,55 @@ def ws_connect(message):
     # parse the URL path
     path = message.content['path'].strip('/').split('/')
 
-    # Handle /container/{container_id}
-    #
-    # This registers a container's STDIN websocket connection with it's
-    # corresponding model.
-    if len(path) == 2 and path[0] == 'container':
-        # Get container id
-        container_id = path[1]
+    # Handle /{type}/{task_manager_id}/{session_id}
+    # This registers a xterm's or container's websocket with the corresponding task manager.
+    if len(path) == 3:
+        # Parse path into fields
+        type = path[0]
+        task_manager_id = path[1]
+        session_id = path[2]
 
-        # Update container model with STDIN channel name
-        container = Container.objects.get(container_id=container_id)
-        container.stdin_channel_name = message.reply_channel.name
-        container.save()
+        # Set attributes that will be attached to every message from this websocket
+        message.channel_session['type'] = type
+        message.channel_session['task_manager_id'] = task_manager_id
+        message.channel_session['session_id'] = session_id
 
-        # Associate STDOUT messages with this container
-        channel_id = 'container_{}'.format(container_id)
-        message.channel_session['id'] = channel_id
+        # Attempt to register this socket with a task manager
+        task_manager = TaskManager.objects.get(id=task_manager_id)
+        task_manager.lock()
+        if session_id == task_manager.session_id:
+            if type == 'xterm':
+                task_manager.xterm_stdout_channel_name = message.reply_channel.name
+            elif type == 'container':
+                task_manager.container_stdin_channel_name = message.reply_channel.name
+            else:
+                raise Exception('unrecognized websocket type')
+            task_manager.save()
+        task_manager.unlock()
 
 # Connected to websocket.receive
 @enforce_ordering
 @channel_session
 def ws_message(message):
-    type, object_id = message.channel_session['id'].split('_')
+    type = message.channel_session['type']
+    task_manager_id = message.channel_session['task_manager_id']
+    session_id = message.channel_session['session_id']
 
-    # Handle messages tagged with id = container_{container_id}.
-    # Save these messages to the container's STDOUT field.
-    if type == 'container':
-        container = Container.objects.get(container_id=object_id)
-        container.stdout += message['text']
-        container.save()
+    # This ignores message that don't have a destination to send to
+    task_manager = TaskManager.objects.get(id=task_manager_id)
+    task_manager.lock()
+    if session_id == task_manager.session_id:
+        # send message
+        channel_name = None
+        if type == 'xterm':
+            channel_name = task_manager.container_stdin_channel_name
+        elif type == 'container':
+            channel_name = task_manager.xterm_stdout_channel_name
+        else:
+            raise Exception('unrecognized websocket type')
+        if channel_name != '':
+            Channel(channel_name).send(message['text'])
+    task_manager.unlock()
 
 # Connected to websocket.disconnect
 @enforce_ordering

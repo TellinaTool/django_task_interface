@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from channels import Channel
 
 import docker
@@ -6,6 +7,9 @@ import requests
 import os
 import time
 import subprocess
+import uuid
+import fcntl
+import datetime
 
 class Container(models.Model):
     '''
@@ -17,16 +21,9 @@ class Container(models.Model):
     message.channel_session['id'] = container_{container_id}
     '''
 
+    filesystem_name = models.TextField()
     container_id = models.TextField()
-    stdin = models.TextField()
-    stdout = models.TextField()
-
-    # This is the name of the channel that sends STDIN to the container.
-    stdin_channel_name = models.TextField()
-
-    # The username that created this container. Used as the name of the virtual
-    # FS created for the container.
-    name = models.TextField()
+    port = models.IntegerField()
 
     def write_stdin(self, text):
         while True:
@@ -42,25 +39,28 @@ class Container(models.Model):
             os.sched_yield()
 
     def destroy(self):
-        subprocess.run(['docker', 'rm', '-f', self.container_id]) # remove container
-        subprocess.run(['/bin/bash', 'delete_filesystem.bash', self.name]) # remove FS
-        self.delete() # remove table entry
+        # Destroy Docker container
+        subprocess.run(['docker', 'rm', '-f', self.container_id])
+        # Destroy filesystem
+        subprocess.run(['/bin/bash', 'delete_filesystem.bash', self.filesystem_name])
+        # Delete table entry
+        self.delete()
+        # Channel will be cleaned up by Django
 
-def create_filesystem(name):
-    subprocess.run(['/bin/bash', 'make_filesystem.bash', name])
+def create_container(filesystem_name):
+    # Make filesystem
+    subprocess.run(['/bin/bash', 'make_filesystem.bash', filesystem_name])
 
-def create_docker_container(name):
-    create_filesystem(name)
+    # Create Docker container
+    # NOTE: the created container does not run yet
     cli = docker.Client(base_url='unix://var/run/docker.sock')
-    container = cli.create_container(
+    docker_container = cli.create_container(
         image='tellina',
-        name=name,
         ports=[10411],
         volumes=['/home/myuser'],
-        detach=True,
         host_config=cli.create_host_config(
             binds={
-                '/{}/home'.format(name): {
+                '/{}/home'.format(filesystem_name): {
                     'bind': '/home/myuser',
                     'mode': 'rw',
                 },
@@ -68,26 +68,27 @@ def create_docker_container(name):
             port_bindings={10411: ('127.0.0.1',)},
         ),
     )
-    container_id = container['Id']
+
+    # Get ID of created container
+    container_id = docker_container['Id']
+
+    # Start container
     cli.start(container=container_id)
+
+    # Inspect created container
     info = cli.inspect_container(container_id)
     port = info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort']
+
+    # Wait a bit for container's server to start
     time.sleep(1)
-    return (container_id, port)
 
-def start_container(container_id):
-    cli = docker.Client(base_url='unix://var/run/docker.sock')
-    cli.start(container=container_id)
+    # Create container model object
+    container = Container.objects.create(
+        filesystem_name=filesystem_name,
+        container_id=container_id,
+        port=port,
+    )
 
-def create_container(name):
-    # Race condition: Must create entry in DB before creating container,
-    # so that websocket connect from container will be able to access that
-    # entry in the DB.
-    container_id, port = create_docker_container(name)
-    container = Container.objects.create(name=name, container_id=container_id)
-    start_container(container_id)
-
-    r = requests.get('http://127.0.0.1:{}/{}'.format(port, container_id))
     return container
 
 class Task(models.Model):
@@ -99,8 +100,160 @@ class Task(models.Model):
 
 class TaskResult(models.Model):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
+    task_manager = models.ForeignKey('TaskManager', on_delete=models.CASCADE)
     stdout = models.TextField()
     stdin = models.TextField()
     end_time = models.DateTimeField()
-    state = models.TextField() # 'not_started' | 'timed_out' | passed
+    state = models.TextField() # 'not_started' | 'running' | 'timed_out' | 'passed'
     time_spent = models.DurationField()
+
+def generate_session_id():
+    return str(uuid.uuid4())
+
+class TaskManager(models.Model):
+    '''
+    Invariant: 0 or 1 container running at a time
+    Instantiates task_manager_{id}.lock to serialize requests
+    Uses 'session_id' to keep track of websocket sessions
+
+    Container should connect on /container/{task_manager.id}/{task_manager.session_id}
+    User should connect on /xterm/{task_manager.id}/{task_manager.session_id}
+    '''
+
+    task = models.ForeignKey('Task', on_delete=models.CASCADE) # current task
+
+    # These are saved/reset when a task is finished
+    stdin = models.TextField()
+    stdout = models.TextField()
+
+    session_id = models.TextField()                   # '' means no session currently
+    # The following variables are associate with the session:
+    container_id = models.IntegerField()              # -1 means no container
+    container_stdin_channel_name = models.TextField() # '' means websocket not connected yet
+    xterm_stdout_channel_name = models.TextField()    # '' means websocket not connected yet
+
+    def lock(self):
+        with open(str(self.id), 'w+') as file:
+            fcntl.flock(file, fcntl.LOCK_EX)
+        self.refresh_from_db()
+
+    def unlock(self):
+        with open(str(self.id), 'w+') as file:
+            fcntl.flock(file, fcntl.LOCK_UN)
+
+    def get_current_task_id(self):
+        self.lock()
+        task_id = self.task_id
+        self.unlock()
+        return task_id
+
+    # handles starting new task, opening new window to current
+    # task, resetting current task
+    def initialize_task(self, task_id):
+        self.lock()
+        if task_id == self.task_id: # Reset or start the current task
+            # Destroy container, if any
+            if self.container_id != -1:
+                Container.objects.get(id=self.container_id).destroy()
+
+            # Create a new session ID
+            self.session_id = 'tellina_session_'+generate_session_id()
+            self.save()
+
+            # Create a new container
+            container = create_container(session_id)
+
+            # Set container ID
+            self.container_id = container.id
+            self.save()
+
+            # Ask container to connect a WebSocket to this server
+            requests.get('http://127.0.0.1:{}/{}/{}'.format(container.port, self.id, self.session_id))
+
+            # Start current task
+            task_result = TaskResult.objects.filter(task_manager_id=self.id).get(task_id=task_id)
+            if task_result.state == 'not_started':
+                task_result.state = 'running'
+                task_result.end_time = time.now() + task_result.task.duration
+                task_result.save()
+
+            self.unlock()
+            return self.session_id
+        else: # Does not match current task
+            self.unlock()
+            return None
+
+    def get_task(self, session_id):
+        self.lock()
+        if session_id == self.session_id:
+            task_id = self.task_id
+            self.unlock()
+            return task_id
+        else:
+            self.unlock()
+            return None
+
+    def get_filesystem(self, session_id):
+        self.lock()
+        if session_id == self.session_id:
+            filesystem = '{}'
+            self.unlock()
+            return filesystem
+        else:
+            self.unlock()
+            return None
+
+    def check_answer(self, session_id):
+        self.lock()
+        if session_id == self.session_id:
+            is_correct = False
+            self.unlock()
+            return is_correct
+        else:
+            self.unlock()
+            return None
+
+    def update_task_state(self):
+        task_result = self.task_results.get(id=self.current_task_number)
+
+        if task_result.state == 'running':
+            if django.time.now() > task_result.end_time:
+                task_result.state = 'timed_out'
+                task_result.save()
+                self.current_task_number += 1
+                self.save()
+            else:
+                if check_answer(task_result):
+                    task_result.state = 'passed'
+                    task_result.save()
+                    self.current_task_number += 1
+                    self.save()
+                else:
+                    pass
+        else:
+            pass
+
+def create_task_manager(tasks):
+    if len(tasks) == 0:
+        raise Exception('len(tasks) == 0')
+    task_manager = TaskManager.objects.create(
+        task=tasks[0],
+        stdin='',
+        stdout='',
+        session_id='',
+        container_id=-1,
+        container_stdin_channel_name='',
+        xterm_stdout_channel_name='',
+    )
+    # Create task results for each task
+    for task in tasks:
+        TaskResult.objects.create(
+            task=task,
+            task_manager=task_manager,
+            stdin='',
+            stdout='',
+            end_time=timezone.now(), # this is just an arbitrary value to satisfy non-NULL constraint
+            state='not_started',
+            time_spent=datetime.timedelta(seconds=1), # arbitrary value to satisfy non-NULL constraint
+        )
+    return task_manager
