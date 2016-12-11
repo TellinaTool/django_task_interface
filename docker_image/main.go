@@ -36,13 +36,14 @@ func main() {
 
 func StartServer(port int) {
 	r := mux.NewRouter()
-	r.HandleFunc("/{container_id}", XtermHandler)
+	r.HandleFunc("/{task_manager_id}/{session_id}", XtermHandler)
 	log.Printf("Starting server on port %d...\n", port)
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
 }
 
 func XtermHandler(response http.ResponseWriter, request *http.Request) {
-	container_id := mux.Vars(request)["container_id"]
+	task_manager_id := mux.Vars(request)["task_manager_id"]
+	session_id := mux.Vars(request)["session_id"]
 
 	file, err := pty.Start(exec.Command("/bin/bash", "--login"))
 	if err != nil {
@@ -54,7 +55,7 @@ func XtermHandler(response http.ResponseWriter, request *http.Request) {
 	time.Sleep(250 * time.Millisecond)
 
 	// Open connection to task interface server
-	url := fmt.Sprintf("ws://%s:10411/container/%s", dockerHostIP, container_id)
+	url := fmt.Sprintf("ws://%s:10411/container/%s/%s", dockerHostIP, task_manager_id, session_id)
 	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		log.Fatalf("Could not open websocket to %v: %v\n", url, err)
