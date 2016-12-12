@@ -73,7 +73,7 @@ def test_task_manager(request):
     )
 
     # Create a task manager
-    task_manager = create_task_manager(Task.objects.all())
+    task_manager = create_task_manager()
 
     # Check initial current task
     current_task_id = task_manager.get_current_task_id()
