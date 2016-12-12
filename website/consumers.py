@@ -47,20 +47,31 @@ def ws_message(message):
     task_manager_id = message.channel_session['task_manager_id']
     session_id = message.channel_session['session_id']
 
-    # This ignores message that don't have a destination to send to
+    # This ignores messages that don't have a destination to forward to
     task_manager = TaskManager.objects.get(id=task_manager_id)
     task_manager.lock()
     if session_id == task_manager.session_id:
-        # send message
+        # Get message text
+        text = message['text']
+        print('type: {}, text: {}'.format(type, repr(text)))
+
+        # Get name of destination channel
+        # Append to STDIN or STDOUT
         channel_name = None
         if type == 'xterm':
             channel_name = task_manager.container_stdin_channel_name
+            task_manager.stdin += text
+            task_manager.save()
         elif type == 'container':
             channel_name = task_manager.xterm_stdout_channel_name
+            task_manager.stdout += text
+            task_manager.save()
         else:
             raise Exception('unrecognized websocket type')
+
+        # Forward to destination channel, if available
         if channel_name != '':
-            Channel(channel_name).send(message['text'])
+            Channel(channel_name).send(message)
     task_manager.unlock()
 
 # Connected to websocket.disconnect

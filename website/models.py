@@ -101,11 +101,14 @@ class Task(models.Model):
 class TaskResult(models.Model):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     task_manager = models.ForeignKey('TaskManager', on_delete=models.CASCADE)
-    stdout = models.TextField()
     stdin = models.TextField()
-    end_time = models.DateTimeField()
+    stdout = models.TextField()
+    start_time = models.DateTimeField()
     state = models.TextField() # 'not_started' | 'running' | 'timed_out' | 'passed'
     time_spent = models.DurationField()
+
+    def end_time(self):
+        return self.start_time + self.task.duration
 
 def generate_session_id():
     return str(uuid.uuid4())
@@ -171,10 +174,10 @@ class TaskManager(models.Model):
             requests.get('http://127.0.0.1:{}/{}/{}'.format(container.port, self.id, self.session_id))
 
             # Start current task
-            task_result = TaskResult.objects.filter(task_manager_id=self.id).get(task_id=task_id)
+            task_result = self.get_current_task_result()
             if task_result.state == 'not_started':
                 task_result.state = 'running'
-                task_result.end_time = timezone.now() + task_result.task.duration
+                task_result.start_time = timezone.now()
                 task_result.save()
 
             self.unlock()
@@ -212,6 +215,19 @@ class TaskManager(models.Model):
         else:
             self.unlock()
             return None
+
+    # Used for testing only
+    def write_stdin(self, session_id, text):
+        self.lock()
+        if session_id == self.session_id and self.container_stdin_channel_name != '':
+            Channel(self.container_stdin_channel_name).send({'text': text})
+        self.unlock()
+
+    def get_current_task_result(self):
+        self.lock()
+        task_result = TaskResult.objects.filter(task_manager_id=self.id).get(task_id=self.task_id)
+        self.unlock()
+        return task_result
 
     def update_task_state(self):
         task_result = self.task_results.get(id=self.current_task_number)
@@ -252,7 +268,7 @@ def create_task_manager(tasks):
             task_manager=task_manager,
             stdin='',
             stdout='',
-            end_time=timezone.now(), # this is just an arbitrary value to satisfy non-NULL constraint
+            start_time=timezone.now(), # this is just an arbitrary value to satisfy non-NULL constraint
             state='not_started',
             time_spent=datetime.timedelta(seconds=1), # arbitrary value to satisfy non-NULL constraint
         )

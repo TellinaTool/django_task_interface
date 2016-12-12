@@ -67,28 +67,45 @@ def test_task_manager(request):
     # Check initial current task
     current_task_id = task_manager.get_current_task_id()
     if current_task_id != 1:
-        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
-
+        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
+        return HttpResponse('<pre>{}</pre>'.format(msg))
 
     # Check task result is in 'not_started'
-    task_result = TaskResult.objects.filter(task_manager_id=task_manager.id).get(task_id=current_task_id)
+    task_result = task_manager.get_current_task_result()
     if task_result.state != 'not_started':
-        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
+        return HttpResponse('<pre>{}</pre>'.format(msg))
 
     # Initialize to starting task
     session_id = task_manager.initialize_task(current_task_id)
     if session_id is None:
-        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
+        return HttpResponse('<pre>{}</pre>'.format(msg))
 
     # Check task result state == 'running'
     task_result = TaskResult.objects.filter(task_manager_id=task_manager.id).get(task_id=current_task_id)
     if task_result.state != 'running':
-        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
+        return HttpResponse('<pre>{}</pre>'.format(msg))
 
-    # Wait a bit for container's websocket to connect to us
-    time.sleep(1)
+    # Wait a bit, then check if container's websocket connected to us
+    time.sleep(0.5)
     task_manager.refresh_from_db()
     if task_manager.container_stdin_channel_name == '':
-        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
+        return HttpResponse('<pre>{}</pre>'.format(msg))
+
+    # Write to container's STDIN
+    task_manager.write_stdin(session_id, '''echo 'h'ello world\n''')
+
+    # Wait a bit, then check container's STDOUT
+    time.sleep(0.5)
+    task_manager.refresh_from_db()
+    if "echo 'h'ello world" not in task_manager.stdout:
+        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
+        return HttpResponse('<pre>{}</pre>'.format(msg))
+    if "hello world" not in task_manager.stdout:
+        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
+        return HttpResponse('<pre>{}</pre>'.format(msg))
 
     return HttpResponse('tests passed')
