@@ -250,9 +250,10 @@ class TaskManager(models.Model):
             pass
         self.unlock()
 
-def create_task_manager(tasks):
+def create_task_manager():
+    tasks = Task.objects.all()
     if len(tasks) == 0:
-        raise Exception('len(tasks) == 0')
+        raise Exception('No tasks loaded')
     task_manager = TaskManager.objects.create(
         task_id=1,
         stdin='',
@@ -274,3 +275,11 @@ def create_task_manager(tasks):
             time_spent=datetime.timedelta(seconds=1), # arbitrary value to satisfy non-NULL constraint
         )
     return task_manager
+
+class User(models.Model):
+    access_code = models.TextField()
+    task_manager = models.OneToOneField('TaskManager', on_delete=models.CASCADE)
+
+def create_user(access_code):
+    task_manager = create_task_manager()
+    return User.objects.create(access_code, task_manager=task_manager)

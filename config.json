@@ -1,0 +1,44 @@
+{
+  "access_codes": [
+    "bob"
+  ],
+  "task_duration": 60,
+  "Tasks": [
+    {
+      "type": "stdout",
+      "description": "enter 'echo hello world'",
+      "initial_filesystem": {},
+      "answer": "hello world"
+    },
+    {
+      "type": "stdout",
+      "description": "enter 'echo hello world 2'",
+      "initial_filesystem": {},
+      "answer": "hello world 2"
+    },
+    {
+      "type": "stdout",
+      "description": "enter 'echo hello world 3'",
+      "initial_filesystem": {},
+      "answer": "hello world 3"
+    },
+    {
+      "type": "filesystem",
+      "description": "create a file named hello.txt in dir1/dir2",
+      "initial_filesystem": {
+        "dir1": {
+          "file.txt": null,
+          "dir2": {}
+        }
+      },
+      "answer": {
+        "dir1": {
+          "file.txt": null,
+          "dir2": {
+            "hello.txt": null
+          }
+        }
+      }
+    }
+  ]
+}
