@@ -1,5 +1,6 @@
 from channels.sessions import channel_session, enforce_ordering
 from .models import TaskManager
+from channels import Channel
 
 # Connected to websocket.connect
 @enforce_ordering
@@ -46,15 +47,14 @@ def ws_message(message):
     type = message.channel_session['type']
     task_manager_id = message.channel_session['task_manager_id']
     session_id = message.channel_session['session_id']
+    text = message['text']
+
+    print('WS message - type: {}, text: {}'.format(type, repr(text)))
 
     # This ignores messages that don't have a destination to forward to
     task_manager = TaskManager.objects.get(id=task_manager_id)
     task_manager.lock()
     if session_id == task_manager.session_id:
-        # Get message text
-        text = message['text']
-        print('type: {}, text: {}'.format(type, repr(text)))
-
         # Get name of destination channel
         # Append to STDIN or STDOUT
         channel_name = None
@@ -71,7 +71,7 @@ def ws_message(message):
 
         # Forward to destination channel, if available
         if channel_name != '':
-            Channel(channel_name).send(message)
+            Channel(channel_name).send({'text': text})
     task_manager.unlock()
 
 # Connected to websocket.disconnect
