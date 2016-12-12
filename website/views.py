@@ -8,6 +8,33 @@ import docker
 import traceback
 import time
 
+def get_current_task_id(request):
+    access_code = request.GET['access_code']
+    task_manager = User.objects.get(access_code=access_code).task_manager
+    return HttpResponse(str(task_manager.get_current_task_id()))
+
+def initialize_task(request):
+    access_code = request.GET['access_code']
+    task_id =  int(request.GET['task_id'])
+    task_manager = User.objects.get(access_code=access_code).task_manager
+    session_id = task_manager.initialize_task(task_id)
+    if session_id is None:
+        return HttpResponse('wrong_task')
+    else:
+        return HttpResponse(session_id)
+
+def check_task_state(request):
+    access_code = request.GET['access_code']
+    task_id =  int(request.GET['task_id'])
+    task_manager = User.objects.get(access_code=access_code).task_manager
+    return HttpResponse(task_manager.check_task_state(task_id))
+
+def update_state(request):
+    access_code = request.GET['access_code']
+    task_manager = User.objects.get(access_code=access_code).task_manager
+    task_manager.update_state()
+    return HttpResponse('')
+
 def test(request):
     # This should be a proper unit test in website/tests.py, but the container
     # cannot open a websocket to the test server started by the unit test, for
