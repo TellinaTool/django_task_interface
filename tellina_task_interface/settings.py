@@ -133,3 +133,7 @@ CHANNEL_LAYERS = {
         "ROUTING": "website.routing.channel_routing",
     },
 }
+
+STATICFILES_DIRS = [
+    BASE_DIR + "/website/static/",
+]

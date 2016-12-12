@@ -1,0 +1,55 @@
+<html>
+<head>
+	<link rel="stylesheet" href="/static/css/xterm.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="/static/js/xterm.js"></script>
+	<script src="/static/js/attach.js"></script>
+</head>
+
+<body>
+	<div id="terminal-container"></div>
+
+	<script>
+		function getHost() {
+		    return location.hostname + ((location.port) ? (':' + location.port) : '');
+		}
+
+
+		// var accessCode = prompt("Enter your access code");
+		var accessCode = 'bob';
+		$.get(`/get_current_task_id?access_code=${accessCode}`, function(data) {
+			var task_id = parseInt(data);
+			console.log(`task_id: ${task_id}`);
+			$.get(`/initialize_task?access_code=${accessCode}&task_id=${task_id}`, function(data) {
+				var sessionID = data;
+				console.log(`sessionID: ${sessionID}`);
+
+				var cols = 80;
+				var rows = 24;
+				var term = new Terminal({ cursorBlink: true });
+				var terminalContainer = document.getElementById('terminal-container');
+				// clean terminal
+				while (terminalContainer.children.length > 0) {
+				  terminalContainer.removeChild(terminalContainer.children[0]);
+				}
+				// associate JS term object with HTML div
+				term.open(terminalContainer);
+				var charWidth = Math.ceil(term.element.offsetWidth / cols);
+				var charHeight = Math.ceil(term.element.offsetHeight / rows);
+
+				var xtermWebSocket = new WebSocket(`ws://${getHost()}/xterm/1/${sessionID}`);
+				xtermWebSocket.onopen = function() {
+				  term.attach(xtermWebSocket);
+				  console.log('Terminal attached');
+				};
+				xtermWebSocket.onerror = function(event) {
+				  console.log('Socket error: ' + event.data);
+				};
+				xtermWebSocket.onclose = function() {
+				  console.log('Socket closed');
+				};
+			});
+		});
+	</script>
+</body>
+</html>
