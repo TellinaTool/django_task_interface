@@ -101,25 +101,27 @@ class TaskManager(models.Model):
     User should connect on /xterm/{task_manager.id}/{task_manager.session_id}
     '''
 
-    task = models.ForeignKey('Task', on_delete=models.CASCADE) # current task
+    # Current task
+    # -1 means that all tasks are done
+    task_id = models.IntegerField()
 
-    # These are saved/reset when a task is finished
+    # These are saved to TaskResult and reset here when a task is finished
     stdin = models.TextField()
     stdout = models.TextField()
 
+    # The following fields are associated with a session:
     session_id = models.TextField()                   # '' means no session currently
-    # The following variables are associate with the session:
     container_id = models.IntegerField()              # -1 means no container
     container_stdin_channel_name = models.TextField() # '' means websocket not connected yet
     xterm_stdout_channel_name = models.TextField()    # '' means websocket not connected yet
 
     def lock(self):
-        with open(str(self.id), 'w+') as file:
+        with open('task_manager_lock_{}'.format(self.id), 'w+') as file:
             fcntl.flock(file, fcntl.LOCK_EX)
         self.refresh_from_db()
 
     def unlock(self):
-        with open(str(self.id), 'w+') as file:
+        with open('task_manager_lock_{}'.format(self.id), 'w+') as file:
             fcntl.flock(file, fcntl.LOCK_UN)
 
     def get_current_task_id(self):
@@ -164,15 +166,11 @@ class TaskManager(models.Model):
             self.unlock()
             return None
 
-    def get_task(self, session_id):
+    def check_task_state(self, task_id):
         self.lock()
-        if session_id == self.session_id:
-            task_id = self.task_id
-            self.unlock()
-            return task_id
-        else:
-            self.unlock()
-            return None
+        state = TaskResult.objects.filter(task_manager_id=self.id).get(task_id=task_id).state
+        self.unlock()
+        return state
 
     def get_filesystem(self, session_id):
         self.lock()
@@ -180,16 +178,6 @@ class TaskManager(models.Model):
             filesystem = '{}'
             self.unlock()
             return filesystem
-        else:
-            self.unlock()
-            return None
-
-    def check_answer(self, session_id):
-        self.lock()
-        if session_id == self.session_id:
-            is_correct = False
-            self.unlock()
-            return is_correct
         else:
             self.unlock()
             return None
@@ -209,10 +197,17 @@ class TaskManager(models.Model):
 
     def update_state(self):
         self.lock()
+
+        # Check if done with tasks
+        if self.task_id == -1:
+            self.unlock()
+            return
+
         task_result = self.get_current_task_result()
 
-        def commit_task_result_and_setup_next_task():
+        def commit_task_result_and_setup_next_task(state):
             # Commit task result
+            task_result.state = state
             task_result.stdin = self.stdin
             task_result.stdout = self.stdout
             task_result.time_spent = timezone.now() - task_result.start_time
@@ -230,24 +225,24 @@ class TaskManager(models.Model):
             self.xterm_stdout_channel_name = ''
             self.save()
 
-            # Advance to next task
-            self.task_id += 1
+            # Advance to next task, or indicate that all tasks are finished
+            if self.task_id == len(Task.objects.all()):
+                self.task_id = -1
+            else:
+                self.task_id += 1
             self.save()
 
         if task_result.state == 'running':
             if timezone.now() > task_result.end_time():
-                task_result.state = 'timed_out'
-                commit_task_result_and_setup_next_task()
+                commit_task_result_and_setup_next_task('timed_out')
             else:
                 # check answer
-                raise Exception('check answer not implemented yet')
-                has_passed = False
-                if task.type == 'stdout' and has_passed:
-                    task_result.state = 'passed'
-                    commit_task_result_and_setup_next_task()
-                elif task.type == 'filesystem' and has_passed:
-                    task_result.state = 'passed'
-                    commit_task_result_and_setup_next_task()
+                task = Task.objects.get(id=self.task_id)
+                if task.type == 'stdout':
+                    if task.answer in self.stdout:
+                        commit_task_result_and_setup_next_task('passed')
+                elif task.type == 'filesystem':
+                    raise Exception('FS answer check not implemented yet')
                 else:
                     raise Exception('unrecognized task type')
         else:
@@ -259,7 +254,7 @@ def create_task_manager(tasks):
     if len(tasks) == 0:
         raise Exception('len(tasks) == 0')
     task_manager = TaskManager.objects.create(
-        task=tasks[0],
+        task_id=1,
         stdin='',
         stdout='',
         session_id='',

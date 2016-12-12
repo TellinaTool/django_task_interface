@@ -24,6 +24,10 @@ def test(request):
 
     return HttpResponse("Test done. Received following STDOUT: {}".format(container.stdout))
 
+def fail():
+    msg = 'test failed: {}'.format(traceback.format_stack()[-2])
+    return HttpResponse('<pre>{}</pre>'.format(msg))
+
 def test_task_manager(request):
     cli = docker.Client(base_url='unix://var/run/docker.sock')
 
@@ -33,7 +37,7 @@ def test_task_manager(request):
     try:
         cli.inspect_container(container=container.container_id)
     except docker.errors.NotFound as e:
-        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+        return fail()
 
     # Test container deletion
     container.destroy()
@@ -43,7 +47,7 @@ def test_task_manager(request):
     except docker.errors.NotFound as e:
         is_container_destroyed = True
     if not is_container_destroyed:
-        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+        return fail()
 
     # Create some tasks
     Task.objects.create(
@@ -51,7 +55,14 @@ def test_task_manager(request):
         type='stdout',
         initial_filesystem='{}',
         answer='hello world',
-        duration=datetime.timedelta(seconds=1),
+        duration=datetime.timedelta(seconds=999999),
+    )
+    Task.objects.create(
+        description='This should timeout almost immediately',
+        type='stdout',
+        initial_filesystem='{}',
+        answer='hello world',
+        duration=datetime.timedelta(milliseconds=1),
     )
     Task.objects.create(
         description='Remove the file foo.txt.',
@@ -67,33 +78,28 @@ def test_task_manager(request):
     # Check initial current task
     current_task_id = task_manager.get_current_task_id()
     if current_task_id != 1:
-        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
-        return HttpResponse('<pre>{}</pre>'.format(msg))
+        return fail()
 
     # Check task result is in 'not_started'
     task_result = task_manager.get_current_task_result()
     if task_result.state != 'not_started':
-        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
-        return HttpResponse('<pre>{}</pre>'.format(msg))
+        return fail()
 
     # Initialize to starting task
     session_id = task_manager.initialize_task(current_task_id)
     if session_id is None:
-        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
-        return HttpResponse('<pre>{}</pre>'.format(msg))
+        return fail()
 
     # Check task result state == 'running'
     task_result = TaskResult.objects.filter(task_manager_id=task_manager.id).get(task_id=current_task_id)
     if task_result.state != 'running':
-        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
-        return HttpResponse('<pre>{}</pre>'.format(msg))
+        return fail()
 
     # Wait a bit, then check if container's websocket connected to us
     time.sleep(0.5)
     task_manager.refresh_from_db()
     if task_manager.container_stdin_channel_name == '':
-        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
-        return HttpResponse('<pre>{}</pre>'.format(msg))
+        return fail()
 
     # Write to container's STDIN
     task_manager.write_stdin(session_id, '''echo 'h'ello world\n''')
@@ -102,20 +108,33 @@ def test_task_manager(request):
     time.sleep(0.5)
     task_manager.refresh_from_db()
     if "echo 'h'ello world" not in task_manager.stdout:
-        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
-        return HttpResponse('<pre>{}</pre>'.format(msg))
+        return fail()
     if "hello world" not in task_manager.stdout:
-        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
-        return HttpResponse('<pre>{}</pre>'.format(msg))
+        return fail()
 
-    # By now, the task should have timed out
-    # Update task manager state
+    # Update task manager state to trigger answer check
     task_manager.update_state()
+
+    # The task should have passed
+    if task_manager.check_task_state(1) != 'passed':
+        return fail()
 
     # Check that we've moved onto the next task
     current_task_id = task_manager.get_current_task_id()
     if current_task_id != 2:
-        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
-        return HttpResponse('<pre>{}</pre>'.format(msg))
+        return fail()
+    if task_manager.check_task_state(2) != 'not_started':
+        return fail()
 
-    return HttpResponse('tests passed')
+    # Initialize next task
+    session_id = task_manager.initialize_task(2)
+
+    # Wait a bit, and update task manager state to trigger timeout check
+    time.sleep(0.5)
+    task_manager.update_state()
+
+    # The task should have timed out
+    if task_manager.check_task_state(2) != 'timed_out':
+        return fail()
+
+    return HttpResponse('Tests passed')
