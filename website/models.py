@@ -229,25 +229,53 @@ class TaskManager(models.Model):
         self.unlock()
         return task_result
 
-    def update_task_state(self):
-        task_result = self.task_results.get(id=self.current_task_number)
+    def update_state(self):
+        self.lock()
+        task_result = self.get_current_task_result()
+
+        def commit_task_result_and_setup_next_task():
+            # Commit task result
+            task_result.stdin = self.stdin
+            task_result.stdout = self.stdout
+            task_result.time_spent = timezone.now() - task_result.start_time
+            task_result.save()
+
+            # Destroy current container
+            Container.objects.get(id=self.container_id).destroy()
+
+            # Reset task manager fields
+            self.stdin = ''
+            self.stdout = ''
+            self.session_id = ''
+            self.container_id = -1
+            self.container_stdin_channel_name = ''
+            self.xterm_stdout_channel_name = ''
+            self.save()
+
+            # Advance to next task
+            self.task_id += 1
+            self.save()
 
         if task_result.state == 'running':
-            if django.time.now() > task_result.end_time:
+            if timezone.now() > task_result.end_time():
                 task_result.state = 'timed_out'
-                task_result.save()
-                self.current_task_number += 1
-                self.save()
+                commit_task_result_and_setup_next_task()
             else:
-                if check_answer(task_result):
+                # check answer
+                raise Exception('check answer not implemented yet')
+                has_passed = False
+                if task.type == 'stdout' and has_passed:
                     task_result.state = 'passed'
-                    task_result.save()
-                    self.current_task_number += 1
-                    self.save()
+                    commit_task_result_and_setup_next_task()
+                elif task.type == 'filesystem' and has_passed:
+                    task_result.state = 'passed'
+                    commit_task_result_and_setup_next_task()
                 else:
-                    pass
+                    raise Exception('unrecognized task type')
         else:
+            # No need to update if task is not running
             pass
+        self.unlock()
 
 def create_task_manager(tasks):
     if len(tasks) == 0:

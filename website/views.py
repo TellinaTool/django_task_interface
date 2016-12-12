@@ -108,4 +108,14 @@ def test_task_manager(request):
         msg = 'test failed: {}'.format(traceback.format_stack()[-1])
         return HttpResponse('<pre>{}</pre>'.format(msg))
 
+    # By now, the task should have timed out
+    # Update task manager state
+    task_manager.update_state()
+
+    # Check that we've moved onto the next task
+    current_task_id = task_manager.get_current_task_id()
+    if current_task_id != 2:
+        msg = 'test failed: {}'.format(traceback.format_stack()[-1])
+        return HttpResponse('<pre>{}</pre>'.format(msg))
+
     return HttpResponse('tests passed')
