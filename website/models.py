@@ -161,7 +161,7 @@ class TaskManager(models.Model):
             self.save()
 
             # Create a new container
-            container = create_container(session_id)
+            container = create_container(self.session_id)
 
             # Set container ID
             self.container_id = container.id
@@ -174,7 +174,7 @@ class TaskManager(models.Model):
             task_result = TaskResult.objects.filter(task_manager_id=self.id).get(task_id=task_id)
             if task_result.state == 'not_started':
                 task_result.state = 'running'
-                task_result.end_time = time.now() + task_result.task.duration
+                task_result.end_time = timezone.now() + task_result.task.duration
                 task_result.save()
 
             self.unlock()

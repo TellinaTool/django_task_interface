@@ -1,5 +1,5 @@
 from channels.sessions import channel_session, enforce_ordering
-from .models import Container
+from .models import TaskManager
 
 # Connected to websocket.connect
 @enforce_ordering
@@ -7,6 +7,7 @@ from .models import Container
 def ws_connect(message):
     # parse the URL path
     path = message.content['path'].strip('/').split('/')
+    print('WS connect: {}'.format(path))
 
     # Handle /{type}/{task_manager_id}/{session_id}
     # This registers a xterm's or container's websocket with the corresponding task manager.
@@ -21,10 +22,11 @@ def ws_connect(message):
         message.channel_session['task_manager_id'] = task_manager_id
         message.channel_session['session_id'] = session_id
 
-        # Attempt to register this socket with a task manager
+        # Register this socket with the task manager
         task_manager = TaskManager.objects.get(id=task_manager_id)
         task_manager.lock()
         if session_id == task_manager.session_id:
+            # Register if session_id matches
             if type == 'xterm':
                 task_manager.xterm_stdout_channel_name = message.reply_channel.name
             elif type == 'container':
@@ -32,6 +34,9 @@ def ws_connect(message):
             else:
                 raise Exception('unrecognized websocket type')
             task_manager.save()
+        else:
+            # Ignore connection session_id does not match
+            pass
         task_manager.unlock()
 
 # Connected to websocket.receive

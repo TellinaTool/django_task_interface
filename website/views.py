@@ -6,6 +6,7 @@ import uuid
 import datetime
 import docker
 import traceback
+import time
 
 def test(request):
     # This should be a proper unit test in website/tests.py, but the container
@@ -64,9 +65,30 @@ def test_task_manager(request):
     task_manager = create_task_manager(Task.objects.all())
 
     # Check initial current task
-    if task_manager.get_current_task_id() != 1:
+    current_task_id = task_manager.get_current_task_id()
+    if current_task_id != 1:
         return HttpResponse('test fail: {}'.format(traceback.format_stack()))
 
-    # print(task_manager.initialize_task(task_manager.get_current_task_id()))
-    # # # task_manager.initialize_task(1)
+
+    # Check task result is in 'not_started'
+    task_result = TaskResult.objects.filter(task_manager_id=task_manager.id).get(task_id=current_task_id)
+    if task_result.state != 'not_started':
+        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+
+    # Initialize to starting task
+    session_id = task_manager.initialize_task(current_task_id)
+    if session_id is None:
+        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+
+    # Check task result state == 'running'
+    task_result = TaskResult.objects.filter(task_manager_id=task_manager.id).get(task_id=current_task_id)
+    if task_result.state != 'running':
+        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+
+    # Wait a bit for container's websocket to connect to us
+    time.sleep(1)
+    task_manager.refresh_from_db()
+    if task_manager.container_stdin_channel_name == '':
+        return HttpResponse('test fail: {}'.format(traceback.format_stack()))
+
     return HttpResponse('tests passed')
