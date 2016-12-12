@@ -3,7 +3,7 @@
     "bob"
   ],
   "task_duration": 60,
-  "Tasks": [
+  "tasks": [
     {
       "type": "stdout",
       "description": "enter 'echo hello world'",
