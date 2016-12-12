@@ -282,4 +282,4 @@ class User(models.Model):
 
 def create_user(access_code):
     task_manager = create_task_manager()
-    return User.objects.create(access_code, task_manager=task_manager)
+    return User.objects.create(access_code=access_code, task_manager=task_manager)
