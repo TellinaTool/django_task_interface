@@ -132,6 +132,7 @@ class TaskManager(models.Model):
 
     # handles starting new task, opening new window to current
     # task, resetting current task
+    # Returns None if task_id does not match self.task_id
     def initialize_task(self, task_id):
         self.lock()
         if task_id == self.task_id: # Reset or start the current task
