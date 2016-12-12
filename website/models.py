@@ -12,31 +12,9 @@ import fcntl
 import datetime
 
 class Container(models.Model):
-    '''
-    STDIN channel: Channel(container.stdin_channel_name)
-    STDIN transcript: container.stdin
-    STDOUT transcript: container.stdout
-
-    Message from the STDOUT channel are tagged as follows:
-    message.channel_session['id'] = container_{container_id}
-    '''
-
     filesystem_name = models.TextField()
     container_id = models.TextField()
     port = models.IntegerField()
-
-    def write_stdin(self, text):
-        while True:
-            # Busy wait for stdin channel to be registered
-            self.refresh_from_db()
-            if self.stdin_channel_name != '':
-                # Save STDIN to field
-                self.stdin += text
-                self.save()
-                # Send STDIN on channel
-                Channel(self.stdin_channel_name).send({'text': text})
-                break
-            os.sched_yield()
 
     def destroy(self):
         # Destroy Docker container
@@ -45,7 +23,7 @@ class Container(models.Model):
         subprocess.run(['/bin/bash', 'delete_filesystem.bash', self.filesystem_name])
         # Delete table entry
         self.delete()
-        # Channel will be cleaned up by Django
+        # WebSocket channel will be cleaned up by Django
 
 def create_container(filesystem_name):
     # Make filesystem
