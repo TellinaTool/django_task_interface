@@ -1,5 +1,7 @@
 # Tellina Task Interface
 
+Edit `config.json` as necessary.
+
 Start the VM which runs the web application:
 
 ```bash
@@ -8,4 +10,4 @@ vagrant destroy -f # destroy the existing VM, if any
 vagrant up
 ```
 
-Test that the server works by visiting http://127.0.0.1:10411.
+Start the task interface for user `bob` by visiting `http://127.0.0.1:10411/static/html/index.html?access_code=bob`.
