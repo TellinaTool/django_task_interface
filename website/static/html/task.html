@@ -77,6 +77,14 @@
 						console.log(`updated`);
 					});
 				}, 2500);
+
+				// poll filesystem
+				setInterval(function() {
+					$.get(`/get_filesystem?access_code=${accessCode}`, function(data) {
+						var filesystem = data;
+						console.log(`filesystem: ${JSON.stringify(filesystem)}`);
+					});
+				}, 2000);
 			});
 		});
 	</script>

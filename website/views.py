@@ -31,6 +31,11 @@ def initialize_task(request):
     else:
         return HttpResponse(session_id)
 
+def get_filesystem(request):
+    access_code = request.GET['access_code']
+    task_manager = User.objects.get(access_code=access_code).task_manager
+    return JsonResponse(task_manager.get_filesystem())
+
 def check_task_state(request):
     access_code = request.GET['access_code']
     task_id =  int(request.GET['task_id'])
@@ -97,7 +102,7 @@ def test(request):
         type='filesystem',
         initial_filesystem='{"foo.txt": null}',
         answer='{}',
-        duration=datetime.timedelta(seconds=1),
+        duration=datetime.timedelta(seconds=999999),
     )
 
     # Create a task manager
@@ -165,6 +170,30 @@ def test(request):
 
     # The task should have timed out
     if task_manager.check_task_state(2) != 'timed_out':
+        return fail()
+
+    # Check that we've moved onto next task
+    if task_manager.get_current_task_id() != 3:
+        return fail()
+    if task_manager.check_task_state(3) != 'not_started':
+        return fail()
+
+    # Initialize task
+    session_id = task_manager.initialize_task(3)
+    if task_manager.check_task_state(3) != 'running':
+        return fail()
+
+    # Wait a bit, write to container's STDIN
+    time.sleep(0.5)
+    if not task_manager.write_stdin(session_id, 'rm foo.txt\n'):
+        return fail()
+
+    # Check that task passed
+    time.sleep(0.5)
+    if task_manager.get_filesystem() != {}:
+        return fail()
+    task_manager.update_state()
+    if task_manager.check_task_state(3) != 'passed':
         return fail()
 
     return HttpResponse('Tests passed')

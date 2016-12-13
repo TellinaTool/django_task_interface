@@ -196,22 +196,26 @@ class TaskManager(models.Model):
         self.unlock()
         return state
 
-    def get_filesystem(self, session_id):
+    def get_filesystem(self):
         self.lock()
-        if session_id == self.session_id:
-            filesystem = '{}'
+        if self.session_id == '':
+            self.unlock()
+            return []
+        else:
+            filesystem = disk_2_dict(pathlib.Path('/{}/home'.format(self.session_id)))['home']
             self.unlock()
             return filesystem
-        else:
-            self.unlock()
-            return None
 
     # Used for testing only
     def write_stdin(self, session_id, text):
         self.lock()
         if session_id == self.session_id and self.container_stdin_channel_name != '':
             Channel(self.container_stdin_channel_name).send({'text': text})
-        self.unlock()
+            self.unlock()
+            return True
+        else:
+            self.unlock()
+            return False
 
     def get_current_task_result(self):
         self.lock()
@@ -266,7 +270,7 @@ class TaskManager(models.Model):
                     if task.answer in self.stdout:
                         commit_task_result_and_setup_next_task('passed')
                 elif task.type == 'filesystem':
-                    container_filesystem = disk_2_dict(pathlib.Path('/{}/home'.format(self.session_id)))['home']
+                    container_filesystem = self.get_filesystem()
                     answer_filesystem = json.loads(task.answer)
                     if container_filesystem == answer_filesystem:
                         commit_task_result_and_setup_next_task('passed')
