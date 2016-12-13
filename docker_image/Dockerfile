@@ -37,4 +37,4 @@ WORKDIR /home/myuser
 
 EXPOSE 10411
 
-CMD myserver >"log_$(date).txt" 2>&1
+CMD myserver
