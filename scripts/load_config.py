@@ -8,7 +8,7 @@ def run():
     file = open('config.json', 'r')
     content = str(file.read())
     config = json.loads(content)
-    task_duration = config['task_duration']
+    task_duration = config['task_duration_in_seconds']
     for task in config['tasks']:
         type = task['type']
         answer = None
