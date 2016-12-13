@@ -11,10 +11,6 @@ sudo apt-get update
 sudo apt-get install -y python3-pip
 pip3 install --upgrade pip
 
-# Install emacs
-sudo apt-get update
-sudo apt-get install -y emacs
-
 # Build the Docker image
 cd ~/tellina_task_interface/docker_image
 sudo docker build -t tellina .
