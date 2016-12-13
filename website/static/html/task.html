@@ -14,16 +14,32 @@
 		    return location.hostname + ((location.port) ? (':' + location.port) : '');
 		}
 
+		var accessCode = prompt("Enter your access code");
 
-		// var accessCode = prompt("Enter your access code");
-		var accessCode = 'bob';
+		// get the current task
 		$.get(`/get_current_task_id?access_code=${accessCode}`, function(data) {
 			var task_id = parseInt(data);
 			console.log(`task_id: ${task_id}`);
+
+			alert(`You are starting a session for task ${task_id}. Press OK to continue.`);
+
+			// poll task state
+			setInterval(function() {
+				$.get(`/check_task_state?access_code=${accessCode}&task_id=${task_id}`, function(data) {
+					var state = data;
+					console.log(`task state: ${state}`);
+					if (state !== 'running') {
+						location.reload();
+					}
+				});
+			}, 3000);
+
+			// initialize a sesion for the current task
 			$.get(`/initialize_task?access_code=${accessCode}&task_id=${task_id}`, function(data) {
 				var sessionID = data;
 				console.log(`sessionID: ${sessionID}`);
 
+				// connect to xterm
 				var cols = 80;
 				var rows = 24;
 				var term = new Terminal({ cursorBlink: true });
@@ -48,6 +64,13 @@
 				xtermWebSocket.onclose = function() {
 				  console.log('Socket closed');
 				};
+
+				// poll update
+				setInterval(function() {
+					$.get(`/update_state?access_code=${accessCode}`, function(data) {
+						console.log(`updated`);
+					});
+				}, 2500);
 			});
 		});
 	</script>

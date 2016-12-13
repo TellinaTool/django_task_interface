@@ -28,6 +28,7 @@ rm -rf db.sqlite3 website/migrations
 python3 manage.py makemigrations
 python3 manage.py makemigrations website
 python3 manage.py migrate
+python3 manage.py runscript load_config --traceback
 
 # Run server
 sudo python3 manage.py runserver 0.0.0.0:10411
