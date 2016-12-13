@@ -40,7 +40,11 @@ def fail():
     msg = 'test failed: {}'.format(traceback.format_stack()[-2])
     return HttpResponse('<pre>{}</pre>'.format(msg))
 
-def test_task_manager(request):
+def test(request):
+    # This should be a proper unit test in website/tests.py, but the container
+    # cannot open a websocket to the test server started by the unit test, for
+    # some unknown reason.
+
     cli = docker.Client(base_url='unix://var/run/docker.sock')
 
     # Test container creation
