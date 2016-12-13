@@ -2,7 +2,7 @@ import pathlib
 import json
 
 def normalize_JSON(JSON_string: str):
-	return json.dumps(json.loads(JSON_string), sort_keys=True, indent=2)
+	return json.dumps(json.loads(JSON_string), sort_keys=True)
 
 def merge_dictionaries(a: dict, b: dict) -> dict:
 	return {**a, **b}
