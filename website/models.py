@@ -76,11 +76,27 @@ def create_container(filesystem_name: str, filesystem: dict) -> Container:
     return container
 
 class Task(models.Model):
-    description = models.TextField()
     type = models.TextField()
+    description = models.TextField()
     initial_filesystem = models.TextField()
     answer = models.TextField()
     duration = models.DurationField()
+
+    def to_dict(self):
+        answer = None
+        if self.type == 'filesystem':
+            answer = json.loads(self.answer)
+        elif self.type == 'stdout':
+            answer = self.answer
+        else:
+            raise Exception('unrecognized task type')
+        return {
+            'type': self.type,
+            'description': self.description,
+            'initial_filesystem': json.loads(self.initial_filesystem),
+            'answer': answer,
+            'duration': self.duration.seconds,
+        }
 
 class TaskResult(models.Model):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)

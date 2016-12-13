@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import *
 from .filesystem import disk_2_dict
 
@@ -8,6 +8,13 @@ import datetime
 import docker
 import traceback
 import time
+
+def get_task(request):
+    # NOTE: This exposes the full task object, including the answer field.
+    # You'll probably want to change this to only expose the task description.
+    task_id = int(request.GET['task_id'])
+    task = Task.objects.get(id=task_id)
+    return JsonResponse(task.to_dict())
 
 def get_current_task_id(request):
     access_code = request.GET['access_code']

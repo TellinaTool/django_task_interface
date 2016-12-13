@@ -16,10 +16,16 @@
 
 		var accessCode = prompt("Enter your access code");
 
-		// get the current task
+		// get the current task ID
 		$.get(`/get_current_task_id?access_code=${accessCode}`, function(data) {
 			var task_id = parseInt(data);
 			console.log(`task_id: ${task_id}`);
+
+			// get details about the current task
+			$.get(`/get_task?task_id=${task_id}`, function(data) {
+				var task = data;
+				console.log(`task: ${JSON.stringify(task)}`);
+			});
 
 			alert(`You are starting a session for task ${task_id}. Press OK to continue.`);
 
