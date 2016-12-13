@@ -61,23 +61,23 @@ func XtermHandler(response http.ResponseWriter, request *http.Request) {
 		log.Fatalf("Could not open websocket to %v: %v\n", url, err)
 	}
 
-	// user -> container
+	// Forward xterm's STDIN to pseudo-terminal
 	go func() {
 		for {
 			_, data, err := conn.ReadMessage()
 			if err != nil {
-				log.Println("user -> container read msg error:", err)
+				log.Println("xterm -> container read msg error:", err)
 				break
 			}
 			_, err = io.Copy(file, bytes.NewReader(data))
 			if err != nil {
-				log.Println("user -> container write msg error:", err)
+				log.Println("xterm -> container write msg error:", err)
 				break
 			}
 		}
 	}()
 
-	// container -> user
+	// Forward pseudo-terminal's STDOUT to xterm
 	go func() {
 		reader := bufio.NewReader(file)
 		lock := &sync.Mutex{}
@@ -94,7 +94,7 @@ func XtermHandler(response http.ResponseWriter, request *http.Request) {
 					buffer.Reset()
 					if err != nil {
 						lock.Unlock()
-						log.Println("user -> container write msg error:", err)
+						log.Println("xterm -> container write msg error:", err)
 						return
 					}
 				}

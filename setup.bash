@@ -24,6 +24,8 @@ rm -rf db.sqlite3 website/migrations
 python3 manage.py makemigrations
 python3 manage.py makemigrations website
 python3 manage.py migrate
+
+# Load initial data into database
 python3 manage.py runscript load_config --traceback
 
 # Run server
