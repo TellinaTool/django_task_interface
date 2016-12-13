@@ -7,8 +7,8 @@ from channels import Channel
 @channel_session
 def ws_connect(message):
     # parse the URL path
+    print('WS connect at: {}'.format(message.content['path']))
     path = message.content['path'].strip('/').split('/')
-    print('WS connect: {}'.format(path))
 
     # Handle /{type}/{task_manager_id}/{session_id}
     # This registers a xterm's or container's websocket with the corresponding task manager.
@@ -49,9 +49,8 @@ def ws_message(message):
     session_id = message.channel_session['session_id']
     text = message['text']
 
-    print('WS message - type: {}, text: {}'.format(type, repr(text)))
+    print('WS message - type: {}, task_manager_id: {}, session_id: {}, text: {}'.format(type, task_manager_id, session_id, repr(text)))
 
-    # This ignores messages that don't have a destination to forward to
     task_manager = TaskManager.objects.get(id=task_manager_id)
     task_manager.lock()
     if session_id == task_manager.session_id:
