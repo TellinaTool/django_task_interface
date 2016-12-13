@@ -1,6 +1,7 @@
 {
   "access_codes": [
-    "bob"
+    "bob",
+    "alice"
   ],
   "task_duration": 60,
   "tasks": [
