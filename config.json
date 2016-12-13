@@ -7,20 +7,10 @@
     {
       "type": "stdout",
       "description": "enter 'echo hello world'",
-      "initial_filesystem": {},
+      "initial_filesystem": {
+        "ignore_me.txt": null
+      },
       "answer": "hello world"
-    },
-    {
-      "type": "stdout",
-      "description": "enter 'echo hello world 2'",
-      "initial_filesystem": {},
-      "answer": "hello world 2"
-    },
-    {
-      "type": "stdout",
-      "description": "enter 'echo hello world 3'",
-      "initial_filesystem": {},
-      "answer": "hello world 3"
     },
     {
       "type": "filesystem",

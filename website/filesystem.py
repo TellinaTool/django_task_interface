@@ -1,5 +1,9 @@
 import pathlib
 import json
+import shutil
+
+USER = 'vagrant'
+GROUP = 'vagrant'
 
 def normalize_JSON(JSON_string: str):
     return json.dumps(json.loads(JSON_string), sort_keys=True)
@@ -21,11 +25,14 @@ def dict_2_JSON(tree: dict) -> str:
 
 def dict_2_disk(tree: dict, root_path: pathlib.Path):
     for name, subtree in tree.items():
+        path = root_path / name
         if subtree is None:
             # file
-            newfile = (root_path / name).open(mode='w+')
+            newfile = path.open(mode='w+')
             newfile.close()
+            shutil.chown(path.as_posix(), user=USER, group=GROUP)
         else:
             # directory
-            (root_path / name).mkdir()
+            path.mkdir()
+            shutil.chown(path.as_posix(), user=USER, group=GROUP)
             dict_2_disk(subtree, root_path / name)

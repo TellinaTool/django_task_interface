@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from .models import *
+from .filesystem import disk_2_dict
 
 import time
 import uuid
@@ -44,10 +45,15 @@ def test_task_manager(request):
 
     # Test container creation
     filesystem_name = 'tellina_session_'+str(uuid.uuid4())
-    container = create_container(filesystem_name)
+    filesystem = {'dir1': {'dir2': {'file2.txt': None}}, 'file1.txt': None}
+    container = create_container(filesystem_name, filesystem)
     try:
         cli.inspect_container(container=container.container_id)
     except docker.errors.NotFound as e:
+        return fail()
+
+    # Check if filesystem was setup properly
+    if disk_2_dict(pathlib.Path('/{}/home'.format(filesystem_name)))['home'] != filesystem:
         return fail()
 
     # Test container deletion
@@ -64,7 +70,7 @@ def test_task_manager(request):
     Task.objects.create(
         description='Print hello world.',
         type='stdout',
-        initial_filesystem='{}',
+        initial_filesystem='{"dir1": {"dir2": {"file2.txt": null}}, "file1.txt": null}',
         answer='hello world',
         duration=datetime.timedelta(seconds=999999),
     )
@@ -139,6 +145,8 @@ def test_task_manager(request):
 
     # Initialize next task
     session_id = task_manager.initialize_task(2)
+    if task_manager.check_task_state(2) != 'running':
+        return fail()
 
     # Wait a bit, and update task manager state to trigger timeout check
     time.sleep(0.5)

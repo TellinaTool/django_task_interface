@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from channels import Channel
+from .filesystem import dict_2_disk, disk_2_dict
 
 import docker
 import requests
@@ -10,6 +11,8 @@ import subprocess
 import uuid
 import fcntl
 import datetime
+import pathlib
+import json
 
 class Container(models.Model):
     filesystem_name = models.TextField()
@@ -25,9 +28,12 @@ class Container(models.Model):
         self.delete()
         # WebSocket channel will be cleaned up by Django
 
-def create_container(filesystem_name):
-    # Make filesystem
+def create_container(filesystem_name: str, filesystem: dict) -> Container:
+    # Make  virtual filesystem
     subprocess.run(['/bin/bash', 'make_filesystem.bash', filesystem_name])
+
+    # Initialize filesystem
+    dict_2_disk(filesystem, pathlib.Path('/{}/home'.format(filesystem_name)))
 
     # Create Docker container
     # NOTE: the created container does not run yet
@@ -145,7 +151,8 @@ class TaskManager(models.Model):
             self.save()
 
             # Create a new container
-            container = create_container(self.session_id)
+            task = Task.objects.get(id=task_id)
+            container = create_container(self.session_id, json.loads(task.initial_filesystem))
 
             # Set container ID
             self.container_id = container.id
@@ -243,7 +250,10 @@ class TaskManager(models.Model):
                     if task.answer in self.stdout:
                         commit_task_result_and_setup_next_task('passed')
                 elif task.type == 'filesystem':
-                    raise Exception('FS answer check not implemented yet')
+                    container_filesystem = disk_2_dict(pathlib.Path('/{}/home'.format(self.session_id)))['home']
+                    answer_filesystem = json.loads(task.answer)
+                    if container_filesystem == answer_filesystem:
+                        commit_task_result_and_setup_next_task('passed')
                 else:
                     raise Exception('unrecognized task type')
         else:
