@@ -5,9 +5,6 @@ import shutil
 USER = 'vagrant'
 GROUP = 'vagrant'
 
-def normalize_JSON(JSON_string: str):
-    return json.dumps(json.loads(JSON_string), sort_keys=True)
-
 def merge_dictionaries(a: dict, b: dict) -> dict:
     return {**a, **b}
 
@@ -19,9 +16,6 @@ def disk_2_dict(path: pathlib.Path) -> dict:
         return {path.parts[-1]: subtrees}
     else:
         return {path.parts[-1]: None}
-
-def dict_2_JSON(tree: dict) -> str:
-    return normalize_JSON(json.dumps(tree))
 
 def dict_2_disk(tree: dict, root_path: pathlib.Path):
     for name, subtree in tree.items():
