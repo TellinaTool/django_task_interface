@@ -110,8 +110,12 @@ class TaskResult(models.Model):
     def end_time(self):
         return self.start_time + self.task.duration
 
-def generate_session_id():
-    return str(uuid.uuid4())
+class SessionID(models.Model):
+    pass
+
+def generate_session_id() -> str:
+    session_id = SessionID.objects.create()
+    return str(session_id.id)
 
 class TaskManager(models.Model):
     '''
