@@ -16,6 +16,8 @@ import json
 from typing import Optional
 
 class Container(models.Model):
+    """Describes information about a running Docker container."""
+
     filesystem_name = models.TextField()
     container_id = models.TextField()
     port = models.IntegerField()
@@ -59,7 +61,7 @@ def create_container(filesystem_name: str, filesystem: dict) -> Container:
     # Start container
     cli.start(container=container_id)
 
-    # Inspect created container
+    # Find what port the container was mapped to
     info = cli.inspect_container(container_id)
     port = info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort']
 
@@ -76,6 +78,8 @@ def create_container(filesystem_name: str, filesystem: dict) -> Container:
     return container
 
 class Task(models.Model):
+    """Describes a task."""
+
     type = models.TextField()
     description = models.TextField()
     initial_filesystem = models.TextField()
@@ -99,6 +103,8 @@ class Task(models.Model):
         }
 
 class TaskResult(models.Model):
+    """Describes the current state and completion results of a task for a given user."""
+
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     task_manager = models.ForeignKey('TaskManager', on_delete=models.CASCADE)
     stdin = models.TextField()
@@ -111,6 +117,7 @@ class TaskResult(models.Model):
         return self.start_time + self.task.duration
 
 class SessionID(models.Model):
+    """Used by TaskManager to create application-wide unique session IDs."""
     pass
 
 def generate_session_id() -> str:
@@ -118,15 +125,18 @@ def generate_session_id() -> str:
     return str(session_id.id)
 
 class TaskManager(models.Model):
-    '''
+    """Handles logic related to starting, stopping, and resetting tasks.
+
+    Each user has exactly 1 TaskManager.
+
     Invariant: 0 or 1 container running at a time.
-    Instantiates task_manager_{id}.lock to serialize requests.
+    Instantiates file (lock task_manager_{id}.lock) to serialize method calls.
     Uses 'session_id' to keep track of websocket sessions.
     Depends on code in consumers.py to register websockets.
 
     Container should connect on /container/{task_manager.id}/{task_manager.session_id}
     User should connect on /xterm/{task_manager.id}/{task_manager.session_id}
-    '''
+    """
 
     # Current task
     # -1 means that all tasks are done
@@ -157,10 +167,13 @@ class TaskManager(models.Model):
         self.unlock()
         return task_id
 
-    # Handles starting new task, opening new window to current
-    # task, resetting current task
-    # Returns None if task_id does not match self.task_id
     def initialize_task(self, task_id: int) -> Optional[str]:
+        """Destroys current session and starts new session for specified task.
+
+        Returns:
+            ID of newly created session, or None if task_id does not match current task_id.
+        """
+
         self.lock()
         if task_id == self.task_id: # Reset or start the current task
             # Destroy container, if any
@@ -229,6 +242,8 @@ class TaskManager(models.Model):
         return task_result
 
     def update_state(self):
+        """Updates the state of the current task and task result."""
+
         self.lock()
 
         # Check if done with tasks
@@ -313,6 +328,8 @@ def create_task_manager() -> TaskManager:
     return task_manager
 
 class User(models.Model):
+    """Describes a study participant."""
+
     access_code = models.TextField()
     task_manager = models.OneToOneField('TaskManager', on_delete=models.CASCADE)
 
