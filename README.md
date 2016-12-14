@@ -32,14 +32,14 @@
 
 ## Developing
 
-If you edit `setup.bash`, which installs things on the VM:
+If you edit `setup.bash`, which installs things on the VM, you'll need to recreate the VM:
 
 ```bash
 vagrant destroy -f
 vagrant up
 ```
 
-If you edit the Docker image in `docker_image/`:
+If you edit the Docker image in `docker_image/`, you'll need to rebuild the image:
 
 ```bash
 vagrant ssh
@@ -47,7 +47,7 @@ cd ~/tellina_task_interface/docker_image
 sudo docker build -t tellina .
 ```
 
-or
+or recreate the VM:
 
 ```bash
 vagrant destroy -f
