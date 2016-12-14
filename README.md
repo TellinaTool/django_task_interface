@@ -32,9 +32,32 @@
 
 ## Developing
 
-1. Start the VM as shown above.
-2. Edit files on the host. The repo folder on the host is synced with `/home/vagrant/tellina_task_interface` on the VM.
-3. `vagrant ssh` into the VM and start the server again.
+If you edit `setup.bash`, which installs things on the VM:
+
+```bash
+vagrant destroy -f
+vagrant up
+```
+
+If you edit the Docker image in `docker_image/`:
+
+```bash
+vagrant ssh
+cd ~/tellina_task_interface/docker_image
+sudo docker build -t tellina .
+```
+
+or
+
+```bash
+vagrant destroy -f
+vagrant up
+```
+
+If you edit files other than those mentioned above:
+
+1. The repo folder on the host is synced with `/home/vagrant/tellina_task_interface` on the VM.
+2. `vagrant ssh` into the VM and start the server again.
 
 ## Testing
 
