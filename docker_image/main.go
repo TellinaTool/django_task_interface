@@ -26,11 +26,13 @@ var upgrader = websocket.Upgrader{
 var dockerHostIP string
 
 func main() {
+	// Get the IP address of the host machine
 	out, err := exec.Command("/bin/bash", "-c", `route -n | awk '/UG[ \t]/{print $2}'`).Output()
 	if err != nil {
 		log.Fatalln("Failed to get Docker host IP:", err)
 	}
 	dockerHostIP = strings.TrimSpace(string(out))
+
 	StartServer(10411)
 }
 
@@ -50,7 +52,7 @@ func XtermHandler(response http.ResponseWriter, request *http.Request) {
 		log.Fatalln("Failed to start pseudo-terminal:", err)
 	}
 
-	// wait for terminal session to start
+	// Wait for terminal session to start
 	// TODO(kvu787): find a better way
 	time.Sleep(250 * time.Millisecond)
 
