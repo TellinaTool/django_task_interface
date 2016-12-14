@@ -28,6 +28,8 @@
 
 5. Stop the server with `Ctrl-C`.
 
+6. View results in `~/tellina_task_interface/db.sqlite3`.
+
 # Developing
 
 1. Start the VM as shown above.
