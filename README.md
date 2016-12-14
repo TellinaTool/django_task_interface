@@ -24,14 +24,27 @@
   make run
   ```
 
-4. Start the task interface for user `bob` by visiting `http://127.0.0.1:10411/static/html/index.html?access_code=bob`.
+4. Start the task interface for user `bob` by visiting `http://127.0.0.1:10411/static/html/index.html?access_code=bob` on a browser on the host machine.
 
 5. Stop the server with `Ctrl-C`.
 
 6. View results in `~/tellina_task_interface/db.sqlite3`.
 
-# Developing
+## Developing
 
 1. Start the VM as shown above.
 2. Edit files on the host. The repo folder on the host is synced with `/home/vagrant/tellina_task_interface` on the VM.
 3. `vagrant ssh` into the VM and start the server again.
+
+## Testing
+
+1. Run automated tests and start the test server:
+
+  ```bash
+  vagrant ssh
+  cd ~/tellina_task_interface
+  make test
+  ```
+
+2. Visit `http://127.0.0.1:10411/test`.
+3. Verify that the page says "Tests passed".
