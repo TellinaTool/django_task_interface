@@ -31,5 +31,5 @@
 # Developing
 
 1. Start the VM as shown above.
-2. Edit files on the host. The repo folder on the host is synced with `~/tellina_task_interface` on the VM.
+2. Edit files on the host. The repo folder on the host is synced with `/home/vagrant/tellina_task_interface` on the VM.
 3. `vagrant ssh` into the VM and start the server again.
