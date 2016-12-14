@@ -1,4 +1,4 @@
-all: clean setup_db
+run: clean setup_db
 	python3 manage.py runscript load_config --traceback
 	sudo python3 manage.py runserver 0.0.0.0:10411
 

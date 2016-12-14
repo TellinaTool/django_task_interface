@@ -18,6 +18,3 @@ sudo docker build -t tellina .
 # Install server dependencies
 cd ~/tellina_task_interface/
 sudo -H pip3 install -r requirements.txt
-
-# Setup and run server
-make

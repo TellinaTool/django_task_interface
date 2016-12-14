@@ -14,11 +14,8 @@ Vagrant.configure("2") do |config|
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "bento/ubuntu-16.04"
 
-  # This copies files from the host into the guest file system.
-  #
-  # The file provisioner must come before the shell or else files will not be
-  # available to the shell script.
-  config.vm.provision "file", source: "./", destination: "~/"
+  # Share the current folder with the VM
+  config.vm.synced_folder "./", "/home/vagrant/tellina_task_interface"
 
   # The shell provisioner will run setup.bash after the OS is setup.
   config.vm.provision "shell", path: "setup.bash", privileged: false
