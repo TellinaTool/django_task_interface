@@ -13,6 +13,7 @@ import fcntl
 import datetime
 import pathlib
 import json
+from typing import Optional
 
 class Container(models.Model):
     filesystem_name = models.TextField()
@@ -26,7 +27,6 @@ class Container(models.Model):
         subprocess.run(['/bin/bash', 'delete_filesystem.bash', self.filesystem_name])
         # Delete table entry
         self.delete()
-        # WebSocket channel will be cleaned up by Django
 
 def create_container(filesystem_name: str, filesystem: dict) -> Container:
     # Make  virtual filesystem
@@ -82,7 +82,7 @@ class Task(models.Model):
     answer = models.TextField()
     duration = models.DurationField()
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         answer = None
         if self.type == 'filesystem':
             answer = json.loads(self.answer)
@@ -107,7 +107,7 @@ class TaskResult(models.Model):
     state = models.TextField() # 'not_started' | 'running' | 'timed_out' | 'passed'
     time_spent = models.DurationField()
 
-    def end_time(self):
+    def end_time(self) -> datetime.datetime:
         return self.start_time + self.task.duration
 
 class SessionID(models.Model):
@@ -119,9 +119,10 @@ def generate_session_id() -> str:
 
 class TaskManager(models.Model):
     '''
-    Invariant: 0 or 1 container running at a time
-    Instantiates task_manager_{id}.lock to serialize requests
-    Uses 'session_id' to keep track of websocket sessions
+    Invariant: 0 or 1 container running at a time.
+    Instantiates task_manager_{id}.lock to serialize requests.
+    Uses 'session_id' to keep track of websocket sessions.
+    Depends on code in consumers.py to register websockets.
 
     Container should connect on /container/{task_manager.id}/{task_manager.session_id}
     User should connect on /xterm/{task_manager.id}/{task_manager.session_id}
@@ -150,16 +151,16 @@ class TaskManager(models.Model):
         with open('task_manager_lock_{}'.format(self.id), 'w+') as file:
             fcntl.flock(file, fcntl.LOCK_UN)
 
-    def get_current_task_id(self):
+    def get_current_task_id(self) -> int:
         self.lock()
         task_id = self.task_id
         self.unlock()
         return task_id
 
-    # handles starting new task, opening new window to current
+    # Handles starting new task, opening new window to current
     # task, resetting current task
     # Returns None if task_id does not match self.task_id
-    def initialize_task(self, task_id):
+    def initialize_task(self, task_id: int) -> Optional[str]:
         self.lock()
         if task_id == self.task_id: # Reset or start the current task
             # Destroy container, if any
@@ -194,24 +195,24 @@ class TaskManager(models.Model):
             self.unlock()
             return None
 
-    def check_task_state(self, task_id):
+    def check_task_state(self, task_id: int) -> str:
         self.lock()
         state = TaskResult.objects.filter(task_manager_id=self.id).get(task_id=task_id).state
         self.unlock()
         return state
 
-    def get_filesystem(self):
+    def get_filesystem(self) -> Optional[dict]:
         self.lock()
         if self.session_id == '':
             self.unlock()
-            return []
+            return None
         else:
             filesystem = disk_2_dict(pathlib.Path('/{}/home'.format(self.session_id)))['home']
             self.unlock()
             return filesystem
 
     # Used for testing only
-    def write_stdin(self, session_id, text):
+    def write_stdin(self, session_id: str, text: str) -> bool:
         self.lock()
         if session_id == self.session_id and self.container_stdin_channel_name != '':
             Channel(self.container_stdin_channel_name).send({'text': text})
@@ -221,7 +222,7 @@ class TaskManager(models.Model):
             self.unlock()
             return False
 
-    def get_current_task_result(self):
+    def get_current_task_result(self) -> TaskResult:
         self.lock()
         task_result = TaskResult.objects.filter(task_manager_id=self.id).get(task_id=self.task_id)
         self.unlock()
@@ -285,7 +286,7 @@ class TaskManager(models.Model):
             pass
         self.unlock()
 
-def create_task_manager():
+def create_task_manager() -> TaskManager:
     tasks = Task.objects.all()
     if len(tasks) == 0:
         raise Exception('No tasks loaded')
@@ -315,6 +316,6 @@ class User(models.Model):
     access_code = models.TextField()
     task_manager = models.OneToOneField('TaskManager', on_delete=models.CASCADE)
 
-def create_user(access_code):
+def create_user(access_code) -> User:
     task_manager = create_task_manager()
     return User.objects.create(access_code=access_code, task_manager=task_manager)
