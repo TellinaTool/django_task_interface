@@ -1,6 +1,7 @@
 run: clean setup_db
 	python3 manage.py runscript load_config --traceback
-	sudo python3 manage.py runserver 0.0.0.0:10411
+	sudo python3 manage.py runworker -v 3 --traceback &
+	sudo python3 manage.py runserver 0.0.0.0:10411 --noworker
 
 test: clean setup_db
 	python3 manage.py test

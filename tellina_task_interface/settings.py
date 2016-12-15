@@ -127,7 +127,8 @@ STATICFILES_DIRS = [
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "asgiref.inmemory.ChannelLayer",
+        # "BACKEND": "asgiref.inmemory.ChannelLayer",
+        "BACKEND": "asgi_ipc.IPCChannelLayer",
         "CONFIG": {
             # If this capacity parameter is too low, websocket connections
             # will close when too many messages come in.
@@ -136,4 +137,3 @@ CHANNEL_LAYERS = {
         "ROUTING": "website.routing.channel_routing",
     },
 }
-

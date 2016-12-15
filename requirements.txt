@@ -3,3 +3,4 @@ channels==0.17.3
 docker-py==1.10.6
 requests==2.12.3
 django-extensions==1.7.5
+asgi_ipc==1.2.0

@@ -2,9 +2,36 @@
 
 ## Performance notes
 
+Revision 1
+
 * Disabled file locking, DB requests, and websocket messages from the container (see model.py and consumers.py)
 * Server still chokes when I type too fast
 * Conclusion: bottleneck is the rate of incoming websocket message from xterm
+
+Revision 2
+
+* Switched channel layer from in-memory to IPC
+* Changed Makefile to use `runworker` setup
+* Typed really fast, and got the following output from server:
+
+  ```
+  2016-12-15 05:21:13,245 - DEBUG - worker - Got message on websocket.receive (reply websocket.send!oMaBKuDqMibe)
+  2016-12-15 05:21:13,246 - DEBUG - runworker - websocket.receive
+  2016-12-15 05:21:13,246 - DEBUG - worker - Dispatching message on websocket.receive to website.consumers.ws_message
+  WS message - type: xterm, task_manager_id: 1, session_id: tellina_session_1, text: 'f'
+
+  ...
+
+  2016-12-15 05:21:21,015 - DEBUG - worker - Dispatching message on websocket.receive to website.consumers.ws_message
+  2016-12-15 05:21:21,111 - DEBUG - worker - Got message on websocket.receive (reply websocket.send!oMaBKuDqMibe)
+  2016-12-15 05:21:21,115 - DEBUG - runworker - websocket.receive
+  ```
+
+* Notice that the worker still receives messages and dispatches them to the
+  `website.consumers.ws_message` handler, but the handler does not seem to run
+  because it does not print the "WS message" debug output
+* Conclusion: The issue is *not* that we run out of workers to process
+  incoming message
 
 ## Install dependencies
 

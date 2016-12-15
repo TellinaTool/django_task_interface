@@ -51,27 +51,27 @@ def ws_message(message):
 
     print('WS message - type: {}, task_manager_id: {}, session_id: {}, text: {}'.format(type, task_manager_id, session_id, repr(text)))
 
-    task_manager = TaskManager.objects.get(id=task_manager_id)
-    # task_manager.lock()
-    if session_id == task_manager.session_id:
-        # Get name of destination channel
-        # Append to STDIN or STDOUT
-        channel_name = None
-        if type == 'xterm':
-            channel_name = task_manager.container_stdin_channel_name
-            # task_manager.stdin += text
-            # task_manager.save()
-        elif type == 'container':
-            channel_name = task_manager.xterm_stdout_channel_name
-            # task_manager.stdout += text
-            # task_manager.save()
-        else:
-            raise Exception('unrecognized websocket type')
-
-        # Forward to destination channel, if available
-        if channel_name != '':
-            Channel(channel_name).send({'text': text})
-    # task_manager.unlock()
+    # task_manager = TaskManager.objects.get(id=task_manager_id)
+    # # task_manager.lock()
+    # if session_id == task_manager.session_id:
+    #     # Get name of destination channel
+    #     # Append to STDIN or STDOUT
+    #     channel_name = None
+    #     if type == 'xterm':
+    #         channel_name = task_manager.container_stdin_channel_name
+    #         # task_manager.stdin += text
+    #         # task_manager.save()
+    #     elif type == 'container':
+    #         channel_name = task_manager.xterm_stdout_channel_name
+    #         # task_manager.stdout += text
+    #         # task_manager.save()
+    #     else:
+    #         raise Exception('unrecognized websocket type')
+    #
+    #     # Forward to destination channel, if available
+    #     if channel_name != '':
+    #         Channel(channel_name).send({'text': text})
+    # # task_manager.unlock()
 
 # Connected to websocket.disconnect
 @enforce_ordering
