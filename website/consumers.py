@@ -3,7 +3,8 @@ from .models import TaskManager
 from channels import Channel
 
 # Connected to websocket.connect
-@enforce_ordering
+# @enforce_ordering
+@enforce_ordering(slight=True)
 @channel_session
 def ws_connect(message):
     # parse the URL path
@@ -41,7 +42,8 @@ def ws_connect(message):
         task_manager.unlock()
 
 # Connected to websocket.receive
-@enforce_ordering
+# @enforce_ordering
+@enforce_ordering(slight=True)
 @channel_session
 def ws_message(message):
     type = message.channel_session['type']
@@ -74,7 +76,8 @@ def ws_message(message):
     # # task_manager.unlock()
 
 # Connected to websocket.disconnect
-@enforce_ordering
+# @enforce_ordering
+@enforce_ordering(slight=True)
 @channel_session
 def ws_disconnect(message):
     pass

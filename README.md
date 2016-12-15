@@ -33,6 +33,13 @@ Revision 2
 * Conclusion: The issue is *not* that we run out of workers to process
   incoming message
 
+Revision 3
+
+* Switched from @enforce_ordering to @enforce_ordering(slight=True), which
+  means the CONNECT message will come before all regular messages, but those
+  regular messages may be reordered.
+* Mashed keys as fast as I could and the server handled it fine.
+
 ## Install dependencies
 
 1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads).
