@@ -1,4 +1,10 @@
-# Tellina Task Interface
+# Tellina Task Interface (performance testing branch)
+
+## Performance notes
+
+* Disabled file locking, DB requests, and websocket messages from the container (see model.py and consumers.py)
+* Server still chokes when I type too fast
+* Conclusion: bottleneck is the rate of incoming websocket message from xterm
 
 ## Install dependencies
 

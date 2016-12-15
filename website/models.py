@@ -192,8 +192,8 @@ class TaskManager(models.Model):
             self.container_id = container.id
             self.save()
 
-            # Ask container to connect a WebSocket to this server
-            requests.get('http://127.0.0.1:{}/{}/{}'.format(container.port, self.id, self.session_id))
+            # # Ask container to connect a WebSocket to this server
+            # requests.get('http://127.0.0.1:{}/{}/{}'.format(container.port, self.id, self.session_id))
 
             # Start current task
             task_result = self.get_current_task_result()
