@@ -13,6 +13,13 @@ from channels import Channel
 @enforce_ordering
 @channel_session
 def ws_connect(message):
+    """
+    This is called when a WebSocket connects to our server.
+
+    This handler register the name of the Channel (which wraps the WebSocket)
+    with the corresponding TaskManager.
+    """
+
     # parse the URL path
     print('WS connect at: {}'.format(message.content['path']))
     path = message.content['path'].strip('/').split('/')
@@ -51,6 +58,15 @@ def ws_connect(message):
 @enforce_ordering
 @channel_session
 def ws_message(message):
+    """
+    This is called when a message is sent to our server through a WebSocket
+    connected to our server.
+
+    This handler routes message from containers to xterms and from xterm to
+    containers. It also appends message to the STDIN and STDOUT fields of the
+    appropriate TaskManagers.
+    """
+
     type = message.channel_session['type']
     task_manager_id = message.channel_session['task_manager_id']
     session_id = message.channel_session['session_id']
@@ -84,4 +100,10 @@ def ws_message(message):
 @enforce_ordering
 @channel_session
 def ws_disconnect(message):
+    """
+    This is called when a WebSocket connected to our server disconnects.
+
+    Currently, this handler does nothing.
+    """
+
     pass

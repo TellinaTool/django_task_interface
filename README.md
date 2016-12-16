@@ -1,17 +1,24 @@
 # Tellina Task Interface
 
+This repository contains experimental infrastructure for performing
+a controlled experiment of people using the Tellina tool to create
+and run bash commands.
+
 ## Install dependencies
 
 1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads).
 2. Install [Vagrant](https://www.vagrantup.com/downloads.html).
 
+Command to do so for Ubuntu: `sudo apt-get install -y virtualbox vagrant`
+
 ## Create `config.json`
 
-See `config.sample.json` for an example.
+Run: `cp config.sample.jason config.json`
 
-Given the following study setup:
+The example file is for an experiment with the following setup,
+but you can customize any of these aspects of the experiment:
 
-* Each task takes 60 seconds.
+* Each task takes 300 seconds.
 * There are 2 participants: `bob` and `alice`.
 * There are 2 tasks:
   1. Print hello world.
@@ -35,50 +42,12 @@ Given the following study setup:
            hello.txt
        ```
 
-The following JSON should be in `config.json`:
-
-```json
-{
-  "access_codes": [
-    "bob",
-    "alice"
-  ],
-  "task_duration_in_seconds": 60,
-  "tasks": [
-    {
-      "type": "stdout",
-      "description": "Print hello world.",
-      "initial_filesystem": {},
-      "answer": "hello world"
-    },
-    {
-      "type": "filesystem",
-      "description": "Create a file named `hello.txt` in `~/dir1/dir2`.",
-      "initial_filesystem": {
-        "dir1": {
-          "file.txt": null,
-          "dir2": {}
-        }
-      },
-      "answer": {
-        "dir1": {
-          "file.txt": null,
-          "dir2": {
-            "hello.txt": null
-          }
-        }
-      }
-    }
-  ]
-}
-```
-
 ## Run the server
 
-Host will refer to the machine that runs `vagrant up`.
-Guest will refer to the VM created by `vagrant up`.
+"Host" will refer to the machine that runs `vagrant up`.
+"Guest" will refer to the VM created by `vagrant up`.
 
-1. Edit `config.json` as necessary.
+1. Edit `config.json` as necessary (see above).
 2. Start the VM which runs the web application:
 
   ```bash
@@ -98,7 +67,7 @@ Guest will refer to the VM created by `vagrant up`.
 5. Wait until you see `INFO - server - Using busy-loop synchronous mode on channel layer` in the console output.
 
 6. Start the task interface for user `bob` by visiting
-   `http://127.0.0.1:10411/static/html/task.html` on a browser on the host.
+   `http://127.0.0.1:10411/static/html/task.html` in a browser on the host.
    Enter `bob` in the browser prompt and continue.
 
 7. Stop the server with `Ctrl-C` in the guest terminal.

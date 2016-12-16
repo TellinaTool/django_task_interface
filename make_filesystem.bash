@@ -2,6 +2,7 @@
 
 # usage: make_filesystem.bash [name]
 # This script creates a virtual filesystem and mounts it at /name.
+# This is meant to be run on the task interface host.
 
 name=$1
 

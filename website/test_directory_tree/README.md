@@ -1,1 +1,1 @@
-This directory is used for testing purposes.
+This directory is used by the tests in `website/test.py`.

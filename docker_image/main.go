@@ -1,7 +1,7 @@
-// This program starts an HTTP server on 10411. It waits for a request on
-// /{task_manager_id}/{session_id}. Upon receiving a request, it creates a
-// pseudo-terminal and WebSocket, and attaches the terminal's standard input
-// and output to the WebSocket.
+// This program starts an HTTP server that listens on port 10411. It waits
+// for a request on /{task_manager_id}/{session_id}. Upon receiving a request,
+// it creates a pseudo-terminal and WebSocket, and attaches the terminal's
+// standard input and output to the WebSocket.
 package main
 
 import (
