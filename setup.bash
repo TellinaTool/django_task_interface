@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script will be run in the VM that Vagrant sets up to setup tools needed
+# This script will be run in the Vagrant VM (the guest) to set up tools needed
 # to run the task interface server.
 
 # Install docker

@@ -8,7 +8,7 @@ FROM ubuntu:16.04
 # Run commands in the following shell.
 SHELL ["/bin/bash", "-c"]
 
-# Install necessary commands
+# Install necessary tools
 RUN apt-get update
 RUN apt-get install -y wget \
                        git \
@@ -19,7 +19,7 @@ RUN wget --quiet https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.g
 RUN tar -xf go1.7.3.linux-amd64.tar.gz
 RUN mv go /usr/local/go
 
-# Build the application
+# Build the application, which is an HTTP server written in Go.
 WORKDIR /root
 COPY main.go ./
 RUN mkdir ./go
