@@ -6,7 +6,6 @@ from django.http import HttpResponse, JsonResponse
 from .models import *
 from .filesystem import disk_2_dict
 
-import time
 import uuid
 import datetime
 import docker
