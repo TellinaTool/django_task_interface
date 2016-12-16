@@ -7,15 +7,13 @@
   "tasks": [
     {
       "type": "stdout",
-      "description": "enter 'echo hello world'",
-      "initial_filesystem": {
-        "ignore_me.txt": null
-      },
+      "description": "Print hello world.",
+      "initial_filesystem": {},
       "answer": "hello world"
     },
     {
       "type": "filesystem",
-      "description": "create a file named hello.txt in dir1/dir2",
+      "description": "Create a file named `hello.txt` in `~/dir1/dir2`.",
       "initial_filesystem": {
         "dir1": {
           "file.txt": null,

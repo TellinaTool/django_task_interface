@@ -1,3 +1,7 @@
+"""
+This file routes URLs to handler functions.
+"""
+
 from django.conf.urls import url
 
 from . import views

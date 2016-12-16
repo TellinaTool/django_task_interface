@@ -1,9 +1,20 @@
+"""
+This script uses config.json to setup initial data in the database.
+
+Run it with `python3 manage.py runscript load_config`.
+"""
+
 from website.models import *
 
 import json
 import datetime
 
 def run():
+    """
+    This is the 'main method' that must be implemented in order for runscript
+    to run this script.
+    See http://django-extensions.readthedocs.io/en/latest/runscript.html#introduction
+    """
     file = open('config.json', 'r')
     content = str(file.read())
     config = json.loads(content)

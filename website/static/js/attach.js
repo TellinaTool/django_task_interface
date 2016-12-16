@@ -1,3 +1,5 @@
+// Copied from https://github.com/sourcelair/xterm.js/blob/master/dist/addons/attach/attach.js
+
 /**
  * Implements the attach method, that attaches the terminal to a WebSocket stream.
  * @module xterm/addons/attach/attach

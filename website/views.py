@@ -1,3 +1,7 @@
+"""
+This file defines functions to handle requests at URLs defined in urls.py.
+"""
+
 from django.http import HttpResponse, JsonResponse
 from .models import *
 from .filesystem import disk_2_dict
@@ -10,6 +14,12 @@ import traceback
 import time
 
 def get_task(request):
+    """
+    Args:
+        task_id
+
+    Returns a JSON object of the task
+    """
     # NOTE: This exposes the full task object, including the answer field.
     # You'll probably want to change this to only expose the task description.
     task_id = int(request.GET['task_id'])
@@ -17,11 +27,24 @@ def get_task(request):
     return JsonResponse(task.to_dict())
 
 def get_current_task_id(request):
+    """
+    Args:
+        access_code
+
+    Returns the task_id for the given user.
+    """
     access_code = request.GET['access_code']
     task_manager = User.objects.get(access_code=access_code).task_manager
     return HttpResponse(str(task_manager.get_current_task_id()))
 
 def initialize_task(request):
+    """
+    Args:
+        access_code
+        task_id
+
+    Clears any existing session and initializes a new session for the given task_id.
+    """
     access_code = request.GET['access_code']
     task_id =  int(request.GET['task_id'])
     task_manager = User.objects.get(access_code=access_code).task_manager
@@ -32,30 +55,57 @@ def initialize_task(request):
         return HttpResponse(session_id)
 
 def get_filesystem(request):
+    """
+    Args:
+        access_code
+
+    Returns JSON representation of the user's current home directory.
+    """
     access_code = request.GET['access_code']
     task_manager = User.objects.get(access_code=access_code).task_manager
     return JsonResponse(task_manager.get_filesystem())
 
 def check_task_state(request):
+    """
+    Args:
+        access_code
+        task_id
+
+    Returns the state of the TaskResult for the given user and task_id.
+    """
     access_code = request.GET['access_code']
     task_id =  int(request.GET['task_id'])
     task_manager = User.objects.get(access_code=access_code).task_manager
     return HttpResponse(task_manager.check_task_state(task_id))
 
 def update_state(request):
+    """
+    Args:
+        access_code
+
+    Triggers an update of TaskManager's state.
+    """
     access_code = request.GET['access_code']
     task_manager = User.objects.get(access_code=access_code).task_manager
     task_manager.update_state()
     return HttpResponse('')
 
 def fail():
+    """
+    Return a call to this function within a test request to send an HTML
+    page with a traceback of where the failure occured.
+    """
     msg = 'test failed: {}'.format(traceback.format_stack()[-2])
     return HttpResponse('<pre>{}</pre>'.format(msg))
 
 def test(request):
-    # This should be a proper unit test in website/tests.py, but the container
-    # cannot open a websocket to the test server started by the unit test, for
-    # some unknown reason.
+    """
+    Trigger this handler to run automated tests.
+
+    This should be a proper unit test in website/tests.py, but the container
+    cannot open a websocket to the test server started by the unit test
+    framework, for some unknown reason.
+    """
 
     cli = docker.Client(base_url='unix://var/run/docker.sock')
 

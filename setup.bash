@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# This script will be run in the VM that Vagrant sets up to setup tools needed
+# to run the task interface server.
+
 # Install docker
 curl -sSL https://get.docker.com/ | sh
 
@@ -10,10 +13,6 @@ sudo iptables -A INPUT -i docker0 -j ACCEPT
 sudo apt-get update
 sudo apt-get install -y python3-pip
 pip3 install --upgrade pip
-
-# Build the Docker image
-cd ~/tellina_task_interface/docker_image
-sudo docker build -t tellina .
 
 # Install server dependencies
 cd ~/tellina_task_interface/

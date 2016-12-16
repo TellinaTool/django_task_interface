@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# usage: make_filesystem.bash [name]
+# This script creates a virtual filesystem and mounts it at /name.
+
 name=$1
 
 # Exit on empty name

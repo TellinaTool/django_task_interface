@@ -1,3 +1,10 @@
+"""
+This file defines handlers for WebSocket connect, message, and disconnect
+events.
+
+See https://channels.readthedocs.io/en/stable/getting-started.html#first-consumers
+"""
+
 from channels.sessions import channel_session, enforce_ordering
 from .models import TaskManager
 from channels import Channel
