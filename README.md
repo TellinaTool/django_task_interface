@@ -1,17 +1,23 @@
 # Tellina Task Interface
 
+This repository contains experimental infrastructure for performing
+a controlled experiment of people using the Tellina tool to 
+
 ## Install dependencies
 
 1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads).
 2. Install [Vagrant](https://www.vagrantup.com/downloads.html).
 
+Command to do so for Ubuntu: `sudo apt-get install -y virtualbox vagrant`
+
 ## Create `config.json`
 
-See `config.sample.json` for an example.
+Run: `cp config.sample.jason config.json`
 
-Given the following study setup:
+The example file is for an experiment with the following setup,
+but you can customize any of these aspects of the experiment:
 
-* Each task takes 60 seconds.
+* Each task takes 300 seconds.
 * There are 2 participants: `bob` and `alice`.
 * There are 2 tasks:
   1. Print hello world.
@@ -34,44 +40,6 @@ Given the following study setup:
          dir2/
            hello.txt
        ```
-
-The following JSON should be in `config.json`:
-
-```json
-{
-  "access_codes": [
-    "bob",
-    "alice"
-  ],
-  "task_duration_in_seconds": 60,
-  "tasks": [
-    {
-      "type": "stdout",
-      "description": "Print hello world.",
-      "initial_filesystem": {},
-      "answer": "hello world"
-    },
-    {
-      "type": "filesystem",
-      "description": "Create a file named `hello.txt` in `~/dir1/dir2`.",
-      "initial_filesystem": {
-        "dir1": {
-          "file.txt": null,
-          "dir2": {}
-        }
-      },
-      "answer": {
-        "dir1": {
-          "file.txt": null,
-          "dir2": {
-            "hello.txt": null
-          }
-        }
-      }
-    }
-  ]
-}
-```
 
 ## Run the server
 
