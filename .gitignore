@@ -3,3 +3,4 @@
 *.pyc
 .vagrant
 website/migrations
+config.json

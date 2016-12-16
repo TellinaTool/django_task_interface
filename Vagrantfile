@@ -1,3 +1,6 @@
+# This file describes the operating system image that Vagrant will run.
+# Start a VM by running `vagrant up` in the same directory as this file.
+
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 

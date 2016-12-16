@@ -1,14 +1,14 @@
 """
-Contains functions to manipulate JSON filesystem representations.
+Contains functions to manipulate JSON-represented filesystems.
 
-Given the directory:
+Given the following directory:
 
 dir1/
+    file1
+    file2
     dir2/
         dir3/
             file3
-    file1
-    file2
 
 Its JSON representation is:
 
@@ -16,12 +16,12 @@ Its JSON representation is:
     "dir1": {
         "dir2": {
             "dir3": {
-                "file3": null,
+                "file3": null
             }
         },
         "file1": null,
-        "file2": null,
-    },
+        "file2": null
+    }
 }
 """
 
