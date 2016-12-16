@@ -18,11 +18,22 @@ from typing import Optional
 class Container(models.Model):
     """Describes information about a running Docker container."""
 
+    """The name of the virtual filesystem.
+
+    The virtual filesystem that backs this container's home directory is
+    located at /{filesystem_name}/home.
+    """
     filesystem_name = models.TextField()
+
+    """The ID of the container assigned by Docker."""
     container_id = models.TextField()
+
+    """The host port through which the server in the container can be accessed."""
     port = models.IntegerField()
 
     def destroy(self):
+        """Destroys container, filesystem, and database entry."""
+
         # Destroy Docker container
         subprocess.run(['docker', 'rm', '-f', self.container_id])
         # Destroy filesystem
@@ -31,7 +42,15 @@ class Container(models.Model):
         self.delete()
 
 def create_container(filesystem_name: str, filesystem: dict) -> Container:
-    # Make  virtual filesystem
+    """
+    Creates a container whose filesystem is located at /{filesystem_name}/home
+    on the host. The contents of filesystem are written to
+    /{filesystem_name}/home.
+
+    filesystem is a JSON representation of a filesystem.
+    """
+
+    # Make virtual filesystem
     subprocess.run(['/bin/bash', 'make_filesystem.bash', filesystem_name])
 
     # Initialize filesystem
@@ -78,15 +97,30 @@ def create_container(filesystem_name: str, filesystem: dict) -> Container:
     return container
 
 class Task(models.Model):
-    """Describes a task."""
+    """Describes a task that a study participant must complete."""
 
+    """The type of task. Can be 'stdout' or 'filesystem'."""
     type = models.TextField()
+
+    """A human-readable description of the task."""
     description = models.TextField()
+
+    """JSON representation of the user's starting home directory structure."""
     initial_filesystem = models.TextField()
+
+    """
+    The answer to the task.
+    If type == 'stdout': expected string to be found in STDOUT
+    If type == 'filesystem': JSON representation of what the user's home
+    directory should look like.
+    """
     answer = models.TextField()
+
+    """How much time is alotted for the task."""
     duration = models.DurationField()
 
     def to_dict(self) -> dict:
+        """Returns a dictionary representation of the task."""
         answer = None
         if self.type == 'filesystem':
             answer = json.loads(self.answer)
@@ -103,17 +137,48 @@ class Task(models.Model):
         }
 
 class TaskResult(models.Model):
-    """Describes the current state and completion results of a task for a given user."""
+    """Describes the current state and completion results of a task.
 
+    Each TaskResult is associated with 1 User, since a User has-one
+    TaskManager and a TaskManager has-many TaskResult's.
+
+    For example, if there are 2 tasks and 3 users, there are a total of 6
+    task results - 2 for each user.
+    """
+
+    """The task that this TaskResult is associated with"""
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
+
+    """Each TaskResult belongs to a TaskManager"""
     task_manager = models.ForeignKey('TaskManager', on_delete=models.CASCADE)
+
+    """A transcript of all STDIN for this task."""
     stdin = models.TextField()
+
+    """A transcript of all STDOUT for this task."""
     stdout = models.TextField()
+
+    """The time at which this task was started."""
     start_time = models.DateTimeField()
-    state = models.TextField() # 'not_started' | 'running' | 'timed_out' | 'passed'
+
+    """
+    The state of the task result.
+
+    Values:
+        - 'not_started': The user has not started the task yet
+        - 'running':     The user has started the task, but the task has not
+                         passed nor timed out yet
+        - 'timed_out':   The user started the task and did not pass it before
+                         running out of time
+        - 'passed':      The user started the task and passed it
+    """
+    state = models.TextField()
+
+    """How long a user spent doing the task"""
     time_spent = models.DurationField()
 
     def end_time(self) -> datetime.datetime:
+        """The time at which this task times out."""
         return self.start_time + self.task.duration
 
 class SessionID(models.Model):
@@ -121,57 +186,107 @@ class SessionID(models.Model):
     pass
 
 def generate_session_id() -> str:
+    """Generates a database-wide unique ID."""
     session_id = SessionID.objects.create()
     return str(session_id.id)
 
 class TaskManager(models.Model):
     """Handles logic related to starting, stopping, and resetting tasks.
 
-    Each user has exactly 1 TaskManager.
+    Each User has-one TaskManager.
 
-    Invariant: 0 or 1 container running at a time.
-    Instantiates file (lock task_manager_{id}.lock) to serialize method calls.
-    Uses 'session_id' to keep track of websocket sessions.
-    Depends on code in consumers.py to register websockets.
-
-    Container should connect on /container/{task_manager.id}/{task_manager.session_id}
-    User should connect on /xterm/{task_manager.id}/{task_manager.session_id}
+    Each method of TaskManager acquires/releases a file lock so that concurrent
+    method calls are serialized.
     """
 
-    # Current task
-    # -1 means that all tasks are done
+    """
+    Prefix to be used in naming lock files.
+    """
+    LOCK_FILE_PREFIX = 'task_manager_lock_'
+
+    """
+    Either the current task running, or the next unstarted task to be run.
+    -1 means that all tasks are done.
+    """
     task_id = models.IntegerField()
 
-    # These are saved to TaskResult and reset here when a task is finished
+    """
+    A session is
+        - an instance of a Docker container
+        - the WebSocket from the container to this server
+        - the WebSocket from the user to this server
+        - a transcript of the STDIN sent from the user to the container
+        - a transcript of the STDOUT sent from the container to the user
+
+    A session is associated with 1 TaskResult.
+    Each TaskManager can have 0 or 1 sessions at a time.
+    1 or more sessions may be used while running a task.
+
+    The following fields are associated with a session:
+    """
+
+    """
+    Unique identifier for this session.
+    '' means there is no current active session.
+    """
+    session_id = models.TextField()
+
+    """The STDIN transcript for the current session."""
     stdin = models.TextField()
+
+    """The STDOUT transcript for the current session."""
     stdout = models.TextField()
 
-    # The following fields are associated with a session:
-    session_id = models.TextField()                   # '' means no session currently
+    """The ID of the Container model associated with this session."""
     container_id = models.IntegerField()              # -1 means no container
+
+    """
+    The name of the Channel connected to the container's STDIN.
+    See consumers.py for how this Channel is registered with TaskManager.
+    '' means this channel has not been registered.
+    """
     container_stdin_channel_name = models.TextField() # '' means websocket not connected yet
+
+    """
+    The name of the Channel connected to xterm's STDOUT.
+    See consumers.py for how this Channel is registered with TaskManager.
+    '' means this channel has not been registered.
+    """
     xterm_stdout_channel_name = models.TextField()    # '' means websocket not connected yet
 
     def lock(self):
-        with open('task_manager_lock_{}'.format(self.id), 'w+') as file:
+        """
+        Acquire file lock and refresh the model from the database.
+        Does nothing if lock is already acquired.
+        """
+        with open('{}{}'.format(self.LOCK_FILE_PREFIX, self.id), 'w+') as file:
             fcntl.flock(file, fcntl.LOCK_EX)
         self.refresh_from_db()
 
     def unlock(self):
-        with open('task_manager_lock_{}'.format(self.id), 'w+') as file:
+        """
+        Release the file lock.
+        Does nothing if lock is not held.
+        """
+        with open('{}{}'.format(self.LOCK_FILE_PREFIX, self.id), 'w+') as file:
             fcntl.flock(file, fcntl.LOCK_UN)
 
     def get_current_task_id(self) -> int:
+        """
+        Retrieves the current task's ID.
+        """
         self.lock()
         task_id = self.task_id
         self.unlock()
         return task_id
 
     def initialize_task(self, task_id: int) -> Optional[str]:
-        """Destroys current session and starts new session for specified task.
+        """
+        Destroys current session and starts a new session for the specified task.
 
         Returns:
-            ID of newly created session, or None if task_id does not match current task_id.
+            ID of newly created session
+            or None if task_id does not match self.task_id.
         """
 
         self.lock()
@@ -209,12 +324,17 @@ class TaskManager(models.Model):
             return None
 
     def check_task_state(self, task_id: int) -> str:
+        """Returns the state of the current TaskResult."""
         self.lock()
         state = TaskResult.objects.filter(task_manager_id=self.id).get(task_id=task_id).state
         self.unlock()
         return state
 
     def get_filesystem(self) -> Optional[dict]:
+        """
+        Returns a dictionary representation of the container's home directory,
+        or None if there is no session running.
+        """
         self.lock()
         if self.session_id == '':
             self.unlock()
@@ -224,8 +344,14 @@ class TaskManager(models.Model):
             self.unlock()
             return filesystem
 
-    # Used for testing only
     def write_stdin(self, session_id: str, text: str) -> bool:
+        """Write into the current session's STDIN channel.
+
+        Does not perform write and returns False if session_id does not match
+        self.session_id or if STDIN channel has not been registered yet.
+
+        Used for testing only.
+        """
         self.lock()
         if session_id == self.session_id and self.container_stdin_channel_name != '':
             Channel(self.container_stdin_channel_name).send({'text': text})
@@ -236,13 +362,14 @@ class TaskManager(models.Model):
             return False
 
     def get_current_task_result(self) -> TaskResult:
+        """Returns the current TaskResult object."""
         self.lock()
         task_result = TaskResult.objects.filter(task_manager_id=self.id).get(task_id=self.task_id)
         self.unlock()
         return task_result
 
     def update_state(self):
-        """Updates the state of the current task and task result."""
+        """Updates the state of the current TaskResult."""
 
         self.lock()
 
@@ -302,6 +429,11 @@ class TaskManager(models.Model):
         self.unlock()
 
 def create_task_manager() -> TaskManager:
+    """
+    Create a TaskManager model.
+    Retrieves Task's from the database to create TaskResult's.
+    """
+
     tasks = Task.objects.all()
     if len(tasks) == 0:
         raise Exception('No tasks loaded')
@@ -330,9 +462,18 @@ def create_task_manager() -> TaskManager:
 class User(models.Model):
     """Describes a study participant."""
 
+    """
+    Code uniquely identifies a study participant.
+    Participants will use this to log into the task interface.
+    """
     access_code = models.TextField()
+
+    """
+    TaskManager that handles this User's tasks.
+    """
     task_manager = models.OneToOneField('TaskManager', on_delete=models.CASCADE)
 
 def create_user(access_code) -> User:
+    """Create a User model."""
     task_manager = create_task_manager()
     return User.objects.create(access_code=access_code, task_manager=task_manager)
