@@ -63,7 +63,11 @@ def get_filesystem(request):
     """
     access_code = request.GET['access_code']
     task_manager = User.objects.get(access_code=access_code).task_manager
-    return JsonResponse(task_manager.get_filesystem())
+    filesystem = task_manager.get_filesystem()
+    if filesystem is None:
+        return HttpResponse('no_filesystem_available')
+    else:
+        return JsonResponse(filesystem)
 
 def check_task_state(request):
     """
