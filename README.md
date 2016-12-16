@@ -1,7 +1,8 @@
 # Tellina Task Interface
 
 This repository contains experimental infrastructure for performing
-a controlled experiment of people using the Tellina tool to 
+a controlled experiment of people using the Tellina tool to create
+and run bash commands.
 
 ## Install dependencies
 
@@ -43,10 +44,10 @@ but you can customize any of these aspects of the experiment:
 
 ## Run the server
 
-Host will refer to the machine that runs `vagrant up`.
-Guest will refer to the VM created by `vagrant up`.
+"Host" will refer to the machine that runs `vagrant up`.
+"Guest" will refer to the VM created by `vagrant up`.
 
-1. Edit `config.json` as necessary.
+1. Edit `config.json` as necessary (see above).
 2. Start the VM which runs the web application:
 
   ```bash
@@ -66,7 +67,7 @@ Guest will refer to the VM created by `vagrant up`.
 5. Wait until you see `INFO - server - Using busy-loop synchronous mode on channel layer` in the console output.
 
 6. Start the task interface for user `bob` by visiting
-   `http://127.0.0.1:10411/static/html/task.html` on a browser on the host.
+   `http://127.0.0.1:10411/static/html/task.html` in a browser on the host.
    Enter `bob` in the browser prompt and continue.
 
 7. Stop the server with `Ctrl-C` in the guest terminal.
