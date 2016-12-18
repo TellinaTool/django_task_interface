@@ -57,8 +57,9 @@ but you can customize any of these aspects of the experiment:
   ```
   Running the `vagrant` command may throw an error message if you're missing the required plug-ins. In this case, install them with the following commands:
   
-  ```vagrant plugin install vagrant-reload
-     vagrant plugin install vagrant-vbguest
+  ```
+  vagrant plugin install vagrant-reload
+  vagrant plugin install vagrant-vbguest
   ```
 
 3. SSH into the guest and start the server:
