@@ -4,6 +4,10 @@ This repository contains experimental infrastructure for performing
 a controlled experiment of people using the Tellina tool to create
 and run bash commands.
 
+## Architecture diagram
+
+https://docs.google.com/drawings/d/12EXOzE4ZjX-_lJKm3coXwu0JM0O9U7HkadxuWylC4Os/edit?usp=sharing
+
 ## Install dependencies
 
 1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads).
@@ -56,7 +60,7 @@ but you can customize any of these aspects of the experiment:
   vagrant up
   ```
   Running the `vagrant` command may throw an error message if you're missing the required plug-ins. In this case, install them with the following commands:
-  
+
   ```
   vagrant plugin install vagrant-reload
   vagrant plugin install vagrant-vbguest
