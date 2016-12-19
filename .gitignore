@@ -4,3 +4,4 @@
 .vagrant
 website/migrations
 config.json
+task_manager_lock_*
