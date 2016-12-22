@@ -17,7 +17,7 @@ Command to do so for Ubuntu: `sudo apt-get install -y virtualbox vagrant`
 
 ## Create `config.json`
 
-Run: `cp config.sample.jason config.json`
+Run: `cp config.sample.json config.json`
 
 The example file is for an experiment with the following setup,
 but you can customize any of these aspects of the experiment:
