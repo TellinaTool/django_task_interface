@@ -16,7 +16,7 @@ $.get(`/get_current_task_id?access_code=${accessCode}`, function(data) {
     // initialize a sesion for the current task
     $.get(`/initialize_task?access_code=${accessCode}&task_id=${task_id}`, function(data) {
 
-        // poll task state
+        // poll task state - if completed or timed out, proceed to the next task
         setInterval(function() {
             $.get(`/check_task_state?access_code=${accessCode}&task_id=${task_id}`, function(data) {
                 var state = data;
@@ -94,14 +94,14 @@ $.get(`/get_current_task_id?access_code=${accessCode}`, function(data) {
             console.log('Socket closed');
         };
 
-        // poll update for debugging purpose
+        // poll update state - check if the current task is passed or timed out 
         setInterval(function() {
             $.get(`/update_state?access_code=${accessCode}`, function(data) {
                 console.log(`updated`);
             });
         }, 500);
 
-        // poll filesystem for debugging purpose
+        // poll filesystem - to be shown in the visualization
         setInterval(function() {
             $.get(`/get_filesystem?access_code=${accessCode}`, function(data) {
                 var filesystem = data;
