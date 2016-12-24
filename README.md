@@ -18,7 +18,7 @@ The task interface server is implemented with Django. The core implementation ca
 
 The task interface server creates a "[session](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L208)" whenever a user starts a new task (initial login or task switch). When a session is initialized, the user's container for previous task is [destroyed](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L296) and a new one is [created](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L303). 
 
-While a user is working on a task, the task interface server periodically [checks](https://github.com/TellinaTool/tellina_task_interface/blob/2321d22147ad2226bc2fbdcfdc18e969794343ec/website/models.py#L409) if the task times out or has been completed.
+While a user is working on a task, the task interface server periodically [checks](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L409) if the task times out or has been completed.
 
 (The Django configuration files are in the folder [tellina_task_interface/](https://github.com/TellinaTool/tellina_task_interface/tree/websocket_refactor/tellina_task_interface), which in general doesn't need to be changed.)
 
