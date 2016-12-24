@@ -34,10 +34,10 @@ The websocket proxy server is also implemented with Node.js. The core implementa
 
 The terminal is implemented with the third-party plugin [Xterm.js](https://github.com/TellinaTool/tellina_task_interface/tree/websocket_refactor/website/static/lib/xterm.js). The main custom implementation can be found [here](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js).
 
-The front-end also periodically (every 0.5s) [polls] the task interface server for 
-* [verifying if the task is completed or times out, if so, update task state] (https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#97)
+The front-end also periodically (every 0.5s) polls the task interface server for 
+* [verifying](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#97) if the task is completed or times out, if so, update task state 
 * [most recent file system status] (https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#105)
-* [if task status shows complete or time-out, proceed to the next task](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#20).
+* if task status shows complete or time-out, proceed to the [next task](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#20).
 
 ## Install dependencies
 
