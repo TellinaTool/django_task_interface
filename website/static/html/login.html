@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <title>Login</title>
+
+       <!-- Bootstrap core CSS -->
+       <link href="css/bootstrap.min.css" rel="stylesheet">
+       <link href="css/jquery-ui.css" rel="stylesheet">
+       <link href="css/login.css" rel="stylesheet">
+
+       <script src="js/jquery-1.11.3.js"></script>
+       <script src="js/jquery.layout.js"></script>
+       <script src="js/jquery-ui.js"></script>
+
+       <script src="js/modal.js"> </script>
+       <script src="js/bootstrap-dialog.js"></script>
+
+       <script src="js/login.js"></script>
+   </head>
+   <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+            <span class="navbar-brand">Cmd-Nl Collector</span>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li id="user-forget-access-code"><a href="#contact">Forget access code?</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div>
+    <form class="form-signin">
+      <h2 class="form-signin-heading">Login</h2><br/>
+      <input id="username" class="form-control" required placeholder="Access Code"/>
+      <br/><button id="user-log-in" class="btn btn-primary btn-block" type="submit">Start Workflow</button>
+      <br/>
+    </form>
+      <a id="new-user-registration">Click here to get an access code if you don't have one!</a>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModalNorm" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- Modal Header -->
+                <!-- <div class="modal-header">
+                    <button type="button" class="close"
+                       data-dismiss="modal">
+                           <span aria-hidden="true">&times;</span>
+                           <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        Tell us something about yourself:
+                    </h4>
+                </div> -->
+
+
+                <!-- Modal Footer -->
+                <!-- <div class="modal-footer">
+                    <button type="button" class="btn btn-default"
+                            data-dismiss="modal">
+                                Close
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        Save changes
+                    </button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+   </body>
+</html>

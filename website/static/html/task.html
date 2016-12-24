@@ -55,7 +55,6 @@ server is done through HTTP AJAX calls.
                                     <img class="wXEAS7H2e7UsikVkXNety" src="http://www.gravatar.com/avatar/?d=mm" data-reactid="34"/>
                                  </div>
                               </div>
-                              <!-- react-empty: 35 -->
                            </div>
                         </div>
                      </section>
@@ -95,7 +94,7 @@ server is done through HTTP AJAX calls.
                            <div class="accordion-section">
                               <div data-index="0" class="accordion-section-heading">
                                  <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG learn-header">
-                                    Terminal
+                                    <!-- react-text: 76 -->Terminal<!-- /react-text -->
                                  </div>
                               </div>
                               <div class="accordion-section-body">
@@ -174,85 +173,6 @@ server is done through HTTP AJAX calls.
       </div>
 
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-	  <script>
-		function getHost() {
-		    return location.hostname + ((location.port) ? (':' + location.port) : '');
-		}
-
-		var accessCode = prompt("Enter your access code");
-
-		// get the current task ID
-		$.get(`/get_current_task_id?access_code=${accessCode}`, function(data) {
-			var task_id = parseInt(data);
-			console.log(`task_id: ${task_id}`);
-
-			// get details about the current task
-			$.get(`/get_task?task_id=${task_id}`, function(data) {
-				var task = data;
-				console.log(`task: ${JSON.stringify(task)}`);
-			});
-
-			alert(`You are starting a session for task ${task_id}. Press OK to continue.`);
-
-			// poll task state
-			setInterval(function() {
-				$.get(`/check_task_state?access_code=${accessCode}&task_id=${task_id}`, function(data) {
-					var state = data;
-					console.log(`task state: ${state}`);
-					if (state !== 'running') {
-						location.reload();
-					}
-				});
-			}, 3000);
-
-			// initialize a sesion for the current task
-			$.get(`/initialize_task?access_code=${accessCode}&task_id=${task_id}`, function(data) {
-				var sessionID = data;
-				console.log(`sessionID: ${sessionID}`);
-
-				// connect to xterm
-				var cols = 80;
-				var rows = 40;
-				var term = new Terminal({ cursorBlink: true });
-				var terminalContainer = document.getElementById('terminal-container');
-				// clean terminal
-				while (terminalContainer.children.length > 0) {
-				  terminalContainer.removeChild(terminalContainer.children[0]);
-				}
-				// associate JS term object with HTML div
-				term.open(terminalContainer);
-				var charWidth = Math.ceil(term.element.offsetWidth / cols);
-				var charHeight = Math.ceil(term.element.offsetHeight / rows);
-
-				var xtermWebSocket = new WebSocket(`ws://${getHost()}/xterm/1/${sessionID}`);
-				xtermWebSocket.onopen = function() {
-				  term.attach(xtermWebSocket);
-				  console.log('Terminal attached');
-				};
-				xtermWebSocket.onerror = function(event) {
-				  console.log('Socket error: ' + event.data);
-				};
-				xtermWebSocket.onclose = function() {
-				  console.log('Socket closed');
-				};
-
-				// poll update
-				setInterval(function() {
-					$.get(`/update_state?access_code=${accessCode}`, function(data) {
-						console.log(`updated`);
-					});
-				}, 2500);
-
-				// poll filesystem
-				setInterval(function() {
-					$.get(`/get_filesystem?access_code=${accessCode}`, function(data) {
-						var filesystem = data;
-						console.log(`filesystem: ${JSON.stringify(filesystem)}`);
-					});
-				}, 2000);
-			});
-		});
-	  </script>
       <script src="/static/js/task.js"></script>
 	  <script src="/static/js/xterm.js"></script>
   	  <script src="/static/js/attach.js"></script>
