@@ -6,7 +6,19 @@ and run bash commands.
 
 ## Architecture diagram
 
-https://docs.google.com/drawings/d/12EXOzE4ZjX-_lJKm3coXwu0JM0O9U7HkadxuWylC4Os/edit?usp=sharing
+https://docs.google.com/drawings/d/1fwFaJsSLYY8wY7DZC0EBBdU_tgJDlwl9MVl5PLmIu0k
+
+* Task Interface (Main) Server
+
+The main framework of the task interface is implemented with Django. 
+
+The Django configuration files are in [./tellina_task_interface/](https://github.com/TellinaTool/tellina_task_interface/tree/websocket_refactor/tellina_task_interface), which in general doesn't need to be changed.
+
+* WebSocket Proxy Server
+
+* Terminal (File System) Server
+* Xterm front-end
+* Other front-end development
 
 ## Install dependencies
 
