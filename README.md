@@ -8,17 +8,26 @@ and run bash commands.
 
 https://docs.google.com/drawings/d/1fwFaJsSLYY8wY7DZC0EBBdU_tgJDlwl9MVl5PLmIu0k
 
-* Task Interface (Main) Server
+### Task Interface (Main) Server
 
-The main framework of the task interface is implemented with Django. 
+The task interface server is implemented with Django. It is connected to the SQLite database that stores the information of
+* [a user](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L459)
+* [a task](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L114)
+* [a task assignment](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L208), i.e. the match between a user and a container
+* [a task result](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L154), i.e. if a user has successfully completed a task, how much time is spent, etc.
+
+The task interface server creates a "[session](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L208)" whenever a user starts a new task (initial login or task switch). When a session is initialized, the user's container for previous task is [destroyed](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L296) and a new one is [created](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L303). 
+
+While a user is working on a task, the task interface server periodically [checks](https://github.com/TellinaTool/tellina_task_interface/blob/2321d22147ad2226bc2fbdcfdc18e969794343ec/website/models.py) if the task times out or has been completed.
 
 The Django configuration files are in [./tellina_task_interface/](https://github.com/TellinaTool/tellina_task_interface/tree/websocket_refactor/tellina_task_interface), which in general doesn't need to be changed.
 
-* WebSocket Proxy Server
+### Terminal (File System) Server
 
-* Terminal (File System) Server
-* Xterm front-end
-* Other front-end development
+### WebSocket Proxy Server
+
+### Front-end
+The front-end also periodically (every 0.5s) [polls] (https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#20) the task interface server regarding whether the task is completed or times out.
 
 ## Install dependencies
 
