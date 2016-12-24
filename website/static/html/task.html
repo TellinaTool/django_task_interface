@@ -195,7 +195,7 @@ server is done through HTTP AJAX calls.
 			alert(`You are starting a session for task ${task_id}. Press OK to continue.`);
 
 			// poll task state
-			setInterval(function() {
+			/* setInterval(function() {
 				$.get(`/check_task_state?access_code=${accessCode}&task_id=${task_id}`, function(data) {
 					var state = data;
 					console.log(`task state: ${state}`);
@@ -203,7 +203,7 @@ server is done through HTTP AJAX calls.
 						location.reload();
 					}
 				});
-			}, 3000);
+			}, 3000); */
 
 			// initialize a sesion for the current task
 			$.get(`/initialize_task?access_code=${accessCode}&task_id=${task_id}`, function(data) {
@@ -237,19 +237,19 @@ server is done through HTTP AJAX calls.
 				};
 
 				// poll update
-				setInterval(function() {
+				/* setInterval(function() {
 					$.get(`/update_state?access_code=${accessCode}`, function(data) {
 						console.log(`updated`);
 					});
-				}, 2500);
+				}, 2500); */
 
 				// poll filesystem
-				setInterval(function() {
+				/* setInterval(function() {
 					$.get(`/get_filesystem?access_code=${accessCode}`, function(data) {
 						var filesystem = data;
 						console.log(`filesystem: ${JSON.stringify(filesystem)}`);
 					});
-				}, 2000);
+				}, 2000); */
 			});
 		});
 	  </script>
