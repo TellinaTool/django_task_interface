@@ -74,7 +74,7 @@ but you can customize any of these aspects of the experiment:
   make run
   ```
 
-5. Wait until you see `INFO - server - Using busy-loop synchronous mode on channel layer` in the console output.
+5. Wait until you see `Quit the server with CONTROL-C.` in the console output.
 
 6. Start the task interface for user `bob` by visiting
    `http://127.0.0.1:10411/static/html/task.html` in a browser on the host.
@@ -109,3 +109,7 @@ If you edit other files:
   cd ~/tellina_task_interface
   make test
   ```
+
+## Debugging
+
+Check `proxy.log` for a logs from the proxy server.

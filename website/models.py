@@ -79,7 +79,7 @@ def create_container(filesystem_name: str, filesystem: dict) -> Container:
                     'mode': 'rw',
                 },
             },
-            port_bindings={10411: ('127.0.0.1',)},
+            port_bindings={10411: ('0.0.0.0',)},
         ),
     )
 
@@ -342,23 +342,6 @@ class TaskManager(models.Model):
             self.unlock()
             return filesystem
 
-    def write_stdin(self, session_id: str, text: str) -> bool:
-        """Write into the current session's STDIN channel.
-
-        Does not perform write and returns False if session_id does not match
-        self.session_id or if STDIN channel has not been registered yet.
-
-        Used for testing only.
-        """
-        self.lock()
-        if session_id == self.session_id and self.container_stdin_channel_name != '':
-            Channel(self.container_stdin_channel_name).send({'text': text})
-            self.unlock()
-            return True
-        else:
-            self.unlock()
-            return False
-
     def append_stdin(self, session_id: str, data: str) -> bool:
         return self.append_data(session_id, data, True)
 
@@ -414,8 +397,6 @@ class TaskManager(models.Model):
             self.stdout = ''
             self.session_id = ''
             self.container_id = -1
-            self.container_stdin_channel_name = ''
-            self.xterm_stdout_channel_name = ''
             self.save()
 
             # Advance to next task, or indicate that all tasks are finished
