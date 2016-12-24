@@ -18,7 +18,7 @@ The task interface server is implemented with Django. The core implementation ca
 
 The task interface server creates a "[session](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L208)" whenever a user starts a new task (initial login or task switch). When a session is initialized, the user's container for previous task is [destroyed](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L296) and a new one is [created](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L303). 
 
-While a user is working on a task, the task interface server periodically [checks](https://github.com/TellinaTool/tellina_task_interface/blob/2321d22147ad2226bc2fbdcfdc18e969794343ec/website/models.py) if the task times out or has been completed.
+While a user is working on a task, the task interface server periodically [checks](https://github.com/TellinaTool/tellina_task_interface/blob/2321d22147ad2226bc2fbdcfdc18e969794343ec/website/models.py#L409) if the task times out or has been completed.
 
 (The Django configuration files are in the folder [tellina_task_interface/](https://github.com/TellinaTool/tellina_task_interface/tree/websocket_refactor/tellina_task_interface), which in general doesn't need to be changed.)
 
@@ -32,12 +32,12 @@ The websocket proxy server is also implemented with Node.js. The core implementa
 
 ### Front-end
 
-The terminal is implemented with the third-party plugin [Xterm.js](https://github.com/TellinaTool/tellina_task_interface/tree/websocket_refactor/website/static/lib/xterm.js). The main custom implementation can be found [here](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js).
+The terminal is implemented with the third-party plugin [Xterm.js](https://github.com/TellinaTool/tellina_task_interface/tree/websocket_refactor/website/static/lib/xterm.js). The main custom implementation can be found [here](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#L38).
 
 The front-end also periodically (every 0.5s) polls the task interface server for 
-* [verifying](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#97) if the task is completed or times out, if so, update task state 
-* [most recent file system status] (https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#105)
-* if task status shows complete or time-out, proceed to the [next task](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#20).
+* [verifying](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#L97) if the task is completed or times out, if so, update task state 
+* [most recent file system status] (https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#L105)
+* if task status shows complete or time-out, proceed to the [next task](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#L20).
 
 ## Install dependencies
 
