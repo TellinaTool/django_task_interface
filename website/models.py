@@ -11,11 +11,9 @@ python3 manage.py migrate
 """
 from django.db import models
 from django.utils import timezone
-from channels import Channel
 from .filesystem import dict_2_disk, disk_2_dict
 
 import docker
-import requests
 import os
 import time
 import subprocess
@@ -71,7 +69,7 @@ def create_container(filesystem_name: str, filesystem: dict) -> Container:
     # NOTE: the created container does not run yet
     cli = docker.Client(base_url='unix://var/run/docker.sock')
     docker_container = cli.create_container(
-        image='tellina',
+        image='backend_container',
         ports=[10411],
         volumes=['/home/myuser'],
         host_config=cli.create_host_config(
@@ -91,9 +89,15 @@ def create_container(filesystem_name: str, filesystem: dict) -> Container:
     # Start container
     cli.start(container=container_id)
 
+    # Set the permssions of the user's home directory.
+    #
+    # I tried to do this with the docker-py API and I couldn't get it to work,
+    # so I'm just running a shell command.
+    subprocess.run(['docker', 'exec', '-u', 'root', container_id, 'chown', '-R', 'myuser:myuser', '/home/myuser'])
+
     # Find what port the container was mapped to
     info = cli.inspect_container(container_id)
-    port = info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort']
+    port = int(info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort'])
 
     # Wait a bit for container's server to start
     time.sleep(1)
@@ -251,20 +255,6 @@ class TaskManager(models.Model):
     """The ID of the Container model associated with this session."""
     container_id = models.IntegerField()              # -1 means no container
 
-    """
-    The name of the Channel connected to the container's STDIN.
-    See consumers.py for how this Channel is registered with TaskManager.
-    '' means this channel has not been registered.
-    """
-    container_stdin_channel_name = models.TextField() # '' means websocket not connected yet
-
-    """
-    The name of the Channel connected to xterm's STDOUT.
-    See consumers.py for how this Channel is registered with TaskManager.
-    '' means this channel has not been registered.
-    """
-    xterm_stdout_channel_name = models.TextField()    # '' means websocket not connected yet
-
     def lock(self):
         """
         Acquire file lock and refresh the model from the database.
@@ -296,8 +286,8 @@ class TaskManager(models.Model):
         Destroys current session and starts a new session for the specified task.
 
         Returns:
-            ID of newly created session
-            or None if task_id does not match self.task_id.
+            (session_id, port)
+            or (None, None) if task_id does not match self.task_id.
         """
 
         self.lock()
@@ -318,9 +308,6 @@ class TaskManager(models.Model):
             self.container_id = container.id
             self.save()
 
-            # Ask container to connect a WebSocket to this server
-            requests.get('http://127.0.0.1:{}/{}/{}'.format(container.port, self.id, self.session_id))
-
             # Start current task
             task_result = self.get_current_task_result()
             if task_result.state == 'not_started':
@@ -329,7 +316,7 @@ class TaskManager(models.Model):
                 task_result.save()
 
             self.unlock()
-            return self.session_id
+            return (self.session_id, container.port)
         else: # Does not match current task
             self.unlock()
             return None
@@ -366,6 +353,26 @@ class TaskManager(models.Model):
         self.lock()
         if session_id == self.session_id and self.container_stdin_channel_name != '':
             Channel(self.container_stdin_channel_name).send({'text': text})
+            self.unlock()
+            return True
+        else:
+            self.unlock()
+            return False
+
+    def append_stdin(self, session_id: str, data: str) -> bool:
+        return self.append_data(session_id, data, True)
+
+    def append_stdout(self, session_id: str, data: str) -> bool:
+        return self.append_data(session_id, data, False)
+
+    def append_data(self, session_id: str, data: str, is_stdin: bool) -> bool:
+        self.lock()
+        if session_id == self.session_id:
+            if is_stdin:
+                self.stdin += data
+            else:
+                self.stdout += data
+            self.save()
             self.unlock()
             return True
         else:
@@ -454,8 +461,6 @@ def create_task_manager() -> TaskManager:
         stdout='',
         session_id='',
         container_id=-1,
-        container_stdin_channel_name='',
-        xterm_stdout_channel_name='',
     )
     # Create task results for each task
     for task in tasks:

@@ -102,13 +102,10 @@ If you edit other files:
 
 ## Testing
 
-1. Run automated tests and start the test server:
+1. Run automated tests:
 
   ```bash
   vagrant ssh
   cd ~/tellina_task_interface
   make test
   ```
-
-2. Visit `http://127.0.0.1:10411/test`.
-3. Verify that the page says "Tests passed".

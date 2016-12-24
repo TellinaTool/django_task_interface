@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',
     'website',
     'django_extensions',
 ]
@@ -124,16 +123,3 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR + "/website/static/",
 ]
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "asgiref.inmemory.ChannelLayer",
-        "CONFIG": {
-            # If this capacity parameter is too low, websocket connections
-            # will close when too many messages come in.
-            "capacity": 1000000,
-        },
-        "ROUTING": "website.routing.channel_routing",
-    },
-}
-

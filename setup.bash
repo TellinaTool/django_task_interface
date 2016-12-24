@@ -13,7 +13,3 @@ sudo iptables -A INPUT -i docker0 -j ACCEPT
 sudo apt-get update
 sudo apt-get install -y python3-pip
 pip3 install --upgrade pip
-
-# Install server dependencies
-cd ~/tellina_task_interface/
-sudo -H pip3 install -r requirements.txt

@@ -26,6 +26,7 @@ Vagrant.configure("2") do |config|
   # Map the guest port to the host port so we can ping the server
   # inside the guest from the host.
   config.vm.network "forwarded_port", guest: 10411, host: 10411
+  config.vm.network "forwarded_port", guest: 10412, host: 10412
 
   # Give more time for the VM to boot; default is 60 seconds.
   config.vm.boot_timeout = 300

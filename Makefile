@@ -1,27 +1,33 @@
 # This Makefile wraps commands used to setup, test, and run the server.
 
-run: build_image clean setup_db
+run: install_python_dependencies build_images clean setup_db
+	# Start WebSocket server
+	sudo docker run --rm -p 10412:10412 proxy > proxy.log 2>&1 &
+	sleep 1
 	# Load config.json into database.
 	python3 manage.py runscript load_config --traceback
 	# Run server.
 	sudo python3 manage.py runserver 0.0.0.0:10411
 
-test: build_image clean setup_db
+test: install_python_dependencies build_image clean setup_db
 	# Run automated tests.
-	python3 manage.py test
-	# Run server.
-	sudo python3 manage.py runserver 0.0.0.0:10411
+	sudo python3 manage.py test
 
-# Build the Docker image. (Needs to be done each time server is run since
-# changes may have been made to the image.)
-build_image:
-	sudo docker build -t tellina docker_image
+# Build the Docker images. (Needs to be done each time server is run since
+# changes may have been made to the images.)
+build_images:
+	sudo docker build -t proxy proxy_image
+	sudo docker build -t backend_container backend_container_image
 
 # Setup database tables.
 setup_db:
 	python3 manage.py makemigrations
 	python3 manage.py makemigrations website
 	python3 manage.py migrate
+
+# Install Django server dependencies
+install_python_dependencies:
+	sudo -H pip3 install -r ~/tellina_task_interface/requirements.txt
 
 # Clean up environment left by prior server run.
 clean:
