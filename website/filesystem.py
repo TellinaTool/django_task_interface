@@ -17,23 +17,23 @@ Its JSON representation is:
         "dir2": {
             "dir3": {
                 "file": {
-                    "ATTR_size": xx,
-                    "ATTR_mode": xx,
-                    "ATTR_user": xx,
+                    attr_format("size": xx,
+                    attr_format("mode": xx,
+                    attr_format("user": xx,
                     ...
                 }
             }
         },
         "file1": {
-            "ATTR_size": xx,
-            "ATTR_mode": xx,
-            "ATTR_user": xx,
+            attr_format("size": xx,
+            attr_format("mode": xx,
+            attr_format("user": xx,
             ...
         }
         "file2": {
-            "ATTR_size": xx,
-            "ATTR_mode": xx,
-            "ATTR_user": xx,
+            attr_format("size": xx,
+            attr_format("mode": xx,
+            attr_format("user": xx,
             ...
         }
     }
@@ -70,7 +70,7 @@ class File(object):
         self.content = content
 
     def to_dict(self):
-        # A throughput-saving file object serialization
+        # A throughput-saving file object serialization method
         # None-value attributes are excluded from the serialization and are not
         # passed around the network
         d = {}
@@ -83,6 +83,12 @@ class File(object):
 def merge_dictionaries(a: dict, b: dict) -> dict:
     """Merges the entries of 2 dictionaries."""
     return {**a, **b}
+
+
+def attr_format(s):
+    """Add attribute name prefix to the filesystem JSON."""
+    attr_prefix = 'ATTR_'
+    return attr_prefix + s
 
 
 def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
@@ -107,25 +113,25 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
             file_stat = os.stat(path.as_posix())
         for attr in attrs:
             if attr == _NAME:
-                d['ATTR_name'] = path.parts[-1]
+                d[attr_format('name')] = path.parts[-1]
             if attr == _USER:
-                d['ATTR_user'] = pwd.getpwuid(file_stat.st_uid).pw_name
+                d[attr_format('user')] = pwd.getpwuid(file_stat.st_uid).pw_name
             if attr == _GROUP:
-                d['ATTR_group'] = grp.getgrgid(file_stat.st_gid).gr_name
+                d[attr_format('group')] = grp.getgrgid(file_stat.st_gid).gr_name
             if attr == _SIZE:
-                d['ATTR_size'] = file_stat.st_size
+                d[attr_format('size')] = file_stat.st_size
             if attr == _MODE:
-                d['ATTR_mode'] = file_stat.st_mode
+                d[attr_format('mode')] = file_stat.st_mode
             if attr == _ATIME:
-                d['ATTR_atime'] = file_stat.st_atime
+                d[attr_format('atime')] = file_stat.st_atime
             if attr == _MTIME:
-                d['ATTR_mtime'] = file_stat.st_mtime
+                d[attr_format('mtime')] = file_stat.st_mtime
             if attr == _CTIME:
-                d['ATTR_ctime'] = file_stat.st_ctime
+                d[attr_format('ctime')] = file_stat.st_ctime
             if attr == _CONTENT:
                 with open(path.as_posix(), encoding='utf-8',
                           errors='ignore') as f:
-                    d['ATTR_content'] = f.read()
+                    d[attr_format('content')] = f.read()
         return {path.parts[-1]: d}
 
 
@@ -133,12 +139,12 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
     """Writes the directory described by tree to root_path."""
     for name, subtree in tree.items():
         path = root_path / name
-        if subtree.keys()[0].startswith("ATTR_"):
+        if subtree.keys()[0].startswith(attr_format(""):
             # file
-            if "ATTR_size" in subtree:
+            if attr_format('size') in subtree:
                 # 'size' is the only attribute we consider that have something
                 # to do with file content
-                size = subtree["ATTR_size"]
+                size = subtree[attr_format('size')]
                 if not size.isdigit():
                     unit = size[-1] if size[-2].isdigit() else size[-2:]
                     if unit in ['b', 'B']:
@@ -157,24 +163,27 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
             else:
                 newfile = path.open(mode='w+')
                 newfile.close()
-            if "ATTR_user" in subtree:
-                shutil.chown(path.as_posix(), user=subtree["ATTR_user"])
-            if "ATTR_group" in subtree:
-                shutil.chown(path.as_posix(), group=subtree["ATTR_group"])
-            if "ATTR_mode" in subtree:
-                os.chmod(path.as_posix(), mode=subtree["ATTR_mode"])
-            if "ATTR_atime" in subtree and "ATTR_mtime" in subtree:
+            if attr_format('user') in subtree:
+                shutil.chown(path.as_posix(), user=subtree[attr_format('user')])
+            if attr_format('group') in subtree:
+                shutil.chown(path.as_posix(), group=subtree[attr_format('group')])
+            if attr_format('mode') in subtree:
+                os.chmod(path.as_posix(), mode=subtree[attr_format('mode')])
+            if attr_format('atime') in subtree and attr_format('mtime') in subtree:
                 os.utime(path.as_posix(),
-                         (subtree["ATTR_atime"], subtree["ATTR_mtime"]))
+                         (subtree[attr_format('atime')], subtree[attr_format('mtime')]))
             else:
-                if "ATTR_atime" in subtree:
+                if attr_format('atime') in subtree:
                     os.utime(path.as_posix(),
-                         (subtree["ATTR_atime"], subtree["ATTR_atime"]))
-                if "ATTR_mtime" in subtree:
+                         (subtree[attr_format('atime')], subtree[attr_format('atime')]))
+                if attr_format('mtime') in subtree:
                     os.utime(path.as_posix(),
-                         (subtree["ATTR_mtime"], subtree["ATTR_mtime"]))
-            if "ATTR_ctime" in subtree:
+                         (subtree[attr_format('mtime')], subtree[attr_format('mtime')]))
+            if attr_format('ctime') in subtree:
                 raise NotImplementedError
+            if attr_format('content') in subtree:
+                with path.open(mode='w+') as o_f:
+                    o_f.write(subtree[attr_format('content')])
         else:
             # directory
             path.mkdir()
