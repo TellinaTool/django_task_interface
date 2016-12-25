@@ -139,7 +139,7 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
     """Writes the directory described by tree to root_path."""
     for name, subtree in tree.items():
         path = root_path / name
-        if subtree.keys()[0].startswith(attr_format(""):
+        if subtree.keys()[0].startswith(attr_format("")):
             # file
             if attr_format('size') in subtree:
                 # 'size' is the only attribute we consider that have something
