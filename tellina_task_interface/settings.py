@@ -57,7 +57,7 @@ ROOT_URLCONF = 'tellina_task_interface.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR + '/website/static/html/'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
