@@ -41,6 +41,103 @@ class User(models.Model):
     last_name = models.TextField()
 
 
+class Task(models.Model):
+    """
+    Describes a task used in the study.
+
+    :member task_id: The ID that uniquely identifies a task. This makes the
+        implementation of task selection easier.
+    :member type: The type of task. Can be 'stdout' or 'filesystem'.
+    :member description: A human-readable description of the task.
+    :member initial_filesystem: JSON representation of the user's starting home
+        directory
+    :member goal: Goal stdout (if type is 'stdout') or JSON representation of
+        the goal directory (if type is 'filesystem')
+    :member duration: How much time is alotted for the task.
+    """
+    task_id = models.PositiveIntegerField()
+    type = models.TextField()
+    description = models.TextField()
+    initial_filesystem = models.TextField()
+    goal = models.TextField()
+    duration = models.DurationField()
+
+
+# --- Container Management --- #
+
+class Container(models.Model):
+    """
+    Describes information about a running Docker container.
+
+    :member container_id: The ID of the container assigned by Docker.
+    :member filesystem_name: The virtual filesystem that backs this container's
+        home directory is located at /{filesystem_name}/home.
+    :member port: The host port through which the server in the container can
+        be accessed.
+    """
+    container_id = models.TextField()
+    filesystem_name = models.TextField()
+    port = models.IntegerField()
+
+    def destroy(self):
+        """Destroys container, filesystem, and database entry."""
+
+        # Destroy Docker container
+        subprocess.run(['docker', 'rm', '-f', self.container_id])
+        # Destroy filesystem
+        subprocess.run(['/bin/bash', 'delete_filesystem.bash', self.filesystem_name])
+        # Delete table entry
+        self.delete()
+
+
+def create_container(filesystem_name):
+    """
+    Creates a container whose filesystem is located at /{filesystem_name}/home
+    on the host. The contents of filesystem are written to
+    /{filesystem_name}/home.
+    """
+
+    # Make virtual filesystem
+    subprocess.run(['/bin/bash', 'make_filesystem.bash', filesystem_name])
+
+    # Create Docker container
+    # NOTE: the created container does not run yet
+    cli = docker.Client(base_url='unix://var/run/docker.sock')
+    docker_container = cli.create_container(
+        image='tellina',
+        ports=[10411],
+        volumes=['/home/myuser'],
+        host_config=cli.create_host_config(
+            binds={
+                '/{}/home'.format(filesystem_name): {
+                    'bind': '/home/myuser',
+                    'mode': 'rw',
+                },
+            },
+            port_bindings={10411: ('0.0.0.0',)},
+        ),
+    )
+
+    # Get ID of created container
+    container_id = docker_container['Id']
+
+    # Start container
+    cli.start(container=container_id)
+
+    # Find what port the container was mapped to
+    info = cli.inspect_container(container_id)
+    port = int(info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort'])
+
+    # Create container model object
+    container = Container.objects.create(
+        container_id=container_id,
+        filesystem_name=filesystem_name,
+        port=port,
+    )
+
+    return container
+
+
 class StudySession(models.Model):
     """
     A study session participated by a user.
@@ -52,62 +149,22 @@ class StudySession(models.Model):
 
     :member user: The participant of the session.
     :member session_id: an application-wide unique session ID.
-    :member status: Indicate if the study session is completed by the
-        participant or not.
+    :member status: The state of the study session.
+        - 'finished': The user has completed the study session.
+        - 'paused': The user left the study session in the middle. Paused
+            study sessions can be resumed.
+        - 'running': The user is currently taking the study session.
+    :member num_task_completed: The number of tasks that has been completed in
+        the study session.
     :member container_id: The ID of the Container model associated with the
         session. -1 if no container is associated.
-    :member container_stdin_channel: The name of the Channel connected to
-        the container's STDIN. '' means this channel has not been registered
-        and the websocket is not connected yet.
-    :member xterm_stdout_channel: The name of the Channel connected to
-        xterm's STDOUT. '' means this channel has not been registered and the
-        websocket is not connected yet.
-
-    See consumers.py for how Channels are registered.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     session_id = models.TextField()
     status = models.TextField()
-
-    container_id = models.IntegerField()
-    container_stdin_channel = models.TextField()
-    xterm_stdout_channel = models.TextField()
-
-
-class Task(models.Model):
-    """
-    Describes a task used in the study.
-
-    :member type: The type of task. Can be 'stdout' or 'filesystem'.
-    :member description: A human-readable description of the task.
-    :member initial_filesystem: JSON representation of the user's starting home
-        directory
-    :member goal: Goal stdout (if type is 'stdout') or JSON representation of
-        the goal directory (if type is 'filesystem')
-    :member duration: How much time is alotted for the task.
-    """
-    type = models.TextField()
-    description = models.TextField()
-    initial_filesystem = models.TextField()
-    goal = models.TextField()
-    duration = models.DurationField()
-
-    def to_dict(self) -> dict:
-        """Returns a dictionary representation of the task."""
-        answer = None
-        if self.type == 'filesystem':
-            answer = json.loads(self.answer)
-        elif self.type == 'stdout':
-            answer = self.answer
-        else:
-            raise Exception('unrecognized task type')
-        return {
-            'type': self.type,
-            'description': self.description,
-            'initial_filesystem': json.loads(self.initial_filesystem),
-            'answer': answer,
-            'duration': self.duration.seconds,
-        }
+    num_task_completed = models.PositiveIntegerField(default=0)
+    container = models.ForeignKey(Container, default=None,
+                                  on_delete=models.CASCADE)
 
 
 class TaskSession(models.Model):
@@ -144,26 +201,16 @@ class ActionHistory(models.Model):
         - `reset` if the user resets the filesystem
     :member action_time: The time the action is taken.
     """
-
     task_session = models.ForeignKey(TaskSession, on_delete=models.CASCADE)
     action = models.TextField()
     action_time = models.DateTimeField()
 
 
 class TaskManager(models.Model):
-    """Handles logic related to starting, stopping, and resetting tasks.
-
-    Each user has one TaskManager.
-
-    Each method of TaskManager acquires/releases a file lock so that concurrent
-    method calls are serialized.
-    """
-
     study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
 
     # Prefix to be used in naming lock files.
     LOCK_FILE_PREFIX = 'task_manager_lock_'
-
 
 
 
