@@ -11,11 +11,9 @@ python3 manage.py migrate
 """
 from django.db import models
 from django.utils import timezone
-from channels import Channel
 from .filesystem import dict_2_disk, disk_2_dict
 
 import docker
-import requests
 import os
 import time
 import subprocess
@@ -104,7 +102,7 @@ def create_container(filesystem_name):
     # NOTE: the created container does not run yet
     cli = docker.Client(base_url='unix://var/run/docker.sock')
     docker_container = cli.create_container(
-        image='tellina',
+        image='backend_container',
         ports=[10411],
         volumes=['/home/myuser'],
         host_config=cli.create_host_config(
@@ -124,9 +122,18 @@ def create_container(filesystem_name):
     # Start container
     cli.start(container=container_id)
 
+    # Set the permssions of the user's home directory.
+    #
+    # I tried to do this with the docker-py API and I couldn't get it to work,
+    # so I'm just running a shell command.
+    subprocess.run(['docker', 'exec', '-u', 'root', container_id, 'chown', '-R', 'myuser:myuser', '/home/myuser'])
+
     # Find what port the container was mapped to
     info = cli.inspect_container(container_id)
     port = int(info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort'])
+
+    # Wait a bit for container's server to start
+    time.sleep(1)
 
     # Create container model object
     container = Container.objects.create(
@@ -211,8 +218,3 @@ class TaskManager(models.Model):
 
     # Prefix to be used in naming lock files.
     LOCK_FILE_PREFIX = 'task_manager_lock_'
-
-
-
-
-

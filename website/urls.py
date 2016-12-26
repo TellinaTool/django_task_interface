@@ -9,7 +9,6 @@ from django.views.generic.base import TemplateView
 from . import views
 
 urlpatterns = [
-    # url(r'^test$', views.test),
     url(r'^get_task$', views.get_task),
     url(r'^get_container_port$', views.get_container_port),
     url(r'^initialize_task$', views.initialize_task),
@@ -30,4 +29,6 @@ urlpatterns = [
 
     url(r'^', TemplateView.as_view(template_name='login.html'),
         name='home'),
+    url(r'^append_stdin$', views.append_stdin),
+    url(r'^append_stdout$', views.append_stdout),
 ]

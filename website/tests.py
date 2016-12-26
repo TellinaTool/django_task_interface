@@ -7,10 +7,54 @@ This file contains unit tests that are run with
 
 from django.test import TestCase
 from .filesystem import *
-from .models import Task
+from .models import *
 
 import pathlib
 import datetime
+import docker
+
+class ModelTestCase(TestCase):
+    def test_container(self):
+        filesystem_name = 'tellina_session_my_fs'
+        filesystem = {'hello.txt': None}
+        cli = docker.Client(base_url='unix://var/run/docker.sock')
+
+        # Create container
+        container = create_container(filesystem_name, filesystem)
+        
+        # Check that container was cretaed
+        try:
+            cli.inspect_container(container=container.container_id)
+        except docker.errors.NotFound as e:
+            self.fail()
+
+        # Check that filesystem is there
+        self.assertTrue((pathlib.Path('/') / filesystem_name / 'home' / 'hello.txt').exists())
+        self.assertTrue((pathlib.Path('/') / 'home' / 'vagrant' / '{}.ext4'.format(filesystem_name)).exists())
+        
+        # Check that entry created in database
+        self.assertEqual(len(Container.objects.all()), 1)
+        self.assertEqual(container.filesystem_name, filesystem_name)
+        self.assertNotEqual(container.container_id, '')
+        self.assertGreater(container.port, 0)
+
+        # Destroy container
+        container.destroy()
+
+        # Check that container does not exist
+        is_container_destroyed = False
+        try:
+            cli.inspect_container(container=container.container_id)
+        except docker.errors.NotFound as e:
+            is_container_destroyed = True
+        self.assertTrue(is_container_destroyed)
+
+        # Check that filesystem is gone
+        self.assertFalse((pathlib.Path('/') / filesystem_name).exists())
+        self.assertFalse((pathlib.Path('/') / 'home' / 'vagrant' / '{}.ext4'.format(filesystem_name)).exists())
+
+        # Check that database row was deleted
+        self.assertEqual(len(Container.objects.all()), 0)
 
 class FilesystemTestCase(TestCase):
     def test_disk_2_dict(self):

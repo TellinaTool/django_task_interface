@@ -187,7 +187,6 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
         else:
             # directory
             path.mkdir()
-            shutil.chown(path.as_posix(), user=USER, group=GROUP)
             dict_2_disk(subtree, root_path / name)
 
 

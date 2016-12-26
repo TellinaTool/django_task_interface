@@ -5,6 +5,7 @@ This file defines functions to handle requests at URLs defined in urls.py.
 from django.template import loader
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
 from .filesystem import disk_2_dict
@@ -64,11 +65,11 @@ def initialize_task(request):
     access_code = request.GET['access_code']
     task_id =  int(request.GET['task_id'])
     task_manager = User.objects.get(access_code=access_code).task_manager
-    session_id = task_manager.initialize_task(task_id)
+    session_id, port = task_manager.initialize_task(task_id)
     if session_id is None:
-        return HttpResponse('wrong_task')
+        return HttpResponse(status=400)
     else:
-        return HttpResponse(session_id)
+        return JsonResponse({'session_id': session_id, 'port': port})
 
 def get_filesystem(request):
     """
@@ -111,6 +112,49 @@ def update_state(request):
     # task_manager = User.objects.get(access_code=access_code).task_manager
     # task_manager.update_state()
     return HttpResponse('')
+
+
+@csrf_exempt
+def append_stdin(request):
+    """
+    POST
+
+    Query parameters:
+        access_code
+        session_id
+
+    Request body: data to add to stdin
+
+    Appends request body to session's standard input.
+    """
+    access_code = request.GET['access_code']
+    session_id = request.GET['session_id']
+
+    task_manager = User.objects.get(access_code=access_code).task_manager
+    if task_manager.append_stdin(session_id, str(request.body)):
+        return HttpResponse()
+    else:
+        return HttpResponse(status=400)
+
+@csrf_exempt
+def append_stdout(request):
+    access_code = request.GET['access_code']
+    session_id = request.GET['session_id']
+
+    task_manager = User.objects.get(access_code=access_code).task_manager
+    if task_manager.append_stdout(session_id, str(request.body)):
+        return HttpResponse()
+    else:
+        return HttpResponse(status=400)
+
+def fail():
+    """
+    Return a call to this function within a test request to send an HTML
+    page with a traceback of where the failure occured.
+    """
+    msg = 'test failed: {}'.format(traceback.format_stack()[-2])
+    return HttpResponse('<pre>{}</pre>'.format(msg))
+
 
 # --- User Login --- #
 

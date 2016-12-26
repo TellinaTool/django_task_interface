@@ -15,13 +15,16 @@ def fsdiff(fs1, fs2):
         fs: {
             "name": <string>
             "children": list<fs> //optional
-            "tag": ... // indication whether the node is missing or something else.
+            "tag": ... // indication whether the node is missing or something else, includes:
+                       // (1) removal: a file/dir is in the target FS but not in the current FS
+                       // (2) addition: a file/dir is in current FS but not in target FS
+                       // (3) child_diff: a dir that is in both FS but some child of the dir has the "removal" or "addition" tags.
         }
     """
   new_fs = {}
-  fs1_type = "children" in fs1
-  fs2_type = "children" in fs2
-  if fs1["name"] != fs2["name"] or fs1_type != fs2_type:
+  fs1_is_dir = "children" in fs1
+  fs2_is_dir = "children" in fs2
+  if fs1["name"] != fs2["name"] or fs1_is_dir != fs2_is_dir:
     print "[ERROR] root is not the same"
   new_fs["name"] = fs1["name"]
 
