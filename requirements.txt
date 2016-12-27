@@ -1,3 +1,4 @@
 Django==1.10.4
 docker-py==1.10.6
 django-extensions==1.7.5
+functions==0.7.0
