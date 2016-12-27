@@ -159,11 +159,6 @@ class StudySession(models.Model):
     """
     A study session participated by a user.
 
-    The infrastructure of a session contains
-        - an instance of a Docker container
-        - the WebSocket from the container to this server
-        - the WebSocket from the user to this server
-
     :member user: The participant of the session.
     :member session_id: an application-wide unique study session ID.
     :member container: The Container model associated with the session. None if
