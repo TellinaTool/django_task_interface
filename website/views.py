@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import *
 from .filesystem import disk_2_dict
 
+import functions
 import http.cookies
 import uuid
 import datetime
@@ -17,16 +18,129 @@ import docker
 import traceback
 import time
 
+def session_id_required(f):
+    @functions.wraps(f)
+    def g(request, *args, **kwargs):
+        session_id = request.COOKIES['session_id']
+        return f(request, *args, session_id=session_id, **kwargs)
+    return g
+
+def task_session_id_required(f):
+    @functions.wraps(f)
+    def g(request, *args, **kwargs):
+        session_id = request.COOKIES['session_id']
+        task_session_id = request.COOKIES['task_session_id']
+        # ensure that the task session id matches with the study session id
+        assert(task_session_id.startswith(session_id))
+        return f(request, *args, task_session_id=task_session_id, **kwargs)
+    return g
+
+def get_task_session_id(study_session_id, num_tasks_completed):
+    return study_session_id + '/task-{}'.format(num_tasks_completed + 1)
 
 # --- Task Management --- #
 
-def task(request):
+@session_id_required
+def get_container_port(request, session_id):
     """
-    Start a new task session.
+
+    Args:
+        session_id
+
+    Returns the session_id and container_port for the given user.
+
     """
+    container_port = StudySession.objects.get(session_id=session_id).container.port
+    return JsonResponse({
+        "container_port": container_port
+    })
+
+@task_session_id_required
+def go_to_next_task(request, task_session_id):
+    """
+    Args:
+
+        task_session_id:
+
+    Create a new task session.
+    """
+
+    # update the state of current_task_session
+    current_task_session = TaskSession.objects.get(session_id=task_session_id)
+    current_task_session.end_time = timezone.now()
+    current_task_session.status = request.GET['reason']
+    study_session = current_task_session.study_session
+
+    # wipe out everything in the user's home directory and reinitialize
+    user_name = "myuser"
+    container = study_session.container
+    subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
+        'rm', '-r', '/home/{}'.format(user_name)])
+
+    study_session.num_tasks_completed += 1
+
+    # check for study session completion
+    num_tasks_completed = study_session.num_tasks_completed
+    if num_tasks_completed == study_session.total_num_tasks:
+        return JsonResponse({
+            "status": 'STUDY_SESSION_COMPLETE'
+        })
+    next_task_session_id = get_task_session_id(study_session.session_id,
+                                               num_tasks_completed)
+
+    TaskSession.objects.create(
+        study_session = study_session,
+        session_id = next_task_session_id,
+        task = pick_task(num_tasks_completed=num_tasks_completed),
+        start_time = timezone.now(),
+        status = 'running'
+    )
+
+    study_session.current_task_session_id = next_task_session_id
+    study_session.save()
+
+    resp = JsonResponse({
+        'status': 'RUNNING',
+        "task_session_id": next_task_session_id
+    })
+    resp.set_cookie('task_session_id', next_task_session_id)
+    return resp
+
+@task_session_id_required
+def get_current_task(request, task_session_id):
+    """
+    Args:
+        task_session_id
+
+    Returns the
+        - description
+        - goal directory
+        - order number in the study session
+    of the currently served task in the user's study session.
+    """
+    task_session = TaskSession.objects.get(session_id=task_session_id)
+    task = task_session.task
+
+    study_session = task_session.study_session
+    order_number = study_session.num_tasks_completed + 1
+
+    # Initialize filesystem
+    container = study_session.container
+    dict_2_disk(json.loads(task.initial_filesystem),
+                pathlib.Path('/{}/home'.format(container.filesystem_name)))
+
+    context = {
+        "task_description": task.description,
+        "task_goal": task.goal,
+        "task_order_number": order_number,
+        "total_num_tasks": study_session.total_num_tasks,
+        "first_name": study_session.user.first_name,
+        "last_name": study_session.user.last_name
+    }
+
     template = loader.get_template('task.html')
-    context = {}
     return HttpResponse(template.render(context, request))
+
 
 def pick_task(num_tasks_completed):
     """
@@ -46,108 +160,29 @@ def pick_task(num_tasks_completed):
     task = Task.objects.get(task_id=task_id)
     return task
 
-def initialize_task(request):
+# --- File System Management --- #
+
+@task_session_id_required
+def reset_file_system(request, task_session_id):
     """
     Args:
-        access_code
-        task_id
+        task_session_id:
 
-    Clears any existing session and initializes a new session for the given
-    task_id.
+    Reset the file system of the current task session.
     """
-    access_code = request.GET['access_code']
-    task_id =  int(request.GET['task_id'])
-    task_manager = User.objects.get(access_code=access_code).task_manager
-    session_id, port = task_manager.initialize_task(task_id)
-    if session_id is None:
-        return HttpResponse(status=400)
-    else:
-        return JsonResponse({'session_id': session_id, 'port': port})
+    task_session = TaskSession.objects.get(session_id=task_session_id)
+    study_session = task_session.study_session
+    container = study_session.container
+    container_id = container.container_id
 
-def get_filesystem(request):
-    """
-    Args:
-        access_code
+    # wipe out everything in the user's home directory and reinitialize
+    user_name = "myuser"
+    subprocess.run(['docker', 'exec', '-u', 'root', container_id,
+        'rm', '-r', '/home/{}'.format(user_name)])
 
-    Returns the JSON representation of the user's current home directory.
-    """
-    session_id = request.COOKIES['session_id']
-    # task_manager = User.objects.get(access_code=access_code).task_manager
-    # filesystem = task_manager.get_filesystem()
-    # if filesystem is None:
-    #     return HttpResponse('no_filesystem_available')
-    # else:
-    #     return JsonResponse(filesystem)
-    return HttpResponse('')
-
-def check_task_state(request):
-    """
-    Args:
-        access_code
-        task_id
-
-    Returns the state of the TaskResult for the given user and task_id.
-    """
-    access_code = request.GET['access_code']
-    task_id =  int(request.GET['task_id'])
-    task_manager = User.objects.get(access_code=access_code).task_manager
-    return HttpResponse(task_manager.check_task_state(task_id))
-
-def update_state(request):
-    """
-    Args:
-        access_code
-
-    Triggers an update of TaskManager's state.
-    """
-    if 'session_id' in request.COOKIES:
-        session_id = request.COOKIES['session_id']
-    # task_manager = User.objects.get(access_code=access_code).task_manager
-    # task_manager.update_state()
-    return HttpResponse('')
-
-
-@csrf_exempt
-def append_stdin(request):
-    """
-    POST
-
-    Query parameters:
-        access_code
-        session_id
-
-    Request body: data to add to stdin
-
-    Appends request body to session's standard input.
-    """
-    access_code = request.GET['access_code']
-    session_id = request.GET['session_id']
-
-    task_manager = User.objects.get(access_code=access_code).task_manager
-    if task_manager.append_stdin(session_id, str(request.body)):
-        return HttpResponse()
-    else:
-        return HttpResponse(status=400)
-
-@csrf_exempt
-def append_stdout(request):
-    access_code = request.GET['access_code']
-    session_id = request.GET['session_id']
-
-    task_manager = User.objects.get(access_code=access_code).task_manager
-    if task_manager.append_stdout(session_id, str(request.body)):
-        return HttpResponse()
-    else:
-        return HttpResponse(status=400)
-
-def fail():
-    """
-    Return a call to this function within a test request to send an HTML
-    page with a traceback of where the failure occured.
-    """
-    msg = 'test failed: {}'.format(traceback.format_stack()[-2])
-    return HttpResponse('<pre>{}</pre>'.format(msg))
-
+    return JsonResponse({
+        'container_id': container_id
+    })
 
 # --- User Login --- #
 
@@ -197,17 +232,18 @@ def user_login(request):
         # register a new study session for the user
         session_id = '-'.join([access_code, "study_session",
             str(StudySession.objects.filter(user=user).count() + 1)])
-        init_task_session_id = session_id + '/task-1'
+        init_task_session_id = get_task_session_id(session_id, 0)
 
         # create the container of the study session
-        container = create_container(session_id)
+        user_name = "myuser"
+        container = create_container(session_id, user_name)
 
         session = StudySession.objects.create(
             user = user,
             session_id = session_id,
             container = container,
 
-            current_task_session = init_task_session_id,
+            current_task_session_id = init_task_session_id,
             status = 'running'
         )
 
@@ -216,7 +252,7 @@ def user_login(request):
             study_session = session,
             session_id = init_task_session_id,
             task = pick_task(num_tasks_completed = 0),
-            start_time = datetime.datetime.now(),
+            start_time = timezone.now(),
             status = 'running'
         )
 
@@ -250,44 +286,3 @@ def retrieve_access_code(request):
             "access_code": 'USER_DOES_NOT_EXIST'
         })
 
-def get_container_port(request):
-    """
-
-    Args:
-        session_id
-
-    Returns the session_id and container_port for the given user.
-
-    """
-    session_id = request.COOKIES['session_id']
-    container_port = StudySession.objects.get(session_id=session_id).container.port
-    return JsonResponse({
-        "container_port": container_port
-    })
-
-
-def get_task(request):
-    """
-    Args:
-        session_id
-
-    Returns the
-        - description
-        - goal directory
-        - number in the study session
-    of the currently served task in the user's study session.
-    """
-    session_id = request.COOKIES['session_id']
-    study_session = StudySession.objects.get(session_id=session_id)
-    user = study_session.user
-
-    # decide which task to return
-    num_tasks_completed = study_session.num_tasks_completed
-    treatment_order = user.treatment_order
-
-
-
-
-    task_id = int(request.GET['task_id'])
-    task = Task.objects.get(id=task_id)
-    return JsonResponse(task.to_dict())

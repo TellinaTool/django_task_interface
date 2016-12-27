@@ -96,7 +96,7 @@ class Container(models.Model):
         self.delete()
 
 
-def create_container(filesystem_name):
+def create_container(filesystem_name, user_name):
     """
     Creates a container whose filesystem is located at /{filesystem_name}/home
     on the host. The contents of filesystem are written to
@@ -112,11 +112,11 @@ def create_container(filesystem_name):
     docker_container = cli.create_container(
         image='backend_container',
         ports=[10411],
-        volumes=['/home/myuser'],
+        volumes=['/home/' + user_name],
         host_config=cli.create_host_config(
             binds={
                 '/{}/home'.format(filesystem_name): {
-                    'bind': '/home/myuser',
+                    'bind': '/home/' + user_name,
                     'mode': 'rw',
                 },
             },
@@ -134,7 +134,9 @@ def create_container(filesystem_name):
     #
     # I tried to do this with the docker-py API and I couldn't get it to work,
     # so I'm just running a shell command.
-    subprocess.run(['docker', 'exec', '-u', 'root', container_id, 'chown', '-R', 'myuser:myuser', '/home/myuser'])
+    subprocess.run(['docker', 'exec', '-u', 'root', container_id,
+        'chown', '-R', '{}:{}'.format(user_name, user_name),
+        '/home/{}'.format(user_name)])
 
     # Find what port the container was mapped to
     info = cli.inspect_container(container_id)
@@ -166,8 +168,9 @@ class StudySession(models.Model):
     :member session_id: an application-wide unique study session ID.
     :member container: The Container model associated with the session. None if
         no container is associated.
+    :member total_num_tasks: Total number of tasks in the study session.
 
-    :member current_task_session: The id of the task session that the user is
+    :member current_task_session_id: The id of the task session that the user is
         undertaking. None if no task is served.
     :member num_tasks_completed: The number of tasks that has been completed in
         the study session.
@@ -178,10 +181,11 @@ class StudySession(models.Model):
         - 'running': The user is currently taking the study session.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    session_id = models.TextField()
+    session_id = models.TextField(primary_key=True)
     container = models.ForeignKey(Container, default=None)
+    total_num_tasks = models.PositiveIntegerField(default=2)
 
-    current_task_session = models.TextField()
+    current_task_session_id = models.TextField()
     num_tasks_completed = models.PositiveIntegerField(default=0)
     status = models.TextField()
 
@@ -201,13 +205,14 @@ class TaskSession(models.Model):
                          passed nor timed out yet
         - 'timed_out':   The user started the task and did not pass it before
                          running out of time
+        - 'quit':        The user quit the task
         - 'passed':      The user started the task and passed it
     """
     study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
-    session_id = models.TextField()
+    session_id = models.TextField(primary_key=True)
     task = models.ForeignKey(Task)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField(default=None)
+    end_time = models.DateTimeField(default='1990-09-27 00:00:00')
     status = models.TextField()
 
 
