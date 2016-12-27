@@ -1,9 +1,8 @@
-$(document).ready(
+$(document).ready(function () {
+    // connect terminal to the study session's container
     $.get(`/get_container_port`, function(data) {
         console.log(data);
-        var sessionID = data['session_id'];
         var container_port = data.container_port;
-        console.log(`sessionID: ${sessionID}, port: ${port}`);
 
         // connect to xterm
         var cols = 80;
@@ -21,7 +20,7 @@ $(document).ready(
         var charWidth = Math.ceil(term.element.offsetWidth / cols);
         var charHeight = Math.ceil(term.element.offsetHeight / rows);
 
-        var xtermWebSocket = new WebSocket(`ws://${location.hostname}:10412/${port}`);
+        var xtermWebSocket = new WebSocket(`ws:\/\/${location.hostname}:10412/${container_port}`);
         xtermWebSocket.onopen = function() {
             console.log('WebSocket opened');
 
@@ -44,7 +43,7 @@ $(document).ready(
             /*
             // send stdin to server
             setInterval(function() {
-                $.post(`/append_stdin?access_code=${accessCode}&session_id=${sessionID}`, stdin,
+                $.post(`/append_stdin?access_code=${accessCode}&session_id=${session_id}`, stdin,
                     function(data, textStatus, jqXHR) {
                         console.log(`append STDIN status ${jqXHR.status}`);
                     }
@@ -53,7 +52,7 @@ $(document).ready(
             }, 500);
             // send stdout to server
             setInterval(function() {
-                $.post(`/append_stdout?access_code=${accessCode}&session_id=${sessionID}`, stdout,
+                $.post(`/append_stdout?access_code=${accessCode}&session_id=${session_id}`, stdout,
                     function(data, textStatus, jqXHR) {
                         console.log(`append STDOUT status ${jqXHR.status}`);
                     }
@@ -68,4 +67,8 @@ $(document).ready(
             console.log('Socket closed');
         };
     });
+
+    // poll for current task
+    $()
+  }
 );

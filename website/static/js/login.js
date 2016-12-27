@@ -81,9 +81,9 @@ $(document).ready(function () {
             $.get("user_login", {access_code: username}, function(data) {
                 console.log(data);
                 if (data.status == "SESSION_CREATED") {
-                    console.log(data.session_id);
+                    console.log(data.task_session_id);
                     // redirect user into the session
-                    window.location.replace(data.session_id + '/task-1');
+                    window.location.replace(data.task_session_id);
                 } else if (data.status == "USER_DOES_NOT_EXIST") {
                     BootstrapDialog.show({
                         message: "User " + username + " does not exist. Please make sure the username is correct.",

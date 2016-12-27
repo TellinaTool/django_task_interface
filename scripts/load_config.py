@@ -21,19 +21,18 @@ def run():
     task_duration = config['task_duration_in_seconds']
     for task in config['tasks']:
         type = task['type']
-        answer = None
+        goal = None
         if type == 'stdout':
-            answer = task['answer']
+            goal = task['goal']
         elif type == 'filesystem':
-            answer = json.dumps(task['answer'])
+            goal = json.dumps(task['goal'])
         else:
             raise Exception('unrecognized task type: {}'.format(type))
         Task.objects.create(
-            type=task['type'],
+            task_id = task['task_id'],
+	    type=task['type'],
             description=task['description'],
             initial_filesystem=json.dumps(task['initial_filesystem']),
-            answer=answer,
+            goal=goal,
             duration=datetime.timedelta(seconds=task_duration),
         )
-    for access_code in config['access_codes']:
-        create_user(access_code)

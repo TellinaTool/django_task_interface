@@ -9,8 +9,6 @@ from django.views.generic.base import TemplateView
 from . import views
 
 urlpatterns = [
-    url(r'^get_task$', views.get_task),
-    url(r'^get_container_port$', views.get_container_port),
     url(r'^initialize_task$', views.initialize_task),
     url(r'^get_filesystem$', views.get_filesystem),
     url(r'^check_task_state$', views.check_task_state),
@@ -21,8 +19,12 @@ urlpatterns = [
     url(r'^register_user$', views.register_user),
     url(r'^retrieve_access_code$', views.retrieve_access_code),
 
+    # study session
+    url(r'^get_container_port$', views.get_container_port),
+
     # task session
-    url(r'^.*-study_session-.*/task-.*', views.start_task),
+    url(r'^.*-study_session-.*/task-.*', views.task),
+    url(r'^get_task$', views.get_task),
 
     # admin page
     url(r'^admin', admin.site.urls),

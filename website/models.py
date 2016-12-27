@@ -25,6 +25,9 @@ import json
 from typing import Optional
 
 
+PART_I_TASKS = [1]
+PART_II_TASKS = [2]
+
 class User(models.Model):
     """
     Describes a study participant.
@@ -33,18 +36,23 @@ class User(models.Model):
         Participants will use this to log into the task interface.
     :member first_name: user's first name
     :member last_name: user's last name
+
+    :member treatment_order: a user is 50/50 randomly assigned one of the
+        following two treatment orders
+        - Tellina / Google
+        - Google / Tellina
     """
     access_code = models.TextField()
     first_name = models.TextField()
     last_name = models.TextField()
-
+    treatment_order = models.TextField()
 
 class Task(models.Model):
     """
     Describes a task used in the study.
 
     :member task_id: The ID that uniquely identifies a task. This makes the
-        implementation of task selection easier.
+        implementation of task scheduler easier.
     :member type: The type of task. Can be 'stdout' or 'filesystem'.
     :member description: A human-readable description of the task.
     :member initial_filesystem: JSON representation of the user's starting home
@@ -155,23 +163,27 @@ class StudySession(models.Model):
         - the WebSocket from the user to this server
 
     :member user: The participant of the session.
-    :member session_id: an application-wide unique session ID.
+    :member session_id: an application-wide unique study session ID.
+    :member container: The Container model associated with the session. None if
+        no container is associated.
+
+    :member current_task_session: The id of the task session that the user is
+        undertaking. None if no task is served.
+    :member num_tasks_completed: The number of tasks that has been completed in
+        the study session.
     :member status: The state of the study session.
         - 'finished': The user has completed the study session.
         - 'paused': The user left the study session in the middle. Paused
             study sessions can be resumed.
         - 'running': The user is currently taking the study session.
-    :member num_task_completed: The number of tasks that has been completed in
-        the study session.
-    :member container_id: The ID of the Container model associated with the
-        session. -1 if no container is associated.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     session_id = models.TextField()
+    container = models.ForeignKey(Container, default=None)
+
+    current_task_session = models.TextField()
+    num_tasks_completed = models.PositiveIntegerField(default=0)
     status = models.TextField()
-    num_task_completed = models.PositiveIntegerField(default=0)
-    container = models.ForeignKey(Container, default=None,
-                                  on_delete=models.CASCADE)
 
 
 class TaskSession(models.Model):
@@ -179,9 +191,11 @@ class TaskSession(models.Model):
     A task performed by a user in a study session.
 
     :member study_session: The study session to which the task session belong.
+    :member session_id: an application-wide unique task session ID.
     :member task: The task being performed in the task session.
     :member start_time: The start time of a task session.
-    :member end_time: The end time of a task session.
+    :member end_time: The end time of a task session. None if the task session
+        is being undertaken.
     :member status: The state of the task result.
         - 'running':     The user has started the task, but the task has not
                          passed nor timed out yet
@@ -190,9 +204,10 @@ class TaskSession(models.Model):
         - 'passed':      The user started the task and passed it
     """
     study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
+    session_id = models.TextField()
     task = models.ForeignKey(Task)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    end_time = models.DateTimeField(default=None)
     status = models.TextField()
 
 
@@ -213,8 +228,7 @@ class ActionHistory(models.Model):
     action_time = models.DateTimeField()
 
 
-class TaskManager(models.Model):
-    study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
+class TaskScheduler(object):
 
     # Prefix to be used in naming lock files.
     LOCK_FILE_PREFIX = 'task_manager_lock_'
