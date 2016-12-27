@@ -6,12 +6,14 @@
   "task_duration_in_seconds": 300,
   "tasks": [
     {
+      "task_id": "1",
       "type": "stdout",
       "description": "Print hello world.",
       "initial_filesystem": {},
-      "answer": "hello world"
+      "goal": "hello world"
     },
     {
+      "task_id": "2",
       "type": "filesystem",
       "description": "Create a file named `hello.txt` in `~/dir1/dir2`.",
       "initial_filesystem": {
@@ -20,7 +22,7 @@
           "dir2": {}
         }
       },
-      "answer": {
+      "goal": {
         "dir1": {
           "file.txt": null,
           "dir2": {
