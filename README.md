@@ -24,6 +24,8 @@ While a user is working on a task, the task interface server periodically [check
 
 ### Terminal (File System) Server
 
+An ext4 file system with the name '{study_session_id}.ext4' is created for each study session. The file system is mounted to location '/{study_session_id}/' on the VM. The script used to create the file system on the VM can be found [here](https://github.com/TellinaTool/tellina_task_interface/blob/master/make_filesystem.bash).The home directory '/{study_session_id}/home' on this physical locaiton is [binded](https://github.com/TellinaTool/tellina_task_interface/blob/precise64_box/website/models.py#L111) to path /home/myuser/ in the docker container of that study session.
+
 The docker container server is implemented with [Node.js](https://nodejs.org/en/). The core implementation can be found in [backend_container_image/app.js](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/backend_container_image/app.js).
 
 ### WebSocket Proxy Server
