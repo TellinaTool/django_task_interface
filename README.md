@@ -146,4 +146,6 @@ If you edit other files:
 
 ## Debugging
 
-Check `proxy.log` for a logs from the proxy server.
+View `proxy.log` for a logs from the proxy server.
+
+View `container_{container_id}.log` files for logs from backend containers.

@@ -126,8 +126,15 @@ def create_container(filesystem_name):
     # Get ID of created container
     container_id = docker_container['Id']
 
-    # Start container
-    cli.start(container=container_id)
+    # Start container and write standard output and error to a log file
+    subprocess.run(
+        args='docker start -a {} >container_{}.log 2>&1 &'.format(container_id, container_id),
+        shell=True,
+        executable='/bin/bash',
+    )
+
+    # Wait a bit for container's to start
+    time.sleep(1)
 
     # Set the permissions of the user's home directory.
     #
@@ -140,9 +147,6 @@ def create_container(filesystem_name):
     # Find what port the container was mapped to
     info = cli.inspect_container(container_id)
     port = int(info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort'])
-
-    # Wait a bit for container's server to start
-    time.sleep(1)
 
     # Create container model object
     container = Container.objects.create(
