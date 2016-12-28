@@ -1,6 +1,6 @@
 # This Makefile wraps commands used to setup, test, and run the server.
 
-run: install_python_dependencies build_images clean setup_db
+run: clean install_python_dependencies build_images setup_db
 	# Start WebSocket server
 	sudo docker run --rm -p 10412:10412 proxy > proxy.log 2>&1 &
 	sleep 1
@@ -9,7 +9,7 @@ run: install_python_dependencies build_images clean setup_db
 	# Run server.
 	sudo python3 manage.py runserver 0.0.0.0:10411
 
-test: install_python_dependencies build_image clean setup_db
+test: clean install_python_dependencies build_image setup_db
 	# Run automated tests.
 	sudo python3 manage.py test
 
