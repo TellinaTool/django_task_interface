@@ -8,6 +8,8 @@ $(document).ready(function () {
     var terminalContainer;
     var xtermWebSocket;
 
+    var task_time_out;
+
     // connect terminal to the study session's container
     $.get(`/get_container_port`, function(data) {
         console.log(data);
@@ -70,37 +72,87 @@ $(document).ready(function () {
         xtermWebSocket.onclose = function() {
             console.log('Socket closed');
         };
-    });
 
-    $("#reset-button").click(function() {
-        // reset file system
-        $.get(`/reset_file_system`, function(data){
-            console.log('Reset ' + data.container_id + ' file system.');
-            term.clear();
-        })
-    });
-
-    $("#quit-button").click(function() {
-        $.get(`/go_to_next_task`, {reason: 'quit'}, function(data){
-            if (data.status == 'STUDY_SESSION_COMPLETE') {
+        // start timing the task
+        $.get(`/get_task_duration`, function(data) {
+            task_time_out = setInterval(function() {
+                clearInterval(task_time_out);
+                // prompt the user that they have to move on to the next task
                 BootstrapDialog.show({
-                    title: "Study Completed",
-                    message: "Congratulations, you have completed the study!",
+                    title: "Time's Up",
+                    message: "The current task session is time out. Please proceed to the next task.",
                     buttons: [{
-                        label: "Got it",
+                        label: "Proceed",
                         cssClass: "btn-primary",
                         action: function(dialogItself) {
                             dialogItself.close();
+                            switch_task('time_out');
                         }
-                    }]
+                    }],
+                    closable: false,
                 });
-                console.log("Study session completed.");
-            } else {
-                // update database and reload task page
-                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
-                console.log(`${location.hostname}:10411/${data.task_session_id}`);
-            }
+            }, parseInt(data.duration) * 1000)
         });
-    })
-  }
-);
+
+        $("#reset-button").click(function() {
+            // reset file system
+            $.get(`/reset_file_system`, function(data){
+                console.log('Reset ' + data.container_id + ' file system.');
+                term.clear();
+            })
+        });
+
+        $("#quit-button").click(function() {
+            // discourage a user from quiting a task
+            BootstrapDialog.show({
+                title: "We hope each participant to try the best on each task. ",
+                message: "If you give up a task, the information we get from the study wil be less accurate. Would you like to proceed anyway?",
+                buttons: [
+                {
+                    label: "Yes, proceed",
+                    cssClass: "btn-primary",
+                    action: function(dialogItself) {
+                        dialogItself.close();
+                        switch_task('quit');
+                    }
+                },
+                {
+                    label: "No, I'll keep trying",
+                    cssClass: "btn-primary",
+                    action: function(dialogItself) {
+                        dialogItself.close();
+                    }
+                }],
+            });
+        })
+
+        function switch_task(reason) {
+            clearInterval(task_time_out);
+            $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
+                if (data.status == 'STUDY_SESSION_COMPLETE') {
+                    // print "thank you" message in the terminal
+                    term.write("\n");
+                    term.write("    .▀█▀.█▄█.█▀█.█▄.█.█▄▀　█▄█.█▀█.█─█\n");
+                    term.write("    ─.█.─█▀█.█▀█.█.▀█.█▀▄　─█.─█▄█.█▄█\n");
+                    BootstrapDialog.show({
+                        title: "Study Completed",
+                        message: "Congratulations, you have completed the study!",
+                        buttons: [{
+                            label: "Leave",
+                            cssClass: "btn-primary",
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                            }
+                        }],
+                        closable: false,
+                    });
+                    console.log("Study session completed.");
+                } else {
+                    // update database and reload task page
+                    window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
+                    console.log(`${location.hostname}:10411/${data.task_session_id}`);
+                }
+            });
+        }
+    });
+});

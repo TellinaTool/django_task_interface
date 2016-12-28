@@ -3,7 +3,7 @@
     "bob",
     "alice"
   ],
-  "task_duration_in_seconds": 300,
+  "task_duration_in_seconds": 30,
   "tasks": [
     {
       "task_id": "1",

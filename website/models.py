@@ -68,7 +68,6 @@ class Task(models.Model):
     goal = models.TextField()
     duration = models.DurationField()
 
-
 # --- Container Management --- #
 
 class Container(models.Model):
@@ -77,7 +76,8 @@ class Container(models.Model):
 
     :member container_id: The ID of the container assigned by Docker.
     :member filesystem_name: The virtual filesystem that backs this container's
-        home directory is located at /{filesystem_name}/home.
+        home directory is located at /{filesystem_name}/home, which normally
+        equals to the id of the study session the container is associated with.
     :member port: The host port through which the server in the container can
         be accessed.
     """
@@ -93,7 +93,7 @@ class Container(models.Model):
         # Destroy filesystem
         subprocess.run(['/bin/bash', 'delete_filesystem.bash', self.filesystem_name])
         # Delete table entry
-        self.delete()
+        # self.delete()
 
 
 def create_container(filesystem_name, user_name):
@@ -169,13 +169,16 @@ class StudySession(models.Model):
     :member container: The Container model associated with the session. None if
         no container is associated.
     :member total_num_tasks: Total number of tasks in the study session.
+    :member creation_time: Time the study session is created. Used for managing
+        unexpectedly interrupted sessions.
 
-    :member current_task_session_id: The id of the task session that the user is
-        undertaking. None if no task is served.
+    :member current_task_session_id: The id of the task session that the user
+        is undertaking. '' if no task session is running.
     :member num_tasks_completed: The number of tasks that has been completed in
         the study session.
     :member status: The state of the study session.
         - 'finished': The user has completed the study session.
+        - 'closed_with_error': The session is closed due to exceptions.
         - 'paused': The user left the study session in the middle. Paused
             study sessions can be resumed.
         - 'running': The user is currently taking the study session.
@@ -184,6 +187,7 @@ class StudySession(models.Model):
     session_id = models.TextField(primary_key=True)
     container = models.ForeignKey(Container, default=None)
     total_num_tasks = models.PositiveIntegerField(default=2)
+    creation_time = models.DateTimeField()
 
     current_task_session_id = models.TextField()
     num_tasks_completed = models.PositiveIntegerField(default=0)
@@ -203,7 +207,7 @@ class TaskSession(models.Model):
     :member status: The state of the task result.
         - 'running':     The user has started the task, but the task has not
                          passed nor timed out yet
-        - 'timed_out':   The user started the task and did not pass it before
+        - 'time_out':   The user started the task and did not pass it before
                          running out of time
         - 'quit':        The user quit the task
         - 'passed':      The user started the task and passed it

@@ -21,7 +21,6 @@ def run():
     task_duration = config['task_duration_in_seconds']
     for task in config['tasks']:
         type = task['type']
-        goal = None
         if type == 'stdout':
             goal = task['goal']
         elif type == 'filesystem':

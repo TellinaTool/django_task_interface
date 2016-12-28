@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import *
 from .filesystem import disk_2_dict
 
-import functions
+from . import functions
 import http.cookies
 import uuid
 import datetime
@@ -56,6 +56,21 @@ def get_container_port(request, session_id):
     })
 
 @task_session_id_required
+def get_task_duration(request, task_session_id):
+    """
+
+    Args:
+        task_session_id:
+
+    Returns the maximum time length the user is allowed to spend on the task.
+
+    """
+    task_session = TaskSession.objects.get(session_id=task_session_id)
+    return JsonResponse({
+        "duration": task_session.task.duration.seconds
+    })
+
+@task_session_id_required
 def go_to_next_task(request, task_session_id):
     """
     Args:
@@ -65,28 +80,33 @@ def go_to_next_task(request, task_session_id):
     Create a new task session.
     """
 
-    # update the state of current_task_session
+    # close current_task_session
     current_task_session = TaskSession.objects.get(session_id=task_session_id)
     current_task_session.end_time = timezone.now()
-    current_task_session.status = request.GET['reason']
-    study_session = current_task_session.study_session
+    current_task_session.status = request.GET['reason_for_close']
+    current_task_session.save()
 
-    # wipe out everything in the user's home directory and reinitialize
+    study_session = current_task_session.study_session
+    study_session.num_tasks_completed += 1
+
+    # check for user study completion
+    num_tasks_completed = study_session.num_tasks_completed
+    if num_tasks_completed == study_session.total_num_tasks:
+        close_study_session(study_session, 'finished')
+        return JsonResponse({
+            "status": 'STUDY_SESSION_COMPLETE'
+        })
+
+    # wipe out everything in the user's home directory
     user_name = "myuser"
     container = study_session.container
     subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
         'rm', '-r', '/home/{}'.format(user_name)])
 
-    study_session.num_tasks_completed += 1
-
-    # check for study session completion
-    num_tasks_completed = study_session.num_tasks_completed
-    if num_tasks_completed == study_session.total_num_tasks:
-        return JsonResponse({
-            "status": 'STUDY_SESSION_COMPLETE'
-        })
     next_task_session_id = get_task_session_id(study_session.session_id,
                                                num_tasks_completed)
+    study_session.current_task_session_id = next_task_session_id
+    study_session.save()
 
     TaskSession.objects.create(
         study_session = study_session,
@@ -95,9 +115,6 @@ def go_to_next_task(request, task_session_id):
         start_time = timezone.now(),
         status = 'running'
     )
-
-    study_session.current_task_session_id = next_task_session_id
-    study_session.save()
 
     resp = JsonResponse({
         'status': 'RUNNING',
@@ -184,6 +201,15 @@ def reset_file_system(request, task_session_id):
         'container_id': container_id
     })
 
+# --- Study Session Management --- #
+def close_study_session(session, reason_for_close):
+    session.current_task_session_id = ''
+    session.status = reason_for_close
+    session.save()
+
+    # destroy the container associated with the study session
+    session.container.destroy()
+
 # --- User Login --- #
 
 def register_user(request):
@@ -199,12 +225,11 @@ def register_user(request):
     first_name = request.GET['first_name']
     last_name = request.GET['last_name']
 
-    try:
-        user = User.objects.get(first_name=first_name, last_name=last_name)
+    if User.objects.filter(first_name=first_name, last_name=last_name).exists():
         return JsonResponse({
             'access_code': 'USER_EXISTS'
         })
-    except ObjectDoesNotExist:
+    else:
         # make access code for user
         access_code = first_name.lower() + '-' + last_name.lower()
         user = User.objects.create(
@@ -221,49 +246,75 @@ def user_login(request):
 
     Args:
         access_code
+        check_existing_session
 
     Create a container for the new study session.
 
     """
     access_code = request.GET['access_code']
+    check_existing_session = request.GET['check_existing_session']
     try:
         user = User.objects.get(access_code=access_code)
 
-        # register a new study session for the user
-        session_id = '-'.join([access_code, "study_session",
-            str(StudySession.objects.filter(user=user).count() + 1)])
-        init_task_session_id = get_task_session_id(session_id, 0)
+        # check if an incomplete study session for the user exists
+        if check_existing_session == "true":
+            no_existing_session = False
+            sessions = StudySession.objects.filter(user=user, status='running')
+            if sessions.exists():
+                existing_sessions = list(sessions.order_by('creation_time'))
+                for session in existing_sessions[:-1]:
+                    close_study_session(session, 'closed_with_error')
+                session = existing_sessions[-1]
+                # remember the study session id and the task session id with cookies
+                resp = JsonResponse({
+                    "status": "RUNNING_STUDY_SESSION_FOUND",
+                    "task_session_id": session.current_task_session_id,
+                })
+                resp.set_cookie('session_id', session.session_id)
+                resp.set_cookie('task_session_id', session.current_task_session_id)
+            else:
+                no_existing_session = True
+        else:
+            # close previous running sessions if not properly closed
+            pass
 
-        # create the container of the study session
-        user_name = "myuser"
-        container = create_container(session_id, user_name)
+        if check_existing_session == "false" or no_existing_session:
+            # register a new study session for the user
+            session_id = '-'.join([access_code, "study_session",
+                str(StudySession.objects.filter(user=user).count() + 1)])
+            init_task_session_id = get_task_session_id(session_id, 0)
 
-        session = StudySession.objects.create(
-            user = user,
-            session_id = session_id,
-            container = container,
+            # create the container of the study session
+            user_name = "myuser"
+            container = create_container(session_id, user_name)
 
-            current_task_session_id = init_task_session_id,
-            status = 'running'
-        )
+            session = StudySession.objects.create(
+                user = user,
+                session_id = session_id,
+                container = container,
+                creation_time = timezone.now(),
 
-        # initialize the first task session
-        TaskSession.objects.create(
-            study_session = session,
-            session_id = init_task_session_id,
-            task = pick_task(num_tasks_completed = 0),
-            start_time = timezone.now(),
-            status = 'running'
-        )
+                current_task_session_id = init_task_session_id,
+                status = 'running'
+            )
 
-        resp = JsonResponse({
-            "status": "SESSION_CREATED",
-            "task_session_id": init_task_session_id,
-        })
+            # initialize the first task session
+            TaskSession.objects.create(
+                study_session = session,
+                session_id = init_task_session_id,
+                task = pick_task(num_tasks_completed = 0),
+                start_time = timezone.now(),
+                status = 'running'
+            )
 
-        # remember the study session id and the task session id with cookies
-        resp.set_cookie('session_id', session_id)
-        resp.set_cookie('task_session_id', init_task_session_id)
+            resp = JsonResponse({
+                "status": "SESSION_CREATED",
+                "task_session_id": init_task_session_id,
+            })
+
+            # remember the study session id and the task session id with cookies
+            resp.set_cookie('session_id', session_id)
+            resp.set_cookie('task_session_id', init_task_session_id)
 
     except ObjectDoesNotExist:
         resp = JsonResponse({

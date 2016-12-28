@@ -1,4 +1,5 @@
-FROM node:6-onbuild
+FROM node:4-onbuild
+# FROM nodesource/trusty:5.1
 
 # Install Vim as an interactive program to test from xterm
 RUN apt-get update && \

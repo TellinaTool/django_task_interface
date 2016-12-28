@@ -78,9 +78,36 @@ $(document).ready(function () {
     $('#user-log-in').click(function() {
         var username = $('#username').val();
         if (username.length > 0) {
-            $.get("user_login", {access_code: username}, function(data) {
-                console.log(data);
-                if (data.status == "SESSION_CREATED") {
+            $.get("user_login", {access_code: username, check_existing_session: true}, function(data) {
+                if (data.status == "RUNNING_STUDY_SESSION_FOUND") {
+                    BootstrapDialog.show({
+                        title: "Running study session found",
+                        message: "We found that you have a previous study session which is not completed. Would you like to resume that session?",
+                        buttons: [
+                        {
+                            label: "Yes, resume",
+                            cssClass: "btn-primary",
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                                // redirect user into the session
+                                window.location.replace(data.task_session_id);
+                            }
+                        },
+                        {
+                            label: "No, create a new session",
+                            cssClass: "btn-primary",
+                            action: function(dialogItself) {
+                                $.get(`/user_login`, {access_code: username, check_existing_session: false}, function(data){
+                                    console.log(data.task_session_id);
+                                    dialogItself.close();
+                                    // redirect user into the session
+                                    window.location.replace(data.task_session_id);
+                                })
+                            }
+                        }]
+                    });
+                    console.log(data.status)
+                } else if (data.status == "SESSION_CREATED") {
                     console.log(data.task_session_id);
                     // redirect user into the session
                     window.location.replace(data.task_session_id);

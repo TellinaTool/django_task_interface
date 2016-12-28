@@ -20,6 +20,7 @@ urlpatterns = [
     # task session
     url(r'^.*-study_session-.*/task-.*', views.get_current_task),
     url(r'^get_current_task$', views.get_current_task),
+    url(r'^get_task_duration$', views.get_task_duration),
     url(r'^go_to_next_task$', views.go_to_next_task),
 
     # file system
