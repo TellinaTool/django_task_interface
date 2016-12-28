@@ -36,7 +36,7 @@ clean:
 	# Remove lock files.
 	-ls | grep '^task_manager_lock_' | xargs rm
 	# Delete virtual filesystems.
-	-ls / | grep '^tellina_session_' | xargs sudo bash delete_filesystem.bash
+	-ls / | grep 'study_session' | xargs sudo bash delete_filesystem.bash
 	# Destroy Docker containers.
 	-sudo docker rm -f `sudo docker ps -q -a`
 	# Destroy database and migrations.
