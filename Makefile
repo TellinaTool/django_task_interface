@@ -27,7 +27,7 @@ setup_db:
 
 # Install Django server dependencies
 install_python_dependencies:
-	sudo -H pip3 install -r ~/tellina_task_interface/requirements.txt
+	sudo -H pip3 install -r `pwd`/requirements.txt
 
 # Clean up environment left by prior server run.
 clean:
