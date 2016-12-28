@@ -8,11 +8,8 @@ $(document).ready(function () {
     var terminalContainer;
     var xtermWebSocket;
 
-    var task_time_out;
-
     // connect terminal to the study session's container
     $.get(`/get_container_port`, function(data) {
-        console.log(data);
         var container_port = data.container_port;
 
         // connect to xterm
@@ -75,8 +72,8 @@ $(document).ready(function () {
 
         // start timing the task
         $.get(`/get_task_duration`, function(data) {
-            task_time_out = setInterval(function() {
-                clearInterval(task_time_out);
+            setTimeout(function() {
+                console.log('task time out');
                 // prompt the user that they have to move on to the next task
                 BootstrapDialog.show({
                     title: "Time's Up",
@@ -127,10 +124,9 @@ $(document).ready(function () {
         })
 
         function switch_task(reason) {
-            clearInterval(task_time_out);
+            $("button").attr("disabled", "disabled");
             $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
                 if (data.status == 'STUDY_SESSION_COMPLETE') {
-                    $("button").attr("disabled", "disabled");
                     // print "thank you" message in the terminal
                     term.write("\n");
                     term.write("    .▀█▀.█▄█.█▀█.█▄.█.█▄▀　█▄█.█▀█.█─█\n");
@@ -143,6 +139,7 @@ $(document).ready(function () {
                             cssClass: "btn-primary",
                             action: function(dialogItself) {
                                 dialogItself.close();
+                                setTimeout(window.location.replace(`http:\/\/${location.hostname}:10411`), 2000);
                             }
                         }],
                         closable: false,

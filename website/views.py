@@ -81,46 +81,52 @@ def go_to_next_task(request, task_session_id):
     Create a new task session.
     """
 
-    # close current_task_session
     current_task_session = TaskSession.objects.get(session_id=task_session_id)
-    current_task_session.end_time = timezone.now()
-    current_task_session.status = request.GET['reason_for_close']
-    current_task_session.save()
-
     study_session = current_task_session.study_session
-    study_session.num_tasks_completed += 1
+
+    # if a task session has ended, ignore requests for updating task attributes
+    if current_task_session.status == 'running':
+        # close current_task_session
+        current_task_session.end_time = timezone.now()
+        current_task_session.status = request.GET['reason_for_close']
+        current_task_session.save()
+        study_session.num_tasks_completed += 1
 
     # check for user study completion
     num_tasks_completed = study_session.num_tasks_completed
+    assert(num_tasks_completed <= study_session.total_num_tasks)
     if num_tasks_completed == study_session.total_num_tasks:
         close_study_session(study_session, 'finished')
-        return JsonResponse({
+        resp = JsonResponse({
             "status": 'STUDY_SESSION_COMPLETE'
         })
+        resp.set_cookie('session_id', '')
+        resp.set_cookie('task_session_id', '')
+    else:
+        # wipe out everything in the user's home directory
+        container = study_session.container
+        subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
+            'rm', '-r', '/home/{}'.format(USER_NAME)])
 
-    # wipe out everything in the user's home directory
-    container = study_session.container
-    subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
-        'rm', '-r', '/home/{}'.format(USER_NAME)])
+        next_task_session_id = get_task_session_id(study_session.session_id,
+                                                   num_tasks_completed)
+        study_session.current_task_session_id = next_task_session_id
+        study_session.save()
 
-    next_task_session_id = get_task_session_id(study_session.session_id,
-                                               num_tasks_completed)
-    study_session.current_task_session_id = next_task_session_id
-    study_session.save()
+        TaskSession.objects.create(
+            study_session = study_session,
+            session_id = next_task_session_id,
+            task = pick_task(num_tasks_completed=num_tasks_completed),
+            start_time = timezone.now(),
+            status = 'running'
+        )
 
-    TaskSession.objects.create(
-        study_session = study_session,
-        session_id = next_task_session_id,
-        task = pick_task(num_tasks_completed=num_tasks_completed),
-        start_time = timezone.now(),
-        status = 'running'
-    )
+        resp = JsonResponse({
+            'status': 'RUNNING',
+            "task_session_id": next_task_session_id
+        })
+        resp.set_cookie('task_session_id', next_task_session_id)
 
-    resp = JsonResponse({
-        'status': 'RUNNING',
-        "task_session_id": next_task_session_id
-    })
-    resp.set_cookie('task_session_id', next_task_session_id)
     return resp
 
 @task_session_id_required
@@ -143,7 +149,7 @@ def get_current_task(request, task_session_id):
 
     # Initialize filesystem
     container = study_session.container
-    dict_2_disk(json.loads(task.initial_filesystem),
+    file_system_created = dict_2_disk(json.loads(task.initial_filesystem),
                 pathlib.Path('/{}/home'.format(container.filesystem_name)))
 
     context = {
@@ -207,12 +213,14 @@ def reset_file_system(request, task_session_id):
 
 # --- Study Session Management --- #
 def close_study_session(session, reason_for_close):
-    session.current_task_session_id = ''
-    session.status = reason_for_close
-    session.save()
+    # ignore already closed study sessions
+    if session.status == 'running' or session.status == 'paused':
+        session.current_task_session_id = ''
+        session.status = reason_for_close
+        session.save()
 
-    # destroy the container associated with the study session
-    session.container.destroy()
+        # destroy the container associated with the study session
+        session.container.destroy()
 
 # --- User Login --- #
 

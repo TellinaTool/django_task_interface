@@ -136,6 +136,10 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
 
 
 def dict_2_disk(tree: dict, root_path: pathlib.Path):
+    # check if path exists
+    if not root_path.exists():
+        return False
+
     """Writes the directory described by tree to root_path."""
     for name, subtree in tree.items():
         path = root_path / name
@@ -189,6 +193,7 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
             if not path.exists():
                 path.mkdir()
             dict_2_disk(subtree, root_path / name)
+        return True
 
 
 def create_file_by_size(path, size):
