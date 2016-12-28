@@ -197,6 +197,11 @@ def reset_file_system(request, task_session_id):
     subprocess.run(['docker', 'exec', '-u', 'root', container_id,
         'rm', '-r', '/home/{}'.format(user_name)])
 
+    # re-initialize file system
+    task = task_session.task
+    dict_2_disk(json.loads(task.initial_filesystem),
+                pathlib.Path('/{}/home'.format(container.filesystem_name)))
+
     return JsonResponse({
         'container_id': container_id
     })
