@@ -130,6 +130,7 @@ $(document).ready(function () {
             clearInterval(task_time_out);
             $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
                 if (data.status == 'STUDY_SESSION_COMPLETE') {
+
                     // print "thank you" message in the terminal
                     term.write("\n");
                     term.write("    .▀█▀.█▄█.█▀█.█▄.█.█▄▀　█▄█.█▀█.█─█\n");
