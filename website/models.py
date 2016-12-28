@@ -135,9 +135,9 @@ def create_container(filesystem_name, user_name):
     subprocess.run(['docker', 'exec', '-u', 'root', container_id,
         'chown', '-R', '{}:{}'.format(user_name, user_name),
         '/home/{}'.format(user_name)])
-    subprocess.run(['docker', 'exec', '-u', 'root', container_id,
-        'chmod', '-R', '644',
-        '/home/{}'.format(user_name)])
+    # subprocess.run(['docker', 'exec', '-u', 'root', container_id,
+    #     'chmod', '-R', '644',
+    #     '/home/{}'.format(user_name)])
 
     # Find what port the container was mapped to
     info = cli.inspect_container(container_id)
