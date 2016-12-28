@@ -18,7 +18,7 @@
       "description": "Create a file named `hello.txt` in `~/dir1/dir2`.",
       "initial_filesystem": {
         "dir1": {
-          "file.txt": null,
+          "file.txt": {},
           "dir2": {}
         }
       },
