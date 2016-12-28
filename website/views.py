@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
 from .filesystem import disk_2_dict
+from .constants import *
 
 from . import functions
 import http.cookies
@@ -98,10 +99,9 @@ def go_to_next_task(request, task_session_id):
         })
 
     # wipe out everything in the user's home directory
-    user_name = "myuser"
     container = study_session.container
     subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
-        'rm', '-r', '/home/{}'.format(user_name)])
+        'rm', '-r', '/home/{}'.format(USER_NAME)])
 
     next_task_session_id = get_task_session_id(study_session.session_id,
                                                num_tasks_completed)
@@ -193,9 +193,8 @@ def reset_file_system(request, task_session_id):
     container_id = container.container_id
 
     # wipe out everything in the user's home directory and reinitialize
-    user_name = "myuser"
     subprocess.run(['docker', 'exec', '-u', 'root', container_id,
-        'rm', '-r', '/home/{}'.format(user_name)])
+        'rm', '-r', '/home/{}'.format(USER_NAME)])
 
     # re-initialize file system
     task = task_session.task
@@ -290,8 +289,7 @@ def user_login(request):
             init_task_session_id = get_task_session_id(session_id, 0)
 
             # create the container of the study session
-            user_name = "myuser"
-            container = create_container(session_id, user_name)
+            container = create_container(session_id)
 
             session = StudySession.objects.create(
                 user = user,

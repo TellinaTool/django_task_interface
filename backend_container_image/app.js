@@ -7,7 +7,7 @@ wss.on('connection', function connection(ws) {
     name: 'xterm-color',
     cols: 80,
     rows: 24,
-    cwd: '/home/myuser',
+    cwd: '/home/study_participant',
     env: process.env
   });
 
