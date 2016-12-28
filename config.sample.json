@@ -24,9 +24,9 @@
       },
       "goal": {
         "dir1": {
-          "file.txt": null,
+          "file.txt": {},
           "dir2": {
-            "hello.txt": null
+            "hello.txt": {}
           }
         }
       }
