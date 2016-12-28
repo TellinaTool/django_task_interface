@@ -10,6 +10,7 @@ python3 manage.py migrate
 from django.db import models
 from django.utils import timezone
 from .filesystem import dict_2_disk, disk_2_dict
+from .constants import *
 
 import docker
 import os
@@ -94,7 +95,7 @@ class Container(models.Model):
         # self.delete()
 
 
-def create_container(filesystem_name, user_name):
+def create_container(filesystem_name):
     """
     Creates a container whose filesystem is located at /{filesystem_name}/home
     on the host. The contents of filesystem are written to
@@ -110,11 +111,11 @@ def create_container(filesystem_name, user_name):
     docker_container = cli.create_container(
         image='backend_container',
         ports=[10411],
-        volumes=['/home/' + user_name],
+        volumes=['/home/' + USER_NAME],
         host_config=cli.create_host_config(
             binds={
                 '/{}/home'.format(filesystem_name): {
-                    'bind': '/home/' + user_name,
+                    'bind': '/home/' + USER_NAME,
                     'mode': 'rw',
                 },
             },
@@ -125,26 +126,27 @@ def create_container(filesystem_name, user_name):
     # Get ID of created container
     container_id = docker_container['Id']
 
-    # Start container
-    cli.start(container=container_id)
+    # Start container and write standard output and error to a log file
+    subprocess.run(
+        args='docker start -a {} >container_{}.log 2>&1 &'.format(container_id, container_id),
+        shell=True,
+        executable='/bin/bash',
+    )
 
-    # Set the permssions of the user's home directory.
+    # Wait a bit for container's to start
+    time.sleep(1)
+
+    # Set the permissions of the user's home directory.
     #
     # I tried to do this with the docker-py API and I couldn't get it to work,
     # so I'm just running a shell command.
     subprocess.run(['docker', 'exec', '-u', 'root', container_id,
-        'chown', '-R', '{}:{}'.format(user_name, user_name),
-        '/home/{}'.format(user_name)])
-    # subprocess.run(['docker', 'exec', '-u', 'root', container_id,
-    #     'chmod', '-R', '644',
-    #     '/home/{}'.format(user_name)])
+        'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
+        '/home/{}'.format(USER_NAME)])
 
     # Find what port the container was mapped to
     info = cli.inspect_container(container_id)
     port = int(info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort'])
-
-    # Wait a bit for container's server to start
-    time.sleep(1)
 
     # Create container model object
     container = Container.objects.create(

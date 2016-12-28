@@ -15,17 +15,19 @@ child_process.exec("route -n | awk '/UG[ \t]/{print $2}'", {'shell': '/bin/bash'
 
   // Register socket on connect handler
   wss.on('connection', function connection(xtermWebSocket) {
-    console.log(`Got connection from ${xtermWebSocket.upgradeReq.url}`);
+    console.log(`Connection from ${xtermWebSocket.upgradeReq.url}`);
 
     // Get port of container to connect to
     var port = parseInt(url.parse(xtermWebSocket.upgradeReq.url).pathname.split('/')[1]);
 
     // Open WebSocket to container
-    console.log(`Connecting to container port ${port}`);
-    var containerWebSocket = new WebSocket(`ws://${dockerHostIP}:${port}`);
+    var containerURL = `ws://${dockerHostIP}:${port}`;
+    console.log(`Opening websocket to ${containerURL}`);
+    var containerWebSocket = new WebSocket(containerURL);
 
     // When container WebSocket connects...
     containerWebSocket.on('open', function() {
+      console.log(`Websocket ${containerURL} opened`);
 
       // Forward xterm -> container
       xtermWebSocket.on('message', function(message) {

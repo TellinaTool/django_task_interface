@@ -1,8 +1,4 @@
 {
-  "access_codes": [
-    "bob",
-    "alice"
-  ],
   "task_duration_in_seconds": 30,
   "tasks": [
     {
