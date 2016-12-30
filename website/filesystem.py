@@ -1,8 +1,7 @@
 """
 File system serialization and deserialization.
 
-TODO: Links in a file system are not specifically handled in the current
-    implementation. We shall handle links properly in future implementations.
+TODO: handle links in a file system properly.
 
 Given the following directory:
 
