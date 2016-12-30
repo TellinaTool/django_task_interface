@@ -1,6 +1,9 @@
 """
 File system serialization and deserialization.
 
+TODO: Links in a file system are not specifically handled in the current
+    implementation. We shall handle links properly in future implementations.
+
 Given the following directory:
 
 dir1/
@@ -38,10 +41,24 @@ Its JSON representation is:
         }
     }
 }
+
+The 'filesystem_diff' function returns an annotated JSON representation which
+contains one extra "tag" field for each entry.
+    "tag": xx  # (1) missing: a file/dir is in the target FS but not in the current FS
+               # (2) extra: a file/dir is in current FS but not in target FS
+               # (3) incorrect: a file/dir is in current FS but has the wrong attribute
+               # (4) (file attributes only): a file in current FS
+                    exists in the target FS, but the attribute value in incorrect
+                    in this case the correct attribute value is added as a suffix
+                    to the current value
+    "tag": {"missing": x, "extra": x, "incorrect": x} # a dir is in the target
+        FS but there are errors present in its subtree. The number of different
+        types of errors is explicitly marked
+
 """
 
 import pathlib
-import os, pwd, grp, shutil
+import copy, os, pwd, grp, shutil
 
 # file attributes
 _NAME = 0
@@ -143,7 +160,7 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
     """Writes the directory described by tree to root_path."""
     for name, subtree in tree.items():
         path = root_path / name
-        if subtree.keys() and list(subtree.keys())[0].startswith(attr_format("")):
+        if name.startswith('FILE:::'):
             # file
             if attr_format('size') in subtree:
                 # 'size' is the only attribute we consider that have something
@@ -191,7 +208,7 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
             if attr_format('content') in subtree:
                 with path.open(mode='w+') as o_f:
                     o_f.write(subtree[attr_format('content')])
-        else:
+        elif name.startswith('DIR:::'):
             # directory
             if not path.exists():
                 try:
@@ -203,6 +220,9 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
             status = dict_2_disk(subtree, path)
             if not status == "FILE_SYSTEM_WRITTEN_TO_DISK":
                 return status
+        else:
+            raise ValueError('Unrecognized FS node name: {}, must starts with'
+                             'node type'.format(name))
 
     return "FILE_SYSTEM_WRITTEN_TO_DISK"
 
@@ -211,3 +231,55 @@ def create_file_by_size(path, size):
     """Create a file with a particular byte length."""
     with open(path, 'wb') as o_f:
         o_f.truncate(size)
+
+# --- File system comparison --- #
+
+def filesystem_diff(fs1, fs2):
+    """
+    Args:
+        fs1 & fs2:
+
+    Given the dictionary representations of two file systems fs1 & fs2,
+    recursively compute the difference between these two systems and store the
+    differences in fs1.
+
+    """
+
+    def mark(node, tag):
+        """Mark a node and its descendants with a specific tag."""
+        node['tag'] = tag
+        for name, subtree in node.items():
+            if not name.startswith('ATTR_'):
+                node[name]['tag'] = tag
+
+    annotated_fs1 = copy.deepcopy(fs1)
+
+    for name1, subtree1 in fs1.items():
+        if name1 in fs2:
+            subtree2 = fs2[name1]
+            # node name match
+            if name1.startswith('ATTR_'):
+                # comparing two file attributes
+                if subtree1 != subtree2:
+                    annotated_fs1[name1] += ":::{}".format(subtree2)
+            else:
+                # comparing two files/directories:
+                annotated_fs1[name1] = filesystem_diff(subtree1, subtree2)
+        else:
+            mark(annotated_fs1[name1], 'extra')
+
+    for name2, subtree2 in fs2.items():
+        if not name2 in fs1:
+            annotated_subtree2 = mark(copy.deepcopy(subtree2), 'missing')
+            annotated_fs1[name2] = annotated_subtree2
+
+    return annotated_fs1
+
+
+
+
+
+
+
+
+
