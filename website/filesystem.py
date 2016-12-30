@@ -271,20 +271,26 @@ def filesystem_diff(fs1, fs2):
                 annotated_subtree2 = copy.deepcopy(subtree2)
                 mark(annotated_subtree2, 'missing')
                 annotated_fs1['[DIR]' + name1] = annotated_subtree2
-            if not is_file(subtree1) and is_file(subtree2):
+                errors['missing'] += 1
+                errors['extra'] += 1
+            elif not is_file(subtree1) and is_file(subtree2):
                 mark(annotated_fs1[name1], 'extra')
                 annotated_fs1['[FILE]' + name1] = copy.deepcopy(subtree2)
                 annotated_fs1['[FILE]' + name1]['tag'] = 'missing'
-            # node name match
-            if name1.startswith(attr_format('')):
-                # comparing two file attributes
-                if subtree1 != subtree2:
-                    annotated_fs1[name1] += ":::{}".format(subtree2)
+                errors['missing'] += 1
+                errors['extra'] += 1
             else:
-                # comparing two files/directories:
-                annotated_fs1[name1] = filesystem_diff(subtree1, subtree2)
-                if annotated_fs1[name1]['tag']:
-                    errors['incorrect'] += 1
+                # node name match
+                if name1.startswith(attr_format('')):
+                    # comparing two file attributes
+                    if subtree1 != subtree2:
+                        annotated_fs1[name1] += ":::{}".format(subtree2)
+                        annotated_fs1['tag'] = 'incorrect'
+                else:
+                    # comparing two files/directories:
+                    annotated_fs1[name1] = filesystem_diff(subtree1, subtree2)
+                    if annotated_fs1[name1]['tag']:
+                        errors['incorrect'] += 1
         else:
             assert(not name1.startswith(attr_format('')))
             mark(annotated_fs1[name1], 'extra')
@@ -298,7 +304,8 @@ def filesystem_diff(fs1, fs2):
             annotated_fs1[name2] = annotated_subtree2
             errors['missing'] += 1
 
-    annotated_fs1['tag'] = errors
+    if not is_file(fs1):
+        annotated_fs1['tag'] = errors
 
     return annotated_fs1
 
