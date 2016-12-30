@@ -107,9 +107,15 @@ def attr_format(s):
     attr_prefix = 'ATTR_'
     return attr_prefix + s
 
+
 def is_file(node):
     """Check if a file system node is a regular file."""
-    return node.keys() and list(node.keys())[0].startswith(attr_format(""))
+    if isinstance(node, str):
+        # node is a file attribute
+        return False
+    else:
+        return list(node.keys())[0].startswith(attr_format(""))
+
 
 def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
     """
@@ -250,12 +256,12 @@ def filesystem_diff(fs1, fs2):
         node['tag'] = tag
         for name, subtree in node.items():
             if not name.startswith(attr_format('')):
-                node[name]['tag'] = tag
                 mark(subtree, tag)
 
-    # comparing a file to a directory
+    # comparing a file to a directory, shouldn't happen
     if is_file(fs1) and not is_file(fs2):
         raise ValueError('Cannot compare a file to a directory.')
+    # comparing a directory to a file, shouldn't happen
     if not is_file(fs1) and is_file(fs2):
         raise ValueError('Cannot compare a directory to a file.')
 
@@ -264,8 +270,10 @@ def filesystem_diff(fs1, fs2):
 
     for name1, subtree1 in fs1.items():
         if name1 in fs2:
+            # node name match
             subtree2 = fs2[name1]
             if is_file(subtree1) and not is_file(subtree2):
+                # the current subtree is a file while the goal subtree is a folder
                 annotated_fs1[name1]['tag'] = 'extra'
                 annotated_subtree2 = copy.deepcopy(subtree2)
                 mark(annotated_subtree2, 'missing')
@@ -273,20 +281,20 @@ def filesystem_diff(fs1, fs2):
                 errors['missing'] += 1
                 errors['extra'] += 1
             elif not is_file(subtree1) and is_file(subtree2):
+                # the current subtree is a folder while the goal subtree is a file
                 mark(annotated_fs1[name1], 'extra')
                 annotated_fs1['[FILE]' + name1] = copy.deepcopy(subtree2)
                 annotated_fs1['[FILE]' + name1]['tag'] = 'missing'
                 errors['missing'] += 1
                 errors['extra'] += 1
             else:
-                # node name match
                 if name1.startswith(attr_format('')):
                     # comparing two file attributes
                     if subtree1 != subtree2:
                         annotated_fs1[name1] += ":::{}".format(subtree2)
                         annotated_fs1['tag'] = 'incorrect'
                 else:
-                    # comparing two files/directories:
+                    # comparing two files or two directories:
                     annotated_fs1[name1] = filesystem_diff(subtree1, subtree2)
                     if annotated_fs1[name1]['tag']:
                         errors['incorrect'] += 1

@@ -18,6 +18,7 @@ import datetime
 import docker
 import traceback
 import time
+import subprocess
 
 def get_task_session_id(study_session_id, num_tasks_completed):
     return study_session_id + '/task-{}'.format(num_tasks_completed + 1)
@@ -158,8 +159,12 @@ def get_current_task(request, task_session):
 
     # Initialize filesystem
     container = study_session.container
+    container_id = container.container_id
     filesystem_status = dict_2_disk(json.loads(task.initial_filesystem),
                 pathlib.Path('/{}/home'.format(container.filesystem_name)))
+    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
+        'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
+        '/home/{}'.format(USER_NAME)])
 
     context = {
         "status": filesystem_status,
@@ -251,6 +256,9 @@ def reset_file_system(request, task_session):
     task = task_session.task
     filesystem_status = dict_2_disk(json.loads(task.initial_filesystem),
                 pathlib.Path('/{}/home'.format(container.filesystem_name)))
+    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
+        'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
+        '/home/{}'.format(USER_NAME)])
 
     return json_response({'container_id': container_id},
                          status=filesystem_status)
