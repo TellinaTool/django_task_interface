@@ -35,7 +35,3 @@ sudo make install
 
 # Upgrade pip.
 pip3 install --upgrade pip
-
-# Install server dependencies.
-cd /home/vagrant/tellina_task_interface/
-sudo pip3 install -r requirements.txt
