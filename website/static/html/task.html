@@ -187,7 +187,16 @@ server is done through HTTP AJAX calls.
       <script src="/static/js/bootstrap-modal.js"> </script>
       <script src="/static/js/bootstrap-dialog.js"></script>
       <script src="/static/lib/xterm.js/xterm.js"></script>
-      <script src="/static/lib/xterm.js/attach.js"></script>
+      <script src="/static/lib/xterm.js/addons/attach.js"></script>
+      <script src="/static/lib/xterm.js/addons/fit.js"></script>
+      <script>
+         $(document).ready(function () {
+            console.log("{{status}}");
+            {% ifnotequal status "FILE_SYSTEM_WRITTEN_TO_DISK" %}
+               alert("{{status}}");
+            {% endifnotequal %}
+         })
+      </script>
       <script src="/static/js/task.js"></script>
 
    </body>

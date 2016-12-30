@@ -23,6 +23,9 @@ urlpatterns = [
     url(r'^get_task_duration$', views.get_task_duration),
     url(r'^go_to_next_task$', views.go_to_next_task),
 
+    # terminal I/O
+    url(r'^on_command_execution$', views.on_command_execution),
+
     # file system
     url(r'^reset_file_system', views.reset_file_system),
 
@@ -37,5 +40,4 @@ urlpatterns = [
     # url(r'^check_task_state$', views.check_task_state),
     # url(r'^update_state$', views.update_state),
     # url(r'^append_stdin$', views.append_stdin),
-    # url(r'^append_stdout$', views.append_stdout),
 ]

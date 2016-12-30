@@ -1,29 +1,28 @@
 $(document).ready(function () {
     // create terminal object
-    var cols = 80;
-    var rows = 40;
+    // var cols = 80;
+    // var rows = 40;
     var term = new Terminal({
         cursorBlink: true
     });
-    var terminalContainer;
-    var xtermWebSocket;
 
-    // connect terminal to the study session's container
+    var terminalContainer = document.getElementById('terminal-container');
+    // clean terminal container
+    while (terminalContainer.children.length > 0) {
+        terminalContainer.removeChild(terminalContainer.children[0]);
+    }
+    // associate JS term object with HTML div
+    term.open(terminalContainer);
+    // var charWidth = Math.ceil(term.element.offsetWidth / cols);
+    // var charHeight = Math.ceil(term.element.offsetHeight / rows);
+
+    term.fit();
+
+    // connect xterm.js terminal to the study session's container
     $.get(`/get_container_port`, function(data) {
         var container_port = data.container_port;
 
-        // connect to xterm
-        terminalContainer = document.getElementById('terminal-container');
-        // clean terminal
-        while (terminalContainer.children.length > 0) {
-            terminalContainer.removeChild(terminalContainer.children[0]);
-        }
-        // associate JS term object with HTML div
-        term.open(terminalContainer);
-        var charWidth = Math.ceil(term.element.offsetWidth / cols);
-        var charHeight = Math.ceil(term.element.offsetHeight / rows);
-
-        xtermWebSocket = new WebSocket(`ws:\/\/${location.hostname}:10412/${container_port}`);
+        var xtermWebSocket = new WebSocket(`ws:\/\/${location.hostname}:10412/${container_port}`);
         xtermWebSocket.onopen = function() {
             console.log('WebSocket opened');
 
@@ -33,6 +32,7 @@ $(document).ready(function () {
 
             // stdin from user input
             term.on('data', function(data) {
+                // console.log(data);
                 xtermWebSocket.send(data);
                 stdin += data;
             });
@@ -41,6 +41,31 @@ $(document).ready(function () {
             xtermWebSocket.onmessage = function(event) {
                 term.write(event.data);
                 stdout += event.data;
+                if (stdout.match(/(.|\n)*study_participant\@[0-9a-z]+\:\~\$ $/)) {
+                    // send the standard output to the backend whenever the user executes a command
+                    // in the terminal
+                    $.post(`/on_command_execution`, {stdout: stdout},
+                        function(data) {
+                            if (data.status == 'TASK_COMPLETED') {
+                                BootstrapDialog.show({
+                                    title: "☺ Great Job!",
+                                    message: "You passed task! Please proceed to the next task.",
+                                    buttons: [{
+                                        label: "Proceed",
+                                        cssClass: "btn-primary",
+                                        action: function(dialogItself) {
+                                            dialogItself.close();
+                                            switch_task('passed');
+                                        }
+                                    }],
+                                    closable: false,
+                                });
+                            }
+                        }
+                    );
+                    console.log(stdout);
+                    stdout = '';
+                }
             };
 
             /*
@@ -55,11 +80,7 @@ $(document).ready(function () {
             }, 500);
             // send stdout to server
             setInterval(function() {
-                $.post(`/append_stdout?access_code=${accessCode}&session_id=${session_id}`, stdout,
-                    function(data, textStatus, jqXHR) {
-                        console.log(`append STDOUT status ${jqXHR.status}`);
-                    }
-                );
+
                 stdout = '';
             }, 500); */
         };
@@ -88,13 +109,13 @@ $(document).ready(function () {
                     }],
                     closable: false,
                 });
-            }, parseInt(data.duration) * 1000)
+            }, parseInt(data.duration) * 10000)
         });
 
         $("#reset-button").click(function() {
             // reset file system
             $.get(`/reset_file_system`, function(data){
-                console.log('Reset ' + data.container_id + ' file system.');
+                console.log('Reset ' + data.container_id + ' file system: ' + data.filesystem_status);
                 term.clear();
             })
         });
@@ -132,10 +153,10 @@ $(document).ready(function () {
                     term.write("    .▀█▀.█▄█.█▀█.█▄.█.█▄▀　█▄█.█▀█.█─█\n");
                     term.write("    ─.█.─█▀█.█▀█.█.▀█.█▀▄　─█.─█▄█.█▄█\n");
                     BootstrapDialog.show({
-                        title: "Study Completed",
-                        message: "Congratulations, you have completed the study!",
+                        title: "Congratulations, you have completed the study!",
+                        message: "Please go on to fill in the post-study questionnaire.",
                         buttons: [{
-                            label: "Leave",
+                            label: "Go to questionnaire",
                             cssClass: "btn-primary",
                             action: function(dialogItself) {
                                 dialogItself.close();

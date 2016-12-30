@@ -174,7 +174,7 @@ $(document).ready(function () {
                             } else {
                                 BootstrapDialog.show({
                                     title: "Login Information",
-                                    message: "Your access code: <b>" + username + "</b>",
+                                    message: "Your access code is <b>" + username + "</b>",
                                     buttons: [{
                                         label: "Got it",
                                         cssClass: "btn-primary",

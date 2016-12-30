@@ -9,7 +9,6 @@ python3 manage.py migrate
 """
 from django.db import models
 from django.utils import timezone
-from .filesystem import dict_2_disk, disk_2_dict
 from .constants import *
 
 import docker
@@ -107,12 +106,12 @@ def create_container(filesystem_name):
 
     # Create Docker container
     # NOTE: the created container does not run yet
-    cli = docker.Client(base_url='unix://var/run/docker.sock')
-    docker_container = cli.create_container(
+    client = docker.Client(base_url='unix://var/run/docker.sock')
+    docker_container = client.create_container(
         image='backend_container',
         ports=[10411],
         volumes=['/home/' + USER_NAME],
-        host_config=cli.create_host_config(
+        host_config=client.create_host_config(
             binds={
                 '/{}/home'.format(filesystem_name): {
                     'bind': '/home/' + USER_NAME,
@@ -140,12 +139,12 @@ def create_container(filesystem_name):
     #
     # I tried to do this with the docker-py API and I couldn't get it to work,
     # so I'm just running a shell command.
-    subprocess.run(['docker', 'exec', '-u', 'root', container_id,
+    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
         'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
         '/home/{}'.format(USER_NAME)])
 
     # Find what port the container was mapped to
-    info = cli.inspect_container(container_id)
+    info = client.inspect_container(container_id)
     port = int(info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort'])
 
     # Create container model object
@@ -233,9 +232,3 @@ class ActionHistory(models.Model):
     task_session = models.ForeignKey(TaskSession, on_delete=models.CASCADE)
     action = models.TextField()
     action_time = models.DateTimeField()
-
-
-class TaskScheduler(object):
-
-    # Prefix to be used in naming lock files.
-    LOCK_FILE_PREFIX = 'task_manager_lock_'

@@ -1,4 +1,8 @@
 {
+  "access_codes": [
+    "bob",
+    "alice"
+  ],
   "task_duration_in_seconds": 30,
   "tasks": [
     {
@@ -14,15 +18,21 @@
       "description": "Create a file named `hello.txt` in `~/dir1/dir2`.",
       "initial_filesystem": {
         "dir1": {
-          "file.txt": {},
+          "file.txt": {
+            "ATTR_name": "file.txt"
+          },
           "dir2": {}
         }
       },
       "goal": {
         "dir1": {
-          "file.txt": {},
+          "file.txt": {
+            "ATTR_name": "file.txt"
+          },
           "dir2": {
-            "hello.txt": {}
+            "hello.txt": {
+              "ATTR_name": "hello.txt"
+            }
           }
         }
       }

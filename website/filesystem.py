@@ -138,7 +138,7 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
 def dict_2_disk(tree: dict, root_path: pathlib.Path):
     # check if path exists
     if not root_path.exists():
-        return False
+        return 'ROOT_PATH_DOES_NOT_EXIST'
 
     """Writes the directory described by tree to root_path."""
     for name, subtree in tree.items():
@@ -147,7 +147,7 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
             # file
             if attr_format('size') in subtree:
                 # 'size' is the only attribute we consider that have something
-                # to do with file content
+                # to do with file content (besides file content itself)
                 size = subtree[attr_format('size')]
                 if not size.isdigit():
                     unit = size[-1] if size[-2].isdigit() else size[-2:]
@@ -163,10 +163,13 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
                         size = int(filter(str.isdigit, size)) * pow(1024, 4)
                     else:
                         raise NotImplementedError
-                newfile = create_file_by_size(path.as_posix(), size)
+                create_file_by_size(path.as_posix(), size)
             else:
-                newfile = path.open(mode='w+')
-                newfile.close()
+                try:
+                    newfile = path.open(mode='w+')
+                    newfile.close()
+                except Exception as err:
+                    return str(err)
             if attr_format('user') in subtree:
                 shutil.chown(path.as_posix(), user=subtree[attr_format('user')])
             if attr_format('group') in subtree:
@@ -191,9 +194,17 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
         else:
             # directory
             if not path.exists():
-                path.mkdir()
-            dict_2_disk(subtree, root_path / name)
-        return True
+                try:
+                    path.mkdir()
+                except FileNotFoundError as err:
+                    return str(err)
+                except FileExistsError as err:
+                    return str(err)
+            status = dict_2_disk(subtree, path)
+            if not status == "FILE_SYSTEM_WRITTEN_TO_DISK":
+                return status
+
+    return "FILE_SYSTEM_WRITTEN_TO_DISK"
 
 
 def create_file_by_size(path, size):
