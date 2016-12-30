@@ -57,6 +57,7 @@ contains one extra "tag" field for each entry.
 
 """
 
+import collections
 import pathlib
 import copy, os, pwd, grp, shutil
 
@@ -93,7 +94,7 @@ class File(object):
         d = {}
         for attr in self.__dict__:
             if self.__dict__[attr] is not None:
-                d[attr] = self.__dict__['ATTR_' + attr]
+                d[attr] = self.__dict__[attr_format(attr)]
         return d
 
 
@@ -107,6 +108,9 @@ def attr_format(s):
     attr_prefix = 'ATTR_'
     return attr_prefix + s
 
+def is_file(node):
+    """Check if a file system node is a regular file."""
+    return list(node.keys())[0].startswith(attr_format(""))
 
 def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
     """
@@ -160,7 +164,7 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
     """Writes the directory described by tree to root_path."""
     for name, subtree in tree.items():
         path = root_path / name
-        if name.startswith('FILE:::'):
+        if is_file(subtree):
             # file
             if attr_format('size') in subtree:
                 # 'size' is the only attribute we consider that have something
@@ -208,7 +212,7 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
             if attr_format('content') in subtree:
                 with path.open(mode='w+') as o_f:
                     o_f.write(subtree[attr_format('content')])
-        elif name.startswith('DIR:::'):
+        else:
             # directory
             if not path.exists():
                 try:
@@ -220,9 +224,6 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
             status = dict_2_disk(subtree, path)
             if not status == "FILE_SYSTEM_WRITTEN_TO_DISK":
                 return status
-        else:
-            raise ValueError('Unrecognized FS node name: {}, must starts with'
-                             'node type'.format(name))
 
     return "FILE_SYSTEM_WRITTEN_TO_DISK"
 
@@ -249,29 +250,55 @@ def filesystem_diff(fs1, fs2):
         """Mark a node and its descendants with a specific tag."""
         node['tag'] = tag
         for name, subtree in node.items():
-            if not name.startswith('ATTR_'):
+            if not name.startswith(attr_format('')):
                 node[name]['tag'] = tag
+                mark(subtree, tag)
+
+    # comparing a file to a directory
+    if is_file(fs1) and not is_file(fs2):
+        raise ValueError('Cannot compare a file to a directory.')
+    if not is_file(fs1) and is_file(fs2):
+        raise ValueError('Cannot compare a directory to a file.')
 
     annotated_fs1 = copy.deepcopy(fs1)
+    errors = collections.defaultdict(int)
 
     for name1, subtree1 in fs1.items():
         if name1 in fs2:
             subtree2 = fs2[name1]
+            if is_file(subtree1) and not is_file(subtree2):
+                annotated_fs1[name1]['tag'] = 'extra'
+                annotated_subtree2 = copy.deepcopy(subtree2)
+                mark(annotated_subtree2, 'missing')
+                annotated_fs1['[DIR]' + name1] = annotated_subtree2
+            if not is_file(subtree1) and is_file(subtree2):
+                mark(annotated_fs1[name1], 'extra')
+                annotated_fs1['[FILE]' + name1] = copy.deepcopy(subtree2)
+                annotated_fs1['[FILE]' + name1]['tag'] = 'missing'
             # node name match
-            if name1.startswith('ATTR_'):
+            if name1.startswith(attr_format('')):
                 # comparing two file attributes
                 if subtree1 != subtree2:
                     annotated_fs1[name1] += ":::{}".format(subtree2)
             else:
                 # comparing two files/directories:
                 annotated_fs1[name1] = filesystem_diff(subtree1, subtree2)
+                if annotated_fs1[name1]['tag']:
+                    errors['incorrect'] += 1
         else:
+            assert(not name1.startswith(attr_format('')))
             mark(annotated_fs1[name1], 'extra')
+            errors['extra'] += 1
 
     for name2, subtree2 in fs2.items():
         if not name2 in fs1:
-            annotated_subtree2 = mark(copy.deepcopy(subtree2), 'missing')
+            assert(not name2.startswith(attr_format('')))
+            annotated_subtree2 = copy.deepcopy(subtree2)
+            mark(annotated_subtree2, 'missing')
             annotated_fs1[name2] = annotated_subtree2
+            errors['missing'] += 1
+
+    annotated_fs1['tag'] = errors
 
     return annotated_fs1
 
