@@ -45,4 +45,4 @@ clean:
 	# Destroy database and migrations.
 	rm -rf db.sqlite3 website/migrations
 	# Remove log files
-	rm *.log
+	rm -f *.log
