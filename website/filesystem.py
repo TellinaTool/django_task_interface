@@ -110,7 +110,7 @@ def attr_format(s):
 
 def is_file(node):
     """Check if a file system node is a regular file."""
-    return list(node.keys())[0].startswith(attr_format(""))
+    return node.keys() and list(node.keys())[0].startswith(attr_format(""))
 
 def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
     """
