@@ -58,7 +58,7 @@ function build_fs_tree_vis(data, div_id) {
         });
 
         ul.selectAll("li.node").style("color", function(d) {
-            if (d.tag.hasOwnProperty("extra"))
+            if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty("extra"))
                 return "red";
         });
 
@@ -76,7 +76,7 @@ function build_fs_tree_vis(data, div_id) {
             .style("top", function (d) { return (d.y - tree.nodeHeight()) + "px";})
             .style("left", function (d) { return d.x + "px"; })
             .style("opacity", function (d) {
-                    if (d.tag.hasOwnProperty("missing"))
+                    if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty("missing"))
                         return 0.3;
                     else 
                         return 1;
