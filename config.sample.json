@@ -9,7 +9,11 @@
       "task_id": "1",
       "type": "stdout",
       "description": "Print hello world.",
-      "initial_filesystem": {},
+      "initial_filesystem": {
+        "name": "/",
+        "type": "directory",
+        "children": []
+      },
       "goal": "hello world"
     },
     {
@@ -17,24 +21,54 @@
       "type": "filesystem",
       "description": "Create a file named `hello.txt` in `~/dir1/dir2`.",
       "initial_filesystem": {
-        "dir1": {
-          "file.txt": {
-            "ATTR_name": "file.txt"
-          },
-          "dir2": {}
-        }
+        "name": "/",
+        "type": "directory",
+        "children": [
+          {
+            "name": "dir1",
+            "type": "directory",
+            "children": [
+              {
+                "name": "file.txt",
+                "type": "file",
+                "attributes": {}
+              },
+              {
+                "name": "dir2",
+                "type": "directory",
+                "children": []
+              }
+            ]
+          }
+        ]
       },
       "goal": {
-        "dir1": {
-          "file.txt": {
-            "ATTR_name": "file.txt"
-          },
-          "dir2": {
-            "hello.txt": {
-              "ATTR_name": "hello.txt"
-            }
+        "name": "/",
+        "type": "directory",
+        "children": [
+          {
+            "name": "dir1",
+            "type": "directory",
+            "children": [
+              {
+                "name": "file.txt",
+                "type": "file",
+                "attributes": {}
+              },
+              {
+                "name": "dir2",
+                "type": "directory",
+                "children": [
+                  {
+                    "name": "hello.txt",
+                    "type": "file",
+                    "attributes": {}
+                  }
+                ]
+              }
+            ]
           }
-        }
+        ]
       }
     }
   ]

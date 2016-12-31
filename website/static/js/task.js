@@ -41,28 +41,35 @@ $(document).ready(function () {
             xtermWebSocket.onmessage = function(event) {
                 term.write(event.data);
                 stdout += event.data;
+                // send the standard output to the backend whenever the user executes a command
+                // in the terminal
                 if (stdout.match(/(.|\n)*study_participant\@[0-9a-z]+\:\~\$ $/)) {
-                    // send the standard output to the backend whenever the user executes a command
-                    // in the terminal
-                    $.post(`/on_command_execution`, {stdout: stdout},
-                        function(data) {
-                            if (data.status == 'TASK_COMPLETED') {
-                                BootstrapDialog.show({
-                                    title: "☺ Great Job!",
-                                    message: "You passed task! Please proceed to the next task.",
-                                    buttons: [{
-                                        label: "Proceed",
-                                        cssClass: "btn-primary",
-                                        action: function(dialogItself) {
-                                            dialogItself.close();
-                                            switch_task('passed');
-                                        }
-                                    }],
-                                    closable: false,
-                                });
+                    if (stdout.split('\n').length > 1) {
+                        $.post(`/on_command_execution`, {stdout: stdout},
+                            function(data) {
+                                console.log(data.filesystem_diff);
+                                current_tree_vis = data.filesystem_diff;
+                                current_tree_vis.name = '/';
+                                console.log(current_tree_vis);
+                                build_fs_tree_vis(current_tree_vis, "#current-tree-vis");
+                                if (data.status == 'TASK_COMPLETED') {
+                                    setTimeout(BootstrapDialog.show({
+                                        title: "Great Job!",
+                                        message: "You passed task! Please proceed to the next task.",
+                                        buttons: [{
+                                            label: "Proceed",
+                                            cssClass: "btn-primary",
+                                            action: function(dialogItself) {
+                                                dialogItself.close();
+                                                switch_task('passed');
+                                            }
+                                        }],
+                                        closable: false,
+                                    }), 1000);
+                                }
                             }
-                        }
-                    );
+                        );
+                    }
                     console.log(stdout);
                     stdout = '';
                 }
@@ -84,6 +91,7 @@ $(document).ready(function () {
                 stdout = '';
             }, 500); */
         };
+
         xtermWebSocket.onerror = function(event) {
             console.log('Socket error: ' + event.data);
         };
@@ -109,7 +117,13 @@ $(document).ready(function () {
                     }],
                     closable: false,
                 });
-            }, parseInt(data.duration) * 10000)
+            }, parseInt(data.duration) * 10000);
+
+            // initial directory visualization
+            current_tree_vis = data.current_filesystem;
+            current_tree_vis.name = '/';
+            build_fs_tree_vis(current_tree_vis, "#current-tree-vis");
+            build_fs_tree_vis(data.goal_filesystem, "#goal-tree-vis");
         });
 
         $("#reset-button").click(function() {
@@ -123,12 +137,14 @@ $(document).ready(function () {
         $("#quit-button").click(function() {
             // discourage a user from quiting a task
             BootstrapDialog.show({
-                title: "We hope each participant to try the best on each task. ",
+                title: "Reminder: We hope everyone to make use of all time allocated for a task. ",
                 message: "If you give up a task, the information we get from the study wil be less accurate. Would you like to proceed anyway?",
+                type: BootstrapDialog.TYPE_WARNING,
                 buttons: [
                 {
-                    label: "Yes, proceed",
-                    cssClass: "btn-primary",
+                    icon: 'glyphicon glyphicon-warning-sign',
+                    label: " Yes, proceed",
+                    cssClass: "btn-danger",
                     action: function(dialogItself) {
                         dialogItself.close();
                         switch_task('quit');

@@ -13,6 +13,7 @@ server is done through HTTP AJAX calls.
 
         <!-- Bootstrap and other CSS -->
         <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
         <link href="/static/css/jquery-ui.min.css" rel="stylesheet">
 	    <link rel="stylesheet" href="/static/lib/xterm.js/xterm.css" />
       	<link href="/static/lib/codecademy.themes/core.css" media="screen" rel="stylesheet"
@@ -24,6 +25,7 @@ server is done through HTTP AJAX calls.
       	<link href="/static/lib/codecademy.themes/platform.css"
          	media="screen" rel="stylesheet" type="text/css" />
       	<link href="/static/css/task.css" rel="stylesheet" media="screen">
+        <link href="/static/lib/fs_tree_vis/treelist.css" rel="stylesheet" media="screen">
 
       	<link rel="shortcut icon" href="/static/img/user_study.png"/>
    </head>
@@ -34,8 +36,9 @@ server is done through HTTP AJAX calls.
                <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" data-reactid="4">
                   <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj" data-reactid="5">
                      <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
-                        <i class="_2s1fAUUBvIvC87s1stozEY fcn-icon fcn-icon-arrowPrev"
-                           data-reactid="12"></i><!-- react-text: 13 -->Tellina User Study<!-- /react-text -->
+                        {% if task_part %}
+                           Tellina User Study - Part {{task_part}}
+                        {% endif %}
                      </section>
                      <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD" data-reactid="10">
                      </section>
@@ -127,9 +130,7 @@ server is done through HTTP AJAX calls.
                                  </div>
                               </div>
                               <div class="accordion-section-body">
-                                 <div class="jfdpfOzslotw2euWgxJNN _1PzvoBkjTI2SFvb5o9YAHW">
-                                    <p>Current directory visualization goes here.</p>
-                                 </div>
+                                 <div class="tree-vis-panel" id="current-tree-vis"></div>
                               </div>
                            </div>
                         </div>
@@ -145,9 +146,7 @@ server is done through HTTP AJAX calls.
                                  </div>
                               </div>
                               <div class="accordion-section-body">
-                                 <div class="jfdpfOzslotw2euWgxJNN _1PzvoBkjTI2SFvb5o9YAHW">
-                                    <p>Goal directory visualization goes here.</p>
-                                 </div>
+                                 <div class="tree-vis-panel" id="goal-tree-vis"><p>test</p></div>
                               </div>
                            </div>
                         </div>
@@ -158,7 +157,7 @@ server is done through HTTP AJAX calls.
                <nav class="y7tvmmg7fKu4JpdaYECtN uLjMYUmq7NHQCvtXjbgKs _3bR5y3xpD2FPv1oUg-7n_p" data-reactid="111">
                   <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="112">
                      <button class="fcn-button fcn-button--warning" id="quit-button">
-                        <!-- react-text: 125 -->Quit Task<!-- /react-text --><!-- react-empty: 126 -->
+                        <i class="glyphicon glyphicon-warning-sign"></i>&nbsp;Quit Task
                      </button>
                   </section>
                   <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD" data-reactid="117">
@@ -186,6 +185,7 @@ server is done through HTTP AJAX calls.
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
       <script src="/static/js/bootstrap-modal.js"> </script>
       <script src="/static/js/bootstrap-dialog.js"></script>
+
       <script src="/static/lib/xterm.js/xterm.js"></script>
       <script src="/static/lib/xterm.js/addons/attach.js"></script>
       <script src="/static/lib/xterm.js/addons/fit.js"></script>
@@ -197,7 +197,11 @@ server is done through HTTP AJAX calls.
             {% endifnotequal %}
          })
       </script>
-      <script src="/static/js/task.js"></script>
 
+      <script src="https://d3js.org/d3.v3.min.js"></script>
+      <script src="/static/lib/fs_tree_vis/treelist.js"></script>
+      <script src="/static/lib/fs_tree_vis/fs_tree_vis.js"></script>
+
+      <script src="/static/js/task.js"></script>
    </body>
 </html>

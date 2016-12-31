@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^get_current_task$', views.get_current_task),
     url(r'^get_task_duration$', views.get_task_duration),
     url(r'^go_to_next_task$', views.go_to_next_task),
+    url(r'^sample$', views.sample),
 
     # terminal I/O
     url(r'^on_command_execution$', views.on_command_execution),

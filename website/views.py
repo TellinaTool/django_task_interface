@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
-from .filesystem import dict_2_disk, disk_2_dict
+from .filesystem import dict_2_disk, disk_2_dict, filesystem_diff
 from .constants import *
 
 from . import functions
@@ -82,8 +82,18 @@ def get_task_duration(request, task_session):
     Returns the maximum time length the user is allowed to spend on the task.
 
     """
+    task = task_session.task
+    study_session = task_session.study_session
+    container = study_session.container
+
+    goal = task.initial_filesystem if task.type == 'stdout' else task.goal
+
     return json_response({
-        "duration": task_session.task.duration.seconds
+        # "current_filesystem": task.initial_filesystem,
+        "current_filesystem": disk_2_dict(
+            pathlib.Path('/{}/home'.format(container.filesystem_name))),
+        "goal_filesystem": json.loads(goal),
+        "duration": task.duration.seconds
     })
 
 @task_session_id_required
@@ -155,6 +165,10 @@ def get_current_task(request, task_session):
     task = task_session.task
 
     study_session = task_session.study_session
+    if study_session.num_tasks_completed < len(PART_I_TASKS):
+        task_part = 'I'
+    else:
+        task_part = 'II'
     order_number = study_session.num_tasks_completed + 1
 
     # Initialize filesystem
@@ -169,11 +183,12 @@ def get_current_task(request, task_session):
     context = {
         "status": filesystem_status,
         "task_description": task.description,
+        "task_part": task_part,
         "task_goal": task.goal,
         "task_order_number": order_number,
         "total_num_tasks": study_session.total_num_tasks,
         "first_name": study_session.user.first_name,
-        "last_name": study_session.user.last_name
+        "last_name": study_session.user.last_name,
     }
 
     template = loader.get_template('task.html')
@@ -218,21 +233,32 @@ def on_command_execution(request, task_session):
         action_time = timezone.now()
     )
 
+    # compute distance between current file system and the goal file system
+    study_session = task_session.study_session
+    container = study_session.container
+    current_file_system = disk_2_dict(
+            pathlib.Path('/{}/home'.format(container.filesystem_name)))
+    goal = task.initial_filesystem if task.type == 'stdout' else task.goal
+    fs_diff = filesystem_diff(current_file_system, json.loads(goal))
+
+    task_completed = False
     if task.type == 'stdout':
         # check if stdout signals task completion
         if task.goal in stdout:
-            return json_response(status='TASK_COMPLETED')
+            task_completed = True
     elif task.type == 'filesystem':
         # check if the current file system is the same as the goal file system
-        study_session = task_session.study_session
-        container = study_session.container
-        current_file_system = disk_2_dict(
-            pathlib.Path('/{}/home'.format(container.filesystem_name)))['home']
+        if not fs_diff['tag']:
+            task_completed = True
     else:
         raise AttributeError('Unrecognized task type "{}": must be "stdout" or'
                              '"filesystem"'.format(task.type))
 
-    return json_response()
+    if task_completed:
+        return json_response({ 'filesystem_diff': fs_diff },
+                             status='TASK_COMPLETED')
+    else:
+        return json_response({ 'filesystem_diff': fs_diff })
 
 # --- File System Management --- #
 
@@ -393,4 +419,9 @@ def retrieve_access_code(request):
         return JsonResponse({
             "access_code": 'USER_DOES_NOT_EXIST'
         })
+
+def sample(request):
+    template = loader.get_template('sample.html')
+    context = {}
+    return HttpResponse(template.render(context, request))
 
