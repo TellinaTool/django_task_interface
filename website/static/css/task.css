@@ -9,5 +9,9 @@
 
 .terminal-header {
     background: #40454f;
-    font: 
+    font-weight: light;
+}
+
+.terminal-container {
+    height: 96%;
 }

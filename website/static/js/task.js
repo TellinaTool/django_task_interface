@@ -6,7 +6,7 @@ $(document).ready(function () {
         cursorBlink: true
     });
 
-    var terminalContainer = document.getElementById('terminal-container');
+    var terminalContainer = document.getElementById('bash-terminal');
     // clean terminal container
     while (terminalContainer.children.length > 0) {
         terminalContainer.removeChild(terminalContainer.children[0]);
@@ -17,6 +17,10 @@ $(document).ready(function () {
     // var charHeight = Math.ceil(term.element.offsetHeight / rows);
 
     term.fit();
+
+    $('#bash-terminal').resize(function() {
+        term.fit();
+    });
 
     // connect xterm.js terminal to the study session's container
     $.get(`/get_container_port`, function(data) {

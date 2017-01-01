@@ -40,7 +40,12 @@
         characterHeight = parseInt(subjectRow.offsetHeight);
         subjectRow.innerHTML = contentBuffer;
         rows = parseInt(availableHeight / characterHeight);
+        console.log(parentElementHeight);
+        console.log(elementPaddingVer);
+        console.log(characterHeight);
+        console.log(rows);
         cols = parseInt(availableWidth / characterWidth);
+        console.log(cols);
         geometry = { cols: cols, rows: rows };
         return geometry;
     };
