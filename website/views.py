@@ -244,7 +244,8 @@ def on_command_execution(request, task_session):
     task_completed = False
     if task.type == 'stdout':
         # check if stdout signals task completion
-        if task.goal in stdout:
+        stdout_lines = stdout.split('\n')
+        if task.goal in stdout_lines[-2]:
             task_completed = True
     elif task.type == 'filesystem':
         # check if the current file system is the same as the goal file system
@@ -285,6 +286,12 @@ def reset_file_system(request, task_session):
     subprocess.call(['docker', 'exec', '-u', 'root', container_id,
         'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
         '/home/{}'.format(USER_NAME)])
+
+    ActionHistory.objects.create(
+        task_session=task_session,
+        action = '__reset__',
+        action_time = timezone.now()
+    )
 
     return json_response({'container_id': container_id},
                          status=filesystem_status)
@@ -349,10 +356,23 @@ def user_login(request):
         # check if an incomplete study session for the user exists
         if check_existing_session == "true":
             no_existing_session = False
-            sessions = StudySession.objects.filter(user=user, status='running')
-            if sessions.exists():
+            healthy_sessions = []
+            for session in StudySession.objects\
+                    .filter(user=user, status='running').order_by('creation_time'):
+                try:
+                    task_session = TaskSession.objects.get(
+                        session_id=session.current_task_session_id)
+                    if task_session.status == 'running' or task_session.status \
+                        == 'paused':
+                        healthy_sessions.append(session)
+                    else:
+                        close_study_session(session, 'closed_with_error')
+                except ObjectDoesNotExist:
+                    # task session is corrupted
+                    close_study_session(session, 'closed_with_error')
+            if healthy_sessions:
                 # close previous running sessions if not properly closed
-                existing_sessions = list(sessions.order_by('creation_time'))
+                existing_sessions = healthy_sessions
                 for session in existing_sessions[:-1]:
                     close_study_session(session, 'closed_with_error')
                 session = existing_sessions[-1]
