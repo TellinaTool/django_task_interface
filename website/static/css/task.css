@@ -11,6 +11,11 @@ body {
 	cursor: default;
 }
 
+nav {
+	margin-left: 3px;
+	margin-right: 3px;
+}
+
 .tree-vis-panel .selected{
 	text-decoration: underline;
 }
