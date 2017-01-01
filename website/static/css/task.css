@@ -1,10 +1,35 @@
 
-.accordion-container cur_dir_vis{
+/*.accordion-container cur_dir_vis{
     height: 50%;
 }
 
 .accordion-container goal_dir_vis{
     height: 50%;
+}*/
+
+.tree-vis-panel .selected{
+    text-decoration: underline;
+}
+.tree-vis-panel .node {
+    position: absolute;
+    list-style: none;
+    cursor: default;
+}
+.tree-vis-panel .node span {
+    margin-right: 3px;
+}
+
+.tree-vis-panel .node .caret {
+    font-size: 10px;
+}
+
+.tree-vis-panel ul li:before {
+    content: none;
+}
+
+.tree-vis-panel {
+	padding-top: 10px;
+	padding-left: 0px;
 }
 
 .terminal-header {

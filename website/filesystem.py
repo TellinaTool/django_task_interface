@@ -53,7 +53,6 @@ contains one extra "tag" field for each entry.
     "tag": {"missing": x, "extra": x, "incorrect": x} # a dir is in the target
         FS but there are errors present in its subtree. The number of different
         types of errors is explicitly marked
-
 """
 
 import collections
@@ -392,6 +391,16 @@ def attribute_diff(attr1, attr2):
     return tag
 
 
+if __name__=="__main__":
+    with open('fs1.json') as data_file:    
+        fs1 = json.load(data_file)
+    with open('fs2.json') as data_file:    
+        fs2 = json.load(data_file)
+  
+    fs = filesystem_diff(fs1, fs2)
+    #tag_intermediate(diff_fs)
+    #find_highest_non_modified(diff_fs)
+    print(json.dumps(fs))
 
 
 

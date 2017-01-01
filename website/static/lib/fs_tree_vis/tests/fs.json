@@ -1,0 +1,53 @@
+{
+	"name": "/",
+	"type": "directory",
+	"tag": {
+		"missing": 1,
+		"extra": 1
+	},
+	"children": [{
+		"name": "dir1",
+		"type": "directory",
+		"tag": {
+			"missing": 2,
+			"extra": 1
+		},
+		"children": [{
+			"name": "dir2",
+			"type": "directory",
+			"tag": {
+				"missing": 1,
+				"extra": 1
+			},
+			"children": [{
+				"name": "file3.txt",
+				"type": "file",
+				"tag": {
+					"extra": 1
+				},
+				"attributes": {}
+			}, {
+				"name": "file4.txt",
+				"type": "file",
+				"tag": {
+					"missing": 1
+				},
+				"attributes": {}
+			}]
+		}, {
+			"name": "file.txt",
+			"type": "file",
+			"tag": {
+				"": 1
+			},
+			"attributes": {}
+		}, {
+			"name": "file3.txt",
+			"type": "file",
+			"tag": {
+				"missing": 1
+			},
+			"attributes": {}
+		}]
+	}]
+}
