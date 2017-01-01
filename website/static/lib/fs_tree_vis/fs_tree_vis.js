@@ -1,6 +1,7 @@
 // Given a json represented *merged* filesystem status, and a div id to draw the visualization,
 // render the visualization there.
 // The filesystem json should be one created from fs_diff.py
+
 function build_fs_tree_vis(data, div_id) {
 
     console.log(data);
@@ -56,7 +57,8 @@ function build_fs_tree_vis(data, div_id) {
         });
         //add icons for folder for file
         entered.append("span").attr("class", function (d) {
-            var icon = d.children || d._children ? "glyphicon-folder-close"
+            // just a quick fix
+            var icon = d.type == "directory" ? "glyphicon-folder-close"
                 : "glyphicon-file";
             return "glyphicon " + icon;
         });
@@ -77,7 +79,11 @@ function build_fs_tree_vis(data, div_id) {
                 : d._children ? "glyphicon-chevron-right" : "";
             return "glyphicon " + icon;
         });
-        //update position with transition
+        // make the glyphicon smaller, and align cneter
+        nodeEls.select("span").style("font-size", "60%");
+        nodeEls.select("span").style("vertical-align", "40%");
+
+        //update position with transition: if 
         nodeEls//.transition().duration(duration)
             .style("margin-top", function (d) { return (d.y - tree.nodeHeight()) + "px";})
             .style("margin-left", function (d) { return d.x + "px"; })
