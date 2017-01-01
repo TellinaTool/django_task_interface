@@ -3,20 +3,20 @@
  * @author Patrick Oladimeji
  * @date 5/24/14 12:21:50 PM
  */
-/*jshint unused: true, undef: true*/
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global d3*/
+ /*jshint unused: true, undef: true*/
+ /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
+ /*global d3*/
 (function (d3) {
     d3.layout.treelist = function () {
         "use strict";
         var hierarchy = d3.layout.hierarchy().sort(null).value(null),
-            nodeHeight = 20,
-            childIndent = 20,
-            size;
+        nodeHeight = 20,
+        childIndent = 20,
+        size;
 
         var treelist = function (d, i) {
             var nodes = hierarchy.call(this, d, i),
-                root = nodes[0];
+            root = nodes[0];
 
             function visit(f, t, index, parent) {
                 if (t) {
@@ -32,8 +32,8 @@
 
             /**
              visit all nodes in the tree and set the x, y positions
-            */
-            function layout(node) {
+             */
+             function layout(node) {
                 //all children of the same parent are rendered on the same  x level
                 //y increases every time a child is added to the list 
                 var x = 0, y = 0;

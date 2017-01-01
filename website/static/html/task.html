@@ -34,7 +34,7 @@ server is done through HTTP AJAX calls.
          <div id="workspace" class="francine" data-reactid="2">
             <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" data-reactid="4">
                <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj" data-reactid="5">
-                  <section style="margin-left: 10px" class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
+                  <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
                      {% if task_part %}
                      Tellina User Study - Part {{task_part}}
                      {% endif %}
@@ -61,7 +61,7 @@ server is done through HTTP AJAX calls.
                         </div>
                      </div>
                      {% if first_name and last_name %}
-                     <span style="margin-right:10px;">{{first_name}}&nbsp;{{last_name}}&nbsp;</span>
+                     <span>{{first_name}}&nbsp;{{last_name}}&nbsp;</span>
                      {% endif %}
                   </section>
                </nav>
@@ -164,7 +164,7 @@ server is done through HTTP AJAX calls.
             <div class="fcn-nav-wrapper__center fcn-progress-container" data-reactid="119">
                {% if task_order_number and total_num_tasks %}
                <div class="fnc-nav__exercise-count" data-reactid="121">
-                  {{task_order_number}}/{{total_num_tasks}}
+                  Task {{task_order_number}} / {{total_num_tasks}}.
                </div>
                {% endif %}
             </div>

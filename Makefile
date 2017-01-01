@@ -26,7 +26,7 @@ setup_db:
 	python3 manage.py migrate
 
 # Create superuser:
-	python3 manage.py createsuperuser
+# 	python3 manage.py createsuperuser
 
 # Install Django server dependencies
 install_python_dependencies:
