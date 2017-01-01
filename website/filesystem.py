@@ -42,17 +42,24 @@ Its JSON representation is:
 }
 
 The 'filesystem_diff' function returns an annotated JSON representation which
-contains one extra "tag" field for each entry.
-    "tag": xx  # (1) missing: a file/dir is in the target FS but not in the current FS
+contains one extra "tag" field for each entry. The tag field is a dictionary
+with error types as the key and count as the value.
+
+An example tag field is
+
+    "tag": {"ch_missing": 1, "ch_extra": 2, "ch_incorrect": 4}
+
+which indicates that one child of the directory node is missing, two are extra
+and four are incorrect.
+
+    tag field: # (1) missing: a file/dir is in the target FS but not in the current FS
                # (2) extra: a file/dir is in current FS but not in target FS
                # (3) incorrect: a file/dir is in current FS but has the wrong attribute
-               # (4) (file attributes only): a file in current FS
+               # (4) ch_tag (directory only): errors in the children of a directory
+               # (5) (file attributes only): a file in current FS
                     exists in the target FS, but the attribute value in incorrect
                     in this case the correct attribute value is added as a suffix
                     to the current value
-    "tag": {"missing": x, "extra": x, "incorrect": x} # a dir is in the target
-        FS but there are errors present in its subtree. The number of different
-        types of errors is explicitly marked
 """
 
 import collections
@@ -332,8 +339,8 @@ def filesystem_diff(fs1, fs2):
                     # is a folder
                     annotated_children.append(markcopy(child1, 'extra'))
                     annotated_children.append(markcopy(child2, 'missing'))
-                    errors['missing'] += 1
-                    errors['extra'] += 1
+                    errors['ch_missing'] += 1
+                    errors['ch_extra'] += 1
                 else:
                     raise AttributeError('Unrecognized node type {}, must '
                         'be "file" or "directory".'.format(child2['type']))
@@ -342,15 +349,18 @@ def filesystem_diff(fs1, fs2):
                     # comparing two directories
                     annotated_child = filesystem_diff(child1, child2)
                     annotated_children.append(annotated_child)
-                    for key in annotated_child['tag']:
-                        errors[key] += 1
+                    if annotated_child['tag']:
+                        # for key in annotated_child['tag']:
+                        #     if not key.startswith('ch_'):
+                        #         errors['ch_'+key] += 1
+                        errors['ch_incorrect'] += 1
                 else:
                     # the current subtree is a folder while the goal
                     # subtree is a file
                     annotated_children.append(markcopy(child1, 'extra'))
                     annotated_children.append(markcopy(child2, 'missing'))
-                    errors['missing'] += 1
-                    errors['extra'] += 1
+                    errors['ch_missing'] += 1
+                    errors['ch_extra'] += 1
             else:
                 raise AttributeError('Unrecognized node type {}, must be '
                     '"file" or "directory".'.format(child1['type']))
@@ -358,20 +368,20 @@ def filesystem_diff(fs1, fs2):
             j += 1
         elif child1['name'] < child2['name']:
             annotated_children.append(markcopy(child1, 'extra'))
-            errors['extra'] += 1
+            errors['ch_extra'] += 1
             i += 1
         else:
             annotated_children.append(markcopy(child2, 'missing'))
-            errors['missing'] += 1
+            errors['ch_missing'] += 1
             j += 1
     if i < len(fs1_children):
         for child1 in fs1_children[i:]:
             annotated_children.append(markcopy(child1, 'extra'))
-            errors['extra'] += 1
+            errors['ch_extra'] += 1
     if j < len(fs2_children):
         for child2 in fs2_children[j:]:
             annotated_children.append(markcopy(child2, 'missing'))
-            errors['missing'] += 1
+            errors['ch_missing'] += 1
 
     annotated_fs1['children'] = annotated_children
     annotated_fs1['tag'] = errors
