@@ -48,7 +48,7 @@ $(document).ready(function () {
                 stdout += event.data;
                 // send the standard output to the backend whenever the user executes a command
                 // in the terminal
-                if (stdout.match(/(.|\n)*study_participant\@[0-9a-z]+\:[^\n]*\$ $/)) {
+                if (stdout.match(/(.|\n)*\nme\@[0-9a-z]+\:[^\n]*\$ $/)) {
                     if (stdout.split('\n').length > 1) {
                         $.post(`/on_command_execution`, {stdout: stdout},
                             function(data) {
@@ -62,7 +62,7 @@ $(document).ready(function () {
                                     setTimeout(function() {
                                         BootstrapDialog.show({
                                             title: "Great Job!",
-                                            message: "You passed task! Please proceed to the next task.",
+                                            message: "You passed the task! Please proceed to the next task.",
                                             buttons: [{
                                                 label: "Proceed",
                                                 cssClass: "btn-primary",
@@ -182,7 +182,8 @@ $(document).ready(function () {
                     */
                     BootstrapDialog.show({
                         title: "Congratulations, you have completed the study!",
-                        message: "Please go on to fill in the post-study questionnaire.",
+                        message: "Report: passed " + data.num_passed + "/" + data.num_total + " tasks; given up " + data.num_given_up + "/" + data.num_total + " tasks.\n\n" +
+                                 "Please go on to fill in the post-study questionnaire.",
                         buttons: [{
                             label: "Go to questionnaire",
                             cssClass: "btn-primary",

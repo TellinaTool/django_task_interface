@@ -1,1 +1,1 @@
-USER_NAME = 'study_participant'
+USER_NAME = 'me'

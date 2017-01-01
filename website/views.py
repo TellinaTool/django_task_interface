@@ -124,7 +124,15 @@ def go_to_next_task(request, task_session):
     assert(num_tasks_completed <= study_session.total_num_tasks)
     if num_tasks_completed == study_session.total_num_tasks:
         close_study_session(study_session, 'finished')
-        resp = json_response(status='STUDY_SESSION_COMPLETE')
+        resp = json_response(
+            {
+                "num_passed": TaskSession.objects.filter(
+                    study_session=study_session, status='passed').count(),
+                "num_given_up": TaskSession.objects.filter(
+                    study_session=study_session, status='quit').count(),
+                "num_total": study_session.total_num_tasks
+            },
+            status='STUDY_SESSION_COMPLETE')
         resp.set_cookie('session_id', '')
         resp.set_cookie('task_session_id', '')
     else:
