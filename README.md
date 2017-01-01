@@ -100,9 +100,11 @@ Below is an overview of the implementation of the infrastructure.
 
 ### Architecture diagram
 
+The task platform consists of four modules. The architecture is illustrated in the following diagram.
+
 https://docs.google.com/drawings/d/1fwFaJsSLYY8wY7DZC0EBBdU_tgJDlwl9MVl5PLmIu0k
 
-### Task Interface (Main) Server
+### I - Task Interface (Main) Server
 
 The task interface server is implemented with Django. The core implementation can be found in [website/models.py](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py) and [website/views.py](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/views.py). It is connected to an SQLite database that stores the information of
 * [user](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L30)
@@ -120,18 +122,18 @@ When the user executes a command, the difference between the current stdout/file
 
 (The Django configuration files are in the folder [tellina_task_interface/](https://github.com/TellinaTool/tellina_task_interface/tree/master/tellina_task_interface), which in general doesn't need to be changed.)
 
-### Terminal (File System) Server
+### II - Terminal (File System) Server
 
 An ext4 file system with the name `{study_session_id}.ext4` is created for each study session. The file system is mounted to location `/{study_session_id}/` on the VM. The script used to create the file system on the VM can be found [here](https://github.com/TellinaTool/tellina_task_interface/blob/master/make_filesystem.bash).
 The home directory `/{study_session_id}/home` on this physical location is [bound](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L116) to path /home/study_participant/ in the docker container of that study session.
 
 The docker container server is implemented with [Node.js](https://nodejs.org/en/). The core implementation can be found in [backend_container_image/app.js](https://github.com/TellinaTool/tellina_task_interface/blob/master/backend_container_image/app.js).
 
-### WebSocket Proxy Server
+### III - WebSocket Proxy Server
 
 The websocket proxy server is also implemented with Node.js. The core implementation can be found in [proxy_image/app.js](https://github.com/TellinaTool/tellina_task_interface/blob/master/proxy_image/app.js).
 
-### Front-end
+### IV - Front-end
 
 The terminal is implemented with the third-party plugin [Xterm.js](https://github.com/TellinaTool/tellina_task_interface/tree/master/website/static/lib/xterm.js). The main custom implementation can be found [here](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/static/js/task.js#L5).
 
