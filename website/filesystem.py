@@ -84,7 +84,6 @@ class Node(object):
         self.name = name
         self.type = type
 
-
 class Directory(Node):
     def __init__(self, name):
         super(Directory, self).__init__(name, 'directory')
@@ -98,7 +97,6 @@ class Directory(Node):
             'type': self.type,
             'children': children_dict_list
         }
-
 
 class File(Node):
     def __init__(self, name, user=None, group=None, size=None, mode=None,
