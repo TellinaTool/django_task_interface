@@ -148,7 +148,7 @@ $(document).ready(function () {
         $("#quit-button").click(function() {
             // discourage a user from quiting a task
             BootstrapDialog.show({
-                title: "Reminder: We hope everyone to make use of all time allocated for a task. ",
+                title: "Reminder: we hope everyone can make use of all time allocated for a task. ",
                 message: "If you give up a task, the information we get from the study wil be less accurate. Would you like to proceed anyway?",
                 type: BootstrapDialog.TYPE_WARNING,
                 buttons: [
@@ -176,9 +176,10 @@ $(document).ready(function () {
             $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
                 if (data.status == 'STUDY_SESSION_COMPLETE') {
                     // print "thank you" message in the terminal
-                    term.write("\n");
+                    /* term.write("\n");
                     term.write("    .▀█▀.█▄█.█▀█.█▄.█.█▄▀　█▄█.█▀█.█─█\n");
                     term.write("    ─.█.─█▀█.█▀█.█.▀█.█▀▄　─█.─█▄█.█▄█\n");
+                    */
                     BootstrapDialog.show({
                         title: "Congratulations, you have completed the study!",
                         message: "Please go on to fill in the post-study questionnaire.",

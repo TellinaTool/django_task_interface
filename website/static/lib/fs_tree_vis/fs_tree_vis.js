@@ -66,6 +66,11 @@ function build_fs_tree_vis(data, div_id) {
         ul.selectAll("li.node").style("color", function(d) {
             if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty("extra"))
                 return "red";
+            else if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty('incorrect'))
+                return "orange";
+            else if (d.hasOwnProperty('tag') && (d.tag.hasOwnProperty('ch_missing')
+                     || d.tag.hasOwnProperty('ch_extra') || d.tag.hasOwnProperty('ch_incorrect')))
+                return "orange";
             else 
                 return "black";
         });
