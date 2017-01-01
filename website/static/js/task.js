@@ -18,9 +18,9 @@ $(document).ready(function () {
 
     term.fit();
 
-    $('#bash-terminal').resize(function() {
+    /* $('#bash-terminal').resize(function() {
         term.fit();
-    });
+    }); */
 
     // connect xterm.js terminal to the study session's container
     $.get(`/get_container_port`, function(data) {
@@ -48,7 +48,7 @@ $(document).ready(function () {
                 stdout += event.data;
                 // send the standard output to the backend whenever the user executes a command
                 // in the terminal
-                if (stdout.match(/(.|\n)*study_participant\@[0-9a-z]+\:\~\$ $/)) {
+                if (stdout.match(/(.|\n)*study_participant\@[0-9a-z]+\:[^\n]*\$ $/)) {
                     if (stdout.split('\n').length > 1) {
                         $.post(`/on_command_execution`, {stdout: stdout},
                             function(data) {
@@ -138,6 +138,9 @@ $(document).ready(function () {
             // reset file system
             $.get(`/reset_file_system`, function(data){
                 console.log('Reset ' + data.container_id + ' file system: ' + data.filesystem_status);
+                current_tree_vis = data.current_filesystem;
+                current_tree_vis.name = '/';
+                build_fs_tree_vis(current_tree_vis, "#current-tree-vis");
                 term.clear();
             })
         });

@@ -19,6 +19,8 @@ import docker
 import traceback
 import time
 import subprocess
+import json
+import pathlib
 
 def get_task_session_id(study_session_id, num_tasks_completed):
     return study_session_id + '/task-{}'.format(num_tasks_completed + 1)
@@ -293,8 +295,10 @@ def reset_file_system(request, task_session):
         action_time = timezone.now()
     )
 
-    return json_response({'container_id': container_id},
-                         status=filesystem_status)
+    return json_response({
+        'container_id': container_id,
+        'current_filesystem': json.loads(task.initial_filesystem)
+    },status=filesystem_status)
 
 # --- Study Session Management --- #
 def close_study_session(session, reason_for_close):
