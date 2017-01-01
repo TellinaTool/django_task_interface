@@ -10,7 +10,7 @@ https://docs.google.com/drawings/d/1fwFaJsSLYY8wY7DZC0EBBdU_tgJDlwl9MVl5PLmIu0k
 
 ### Task Interface (Main) Server
 
-The task interface server is implemented with Django. The core implementation can be found in [website/models.py](https://github.com/TellinaTool/tellina_task_interface/blob/2321d22147ad2226bc2fbdcfdc18e969794343ec/website/models.py). It is connected to an SQLite database that stores the information of
+The task interface server is implemented with Django. The core implementation can be found in https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py. It is connected to an SQLite database that stores the information of
 * [a user](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L459)
 * [a task](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L114)
 * [a task assignment](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L208), i.e. the match between a user and a container
