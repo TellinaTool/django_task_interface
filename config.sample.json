@@ -4,6 +4,16 @@
     "alice"
   ],
   "task_duration_in_seconds": 30,
+  "superuser": {
+    "username": "frodo",
+    "password": "gandalf"
+  },
+  "users": [
+    {
+      "first_name": "V",
+      "last_name": "V"
+    }
+  ],
   "tasks": [
     {
       "task_id": "1",
