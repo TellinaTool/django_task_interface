@@ -9,7 +9,7 @@ wss.on('connection', function connection(ws) {
     name: 'xterm-color',
     // cols: 80,
     // rows: 24,
-    cwd: '/home/study_participant',
+    cwd: '/home/me',
     env: process.env
   });
 
