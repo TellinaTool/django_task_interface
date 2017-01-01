@@ -34,7 +34,7 @@ server is done through HTTP AJAX calls.
          <div id="workspace" class="francine" data-reactid="2">
             <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" data-reactid="4">
                <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj" data-reactid="5">
-                  <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
+                  <section style="margin-left: 10px" class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
                      {% if task_part %}
                      Tellina User Study - Part {{task_part}}
                      {% endif %}
@@ -52,9 +52,7 @@ server is done through HTTP AJAX calls.
                            </div>
                         </div>
                      </div>
-                     {% if first_name and last_name %}
-                     <span>{{first_name}}&nbsp;{{last_name}}&nbsp;</span>
-                     {% endif %}
+                     
                      <div class="_3bI54mnYg5essxyEwnBsko _1f1KmfrKUtLxZllTyx0TrC _3nDVtg6dS-0_R6p0nDL-1S" data-reactid="30">
                         <div class="_3wrXGt5j2uE4fjlPLrDXEA" data-reactid="31">
                            <div class="Y8dknuoW8NLiudcM-zQib _1pl0auxsnexFW5uqwCQW_x _2tbl3cOSPjsfIWBMlHZgcG" data-reactid="33">
@@ -62,6 +60,9 @@ server is done through HTTP AJAX calls.
                            </div>
                         </div>
                      </div>
+                     {% if first_name and last_name %}
+                     <span style="margin-right:10px;">{{first_name}}&nbsp;{{last_name}}&nbsp;</span>
+                     {% endif %}
                   </section>
                </nav>
             </header>
@@ -155,7 +156,7 @@ server is done through HTTP AJAX calls.
    <nav class="y7tvmmg7fKu4JpdaYECtN uLjMYUmq7NHQCvtXjbgKs _3bR5y3xpD2FPv1oUg-7n_p" data-reactid="111">
       <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="112">
          <button class="fcn-button fcn-button--warning" id="quit-button">
-            <i class="glyphicon glyphicon-warning-sign"></i>&nbsp;Quit Task
+            <i class="glyphicon glyphicon-warning-sign"></i>&nbsp;Give Up Current Task
          </button>
       </section>
       <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD" data-reactid="117">
