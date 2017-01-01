@@ -10,36 +10,38 @@ https://docs.google.com/drawings/d/1fwFaJsSLYY8wY7DZC0EBBdU_tgJDlwl9MVl5PLmIu0k
 
 ### Task Interface (Main) Server
 
-The task interface server is implemented with Django. The core implementation can be found in https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py. It is connected to an SQLite database that stores the information of
-* [a user](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L459)
-* [a task](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L114)
-* [a task assignment](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L208), i.e. the match between a user and a container
-* [a task result](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L154), i.e. if a user has successfully completed a task, how much time is spent, etc.
+The task interface server is implemented with Django. The core implementation can be found in [website/models.py](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py) and [website/views.py](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/views.py). It is connected to an SQLite database that stores the information of
+* [user](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L30)
+* [task](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L49)
+* [container](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L72)
+* [user study session](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L161)
+* [task session](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L195)
+* [user's action history](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L221)
 
-The task interface server creates a "[session](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L208)" whenever a user starts a new task (initial login or task switch). When a session is initialized, the user's container for previous task is [destroyed](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L296) and a new one is [created](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L303). 
+The task interface server creates a "[user study session](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L161)" whenever a user starts a new task (initial login or task switch). A container that can be uniquely identified is [created](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/views.py#400) for a user study session. 
 
-While a user is working on a task, the task interface server periodically [checks](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L409) if the task times out or has been completed.
+While a user is working on a task, the task interface server periodically [checks](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/models.py#L409) if the task times out.
 
-(The Django configuration files are in the folder [tellina_task_interface/](https://github.com/TellinaTool/tellina_task_interface/tree/websocket_refactor/tellina_task_interface), which in general doesn't need to be changed.)
+When the user executes a command, the difference between the current stdout/file system and the goal is [compared](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/views.py#L244). If the task is [completed] (https://github.com/TellinaTool/tellina_task_interface/blob/master/website/views.py#L247), the user is redirected to the next one.
+
+(The Django configuration files are in the folder [tellina_task_interface/](https://github.com/TellinaTool/tellina_task_interface/tree/master/tellina_task_interface), which in general doesn't need to be changed.)
 
 ### Terminal (File System) Server
 
 An ext4 file system with the name `{study_session_id}.ext4` is created for each study session. The file system is mounted to location `/{study_session_id}/` on the VM. The script used to create the file system on the VM can be found [here](https://github.com/TellinaTool/tellina_task_interface/blob/master/make_filesystem.bash).
-The home directory `/{study_session_id}/home` on this physical location is [bound](https://github.com/TellinaTool/tellina_task_interface/blob/precise64_box/website/models.py#L111) to path /home/study_participant/ in the docker container of that study session.
+The home directory `/{study_session_id}/home` on this physical location is [bound](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/models.py#L116) to path /home/study_participant/ in the docker container of that study session.
 
-The docker container server is implemented with [Node.js](https://nodejs.org/en/). The core implementation can be found in [backend_container_image/app.js](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/backend_container_image/app.js).
+The docker container server is implemented with [Node.js](https://nodejs.org/en/). The core implementation can be found in [backend_container_image/app.js](https://github.com/TellinaTool/tellina_task_interface/blob/master/backend_container_image/app.js).
 
 ### WebSocket Proxy Server
 
-The websocket proxy server is also implemented with Node.js. The core implementation can be found in [proxy_image/app.js](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/proxy_image/app.js).
+The websocket proxy server is also implemented with Node.js. The core implementation can be found in [proxy_image/app.js](https://github.com/TellinaTool/tellina_task_interface/blob/master/proxy_image/app.js).
 
 ### Front-end
 
-The terminal is implemented with the third-party plugin [Xterm.js](https://github.com/TellinaTool/tellina_task_interface/tree/websocket_refactor/website/static/lib/xterm.js). The main custom implementation can be found [here](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#L38).
+The terminal is implemented with the third-party plugin [Xterm.js](https://github.com/TellinaTool/tellina_task_interface/tree/master/website/static/lib/xterm.js). The main custom implementation can be found [here](https://github.com/TellinaTool/tellina_task_interface/blob/master/website/static/js/task.js#L5).
 
-The front-end also periodically (every 0.5s) polls the task interface server for 
-* [verifying](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#L97) if the task is completed or times out, if so, update task state 
-* [most recent file system status] (https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#L105)
+The front-end periodically (every 0.5s) polls the task interface server for 
 * if task status shows complete or time-out, proceed to the [next task](https://github.com/TellinaTool/tellina_task_interface/blob/websocket_refactor/website/static/js/task.js#L20).
 
 ## Install dependencies
