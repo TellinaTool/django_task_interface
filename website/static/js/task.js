@@ -148,13 +148,13 @@ $(document).ready(function () {
         $("#quit-button").click(function() {
             // discourage a user from quiting a task
             BootstrapDialog.show({
-                title: "Reminder: we hope everyone can make use of all time allocated for a task. ",
+                title: "We hope everyone try harder before giving up a task!",
                 message: "If you give up a task, the information we get from the study wil be less accurate. Would you like to proceed anyway?",
                 type: BootstrapDialog.TYPE_WARNING,
                 buttons: [
                 {
                     icon: 'glyphicon glyphicon-warning-sign',
-                    label: " Yes, proceed",
+                    label: " Yes, give up.",
                     cssClass: "btn-danger",
                     action: function(dialogItself) {
                         dialogItself.close();
