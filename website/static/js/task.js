@@ -21,6 +21,7 @@ $(document).ready(function () {
     // connect xterm.js terminal to the study session's container
     $.get(`/get_container_port`, function(data) {
         var container_port = data.container_port;
+        var task_time_out;
 
         var xtermWebSocket = new WebSocket(`ws:\/\/${location.hostname}:10412/${container_port}`);
         xtermWebSocket.onopen = function() {
@@ -53,19 +54,22 @@ $(document).ready(function () {
                                 console.log(current_tree_vis);
                                 build_fs_tree_vis(current_tree_vis, "#current-tree-vis");
                                 if (data.status == 'TASK_COMPLETED') {
-                                    setTimeout(BootstrapDialog.show({
-                                        title: "Great Job!",
-                                        message: "You passed task! Please proceed to the next task.",
-                                        buttons: [{
-                                            label: "Proceed",
-                                            cssClass: "btn-primary",
-                                            action: function(dialogItself) {
-                                                dialogItself.close();
-                                                switch_task('passed');
-                                            }
-                                        }],
-                                        closable: false,
-                                    }), 1000);
+                                    clearTimeout(task_time_out);
+                                    setTimeout(function() {
+                                        BootstrapDialog.show({
+                                            title: "Great Job!",
+                                            message: "You passed task! Please proceed to the next task.",
+                                            buttons: [{
+                                                label: "Proceed",
+                                                cssClass: "btn-primary",
+                                                action: function(dialogItself) {
+                                                    dialogItself.close();
+                                                    switch_task('passed');
+                                                }
+                                            }],
+                                            closable: false
+                                        });
+                                    }, 300);
                                 }
                             }
                         );
@@ -87,9 +91,7 @@ $(document).ready(function () {
             }, 500);
             // send stdout to server
             setInterval(function() {
-
-                stdout = '';
-            }, 500); */
+            */
         };
 
         xtermWebSocket.onerror = function(event) {
@@ -101,8 +103,10 @@ $(document).ready(function () {
 
         // start timing the task
         $.get(`/get_task_duration`, function(data) {
-            setTimeout(function() {
+            task_time_out = setTimeout(function() {
                 console.log('task time out');
+                clearTimeout(task_time_out);
+
                 // prompt the user that they have to move on to the next task
                 BootstrapDialog.show({
                     title: "Time's Up",

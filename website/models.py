@@ -26,6 +26,7 @@ import subprocess
 PART_I_TASKS = [1]
 PART_II_TASKS = [2]
 
+
 class User(models.Model):
     """
     Describes a study participant.
@@ -213,7 +214,7 @@ class TaskSession(models.Model):
     session_id = models.TextField(primary_key=True)
     task = models.ForeignKey(Task)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField(default='1990-09-27 00:00:00')
+    end_time = models.DateTimeField(default='1111-11-11 00:00:00')
     status = models.TextField()
 
 
@@ -225,8 +226,7 @@ class ActionHistory(models.Model):
     :member task_session: The task session during which the action is taken.
     :member action: The action performed by the user, including
         - bash command issued by the user in the terminal
-        - `quit` if the user quit the task
-        - `reset` if the user resets the filesystem
+        - `__reset__` if the user resets the filesystem
     :member action_time: The time the action is taken.
     """
     task_session = models.ForeignKey(TaskSession, on_delete=models.CASCADE)
