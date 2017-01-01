@@ -19,6 +19,8 @@ import docker
 import traceback
 import time
 import subprocess
+import json
+import pathlib
 
 def get_task_session_id(study_session_id, num_tasks_completed):
     return study_session_id + '/task-{}'.format(num_tasks_completed + 1)
