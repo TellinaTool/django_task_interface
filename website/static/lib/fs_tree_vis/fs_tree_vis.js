@@ -3,12 +3,16 @@
 // The filesystem json should be one created from fs_diff.py
 function build_fs_tree_vis(data, div_id) {
 
+    console.log(data);
+
     var init_time = true;
     var id = 0;
 
     var tree = d3.layout.treelist()
         .childIndent(15)
         .nodeHeight(22);
+
+    $(div_id).empty();
     var ul = d3.select(div_id).append("ul").classed("treelist", "true");
 
     function render(data, parent) {
@@ -30,7 +34,7 @@ function build_fs_tree_vis(data, div_id) {
         });
         //entered nodes
         var entered = nodeEls.enter().append("li").classed("node", true)
-            .style("top", parent.y +"px")
+            .style("margin-top", parent.y +"px")
             .style("opacity", 0)
             .style("height", tree.nodeHeight() + "px")
             .on("click", function (d) {
@@ -48,7 +52,7 @@ function build_fs_tree_vis(data, div_id) {
         entered.append("span").attr("class", function (d) {
             var icon = d.children ? " glyphicon-chevron-down"
                 : d._children ? "glyphicon-chevron-right" : "";
-            return "caret glyphicon " + icon;
+            return "glyphicon " + icon;
         });
         //add icons for folder for file
         entered.append("span").attr("class", function (d) {
@@ -60,25 +64,27 @@ function build_fs_tree_vis(data, div_id) {
         ul.selectAll("li.node").style("color", function(d) {
             if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty("extra"))
                 return "red";
+            else 
+                return "black";
         });
 
         //add text
         entered.append("span").attr("class", "filename")
             .html(function (d) { return d.name; });
         //update caret direction
-        nodeEls.select("span.caret").attr("class", function (d) {
+        nodeEls.select("span").attr("class", function (d) {
             var icon = d.children ? " glyphicon-chevron-down"
                 : d._children ? "glyphicon-chevron-right" : "";
-            return "caret glyphicon " + icon;
+            return "glyphicon " + icon;
         });
         //update position with transition
-        nodeEls.transition().duration(duration)
-            .style("top", function (d) { return (d.y - tree.nodeHeight()) + "px";})
-            .style("left", function (d) { return d.x + "px"; })
+        nodeEls//.transition().duration(duration)
+            .style("margin-top", function (d) { return (d.y - tree.nodeHeight()) + "px";})
+            .style("margin-left", function (d) { return d.x + "px"; })
             .style("opacity", function (d) {
                     if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty("missing"))
                         return 0.3;
-                    else 
+                    else
                         return 1;
                 }
             );
@@ -88,13 +94,14 @@ function build_fs_tree_vis(data, div_id) {
     render(data, data);
 
     // collapse the directory if it is the top level non-modified field
-    if (init_time) {
-        d3.select("body").selectAll("li.node").each(function(d, i) {
+    /*if (init_time) {
+        d3.select(div_id).selectAll("li.node").each(function(d, i) {
+            // decide which folders to hide
             if (d.tag == "higest_non_modified") {
                 var onClickFunc = d3.select(this).on("click");
                 onClickFunc.apply(this, [d, i]);
             }
         });
         init_time = false;
-    }
+    }*/
 }

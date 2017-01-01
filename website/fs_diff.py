@@ -2,25 +2,25 @@ import json
 from pprint import pprint
 
 def fsdiff(fs1, fs2):
-    """ Given two json files each representating a file system, 
-        merge them into a json file that highlights the difference of the two file systems.
+  """ Given two json files each representating a file system, 
+      merge them into a json file that highlights the difference of the two file systems.
 
-        Input json format: 
-        fs: {
-            "name": <string>
-            "children": list<fs> //optional
-        }
+      Input json format: 
+      fs: {
+          "name": <string>
+          "children": list<fs> //optional
+      }
 
-        Output json format:
-        fs: {
-            "name": <string>
-            "children": list<fs> //optional
-            "tag": ... // indication whether the node is missing or something else, includes:
-                       // (1) removal: a file/dir is in the target FS but not in the current FS
-                       // (2) addition: a file/dir is in current FS but not in target FS
-                       // (3) child_diff: a dir that is in both FS but some child of the dir has the "removal" or "addition" tags.
-        }
-    """
+      Output json format:
+      fs: {
+          "name": <string>
+          "children": list<fs> //optional
+          "tag": ... // indication whether the node is missing or something else, includes:
+                     // (1) removal: a file/dir is in the target FS but not in the current FS
+                     // (2) addition: a file/dir is in current FS but not in target FS
+                     // (3) child_diff: a dir that is in both FS but some child of the dir has the "removal" or "addition" tags.
+      }
+  """
   new_fs = {}
   fs1_is_dir = "children" in fs1
   fs2_is_dir = "children" in fs2
