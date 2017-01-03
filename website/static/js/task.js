@@ -48,13 +48,11 @@ $(document).ready(function () {
                 stdout += event.data;
                 // send the standard output to the backend whenever the user executes a command
                 // in the terminal
-                if (stdout.match(/(.|\n)*\nme\@[0-9a-z]+\:[^\n]*\$ $/)) {
+                if (stdout.match(/(.|\n)*me\@[0-9a-z]{12}\:[^\n]*\$ $/)) {
                     if (stdout.split('\n').length > 1) {
                         $.post(`/on_command_execution`, {stdout: stdout},
                             function(data) {
-                                console.log(data.filesystem_diff);
                                 current_tree_vis = data.filesystem_diff;
-                                current_tree_vis.name = '/';
                                 console.log(current_tree_vis);
                                 build_fs_tree_vis(current_tree_vis, "#current-tree-vis");
                                 if (data.status == 'TASK_COMPLETED') {
@@ -74,7 +72,7 @@ $(document).ready(function () {
                                             closable: false
                                         });
                                     }, 300);
-                                }
+                                } 
                             }
                         );
                     }
@@ -82,20 +80,6 @@ $(document).ready(function () {
                     stdout = '';
                 }
             };
-
-            /*
-            // send stdin to server
-            setInterval(function() {
-                $.post(`/append_stdin?access_code=${accessCode}&session_id=${session_id}`, stdin,
-                    function(data, textStatus, jqXHR) {
-                        console.log(`append STDIN status ${jqXHR.status}`);
-                    }
-                );
-                stdin = '';
-            }, 500);
-            // send stdout to server
-            setInterval(function() {
-            */
         };
 
         xtermWebSocket.onerror = function(event) {
@@ -128,9 +112,8 @@ $(document).ready(function () {
             }, parseInt(data.duration) * 10000);
 
             // initial directory visualization
-            current_tree_vis = data.current_filesystem;
-            current_tree_vis.name = '/';
-            build_fs_tree_vis(current_tree_vis, "#current-tree-vis");
+            build_fs_tree_vis(data.current_filesystem, "#current-tree-vis");
+            console.log(data.goal_filesystem);
             build_fs_tree_vis(data.goal_filesystem, "#goal-tree-vis");
         });
 
@@ -138,9 +121,7 @@ $(document).ready(function () {
             // reset file system
             $.get(`/reset_file_system`, function(data){
                 console.log('Reset ' + data.container_id + ' file system: ' + data.filesystem_status);
-                current_tree_vis = data.current_filesystem;
-                current_tree_vis.name = '/';
-                build_fs_tree_vis(current_tree_vis, "#current-tree-vis");
+                build_fs_tree_vis(data.current_filesystem, "#current-tree-vis");
                 term.clear();
             })
         });

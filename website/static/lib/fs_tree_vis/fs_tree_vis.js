@@ -4,8 +4,6 @@
 
 function build_fs_tree_vis(data, div_id) {
 
-    console.log(data);
-
     var init_time = true;
     var id = 0;
 
@@ -87,6 +85,21 @@ function build_fs_tree_vis(data, div_id) {
         // make the glyphicon smaller, and align cneter
         nodeEls.select("span").style("font-size", "60%");
         nodeEls.select("span").style("vertical-align", "40%");
+
+        nodeEls.classed('correct_select', function(d) {
+            return d.hasOwnProperty('tag') && d.tag.hasOwnProperty('to_select')
+            && !d.tag.hasOwnProperty('missing') && (!d.tag.hasOwnProperty('selected') || d.tag.selected === 0);
+        })
+
+        nodeEls.classed('extra_select', function(d) {
+            return d.hasOwnProperty('tag') && !d.tag.hasOwnProperty('missing')
+            && (d.tag.hasOwnProperty('selected') && d.tag.selected === 1);
+        })
+
+        nodeEls.classed('miss_select', function(d) {
+            return d.hasOwnProperty('tag') && d.tag.hasOwnProperty('to_select')
+            && !d.tag.hasOwnProperty('missing') && (d.tag.hasOwnProperty('selected') && d.tag.selected === -1);
+        })
 
         //update position with transition: if 
         nodeEls//.transition().duration(duration)

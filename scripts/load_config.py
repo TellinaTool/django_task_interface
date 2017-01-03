@@ -5,6 +5,7 @@ Run it with `python3 manage.py runscript load_config`.
 """
 
 from website.models import *
+from website.filesystem import *
 
 import json
 import datetime
@@ -37,13 +38,12 @@ def run():
             access_code = access_code
         )
     for task in config['tasks']:
-        type = task['type']
-        if type == 'stdout':
+        if task['type'] == 'stdout':
             goal = task['goal']
-        elif type == 'filesystem':
-            goal = json.dumps(task['goal'])
         else:
-            raise Exception('unrecognized task type: {}'.format(type))
+            goal = task['goal']
+            filesystem_sort(goal)
+            goal = json.dumps(goal)
         Task.objects.create(
             task_id = task['task_id'],
 	        type=task['type'],

@@ -45,7 +45,6 @@
         // console.log(characterHeight);
         // console.log(rows);
         cols = parseInt(availableWidth / characterWidth);
-        console.log(cols);
         geometry = { cols: cols, rows: rows };
         return geometry;
     };

@@ -65,7 +65,9 @@ and four are incorrect.
 import collections
 import json
 import pathlib
+import re
 import copy, os, pwd, grp, shutil
+from .constants import *
 
 # file attributes
 _NAME = 0
@@ -190,6 +192,8 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
         return node
 
     fs = create_filesystem(path, attrs)
+    fs.name = HOME
+
     return fs.to_dict()
 
 
@@ -199,7 +203,8 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
     if not root_path.exists():
         return 'ROOT_PATH_DOES_NOT_EXIST'
 
-    path = root_path / tree['name'] if tree['name'] != '/' else root_path
+    path = root_path / tree['name'] if not tree['name'] in ['~', '/'] \
+        else root_path
 
     if tree['type'] == 'file':
         if 'size' in tree['attributes']:
@@ -290,7 +295,7 @@ def filesystem_diff(fs1, fs2):
 
     def mark(node, tag):
         """Mark a node and its descendants with a specific tag."""
-        node['tag'] = { tag : 1 }
+        add_tag(node, tag)
         if node['type'] == 'directory':
             for child in node['children']:
                     mark(child, tag)
@@ -299,7 +304,7 @@ def filesystem_diff(fs1, fs2):
         """Mark a node and its descendants with a specific tag and make a deep
             copy."""
         node2 = copy.deepcopy(node)
-        node2['tag'] = { tag : 1 }
+        add_tag(node2, tag)
         if node2['type'] == 'directory':
             for child in node2['children']:
                 mark(child, tag)
@@ -331,6 +336,8 @@ def filesystem_diff(fs1, fs2):
                     # comparing two files
                     tag = attribute_diff(child1['attributes'],
                                          child2['attributes'])
+                    if tag_exists(child2, 'to_select'):
+                        add_tag(child1, 'to_select')
                     annotated_children.append(markcopy(child1, tag))
                     if tag:
                         errors[tag] += 1
@@ -348,6 +355,8 @@ def filesystem_diff(fs1, fs2):
                 if child2['type'] == 'directory':
                     # comparing two directories
                     annotated_child = filesystem_diff(child1, child2)
+                    if tag_exists(child2, 'to_select'):
+                        add_tag(annotated_child, 'to_select')
                     annotated_children.append(annotated_child)
                     if annotated_child['tag']:
                         # for key in annotated_child['tag']:
@@ -385,8 +394,19 @@ def filesystem_diff(fs1, fs2):
 
     annotated_fs1['children'] = annotated_children
     annotated_fs1['tag'] = errors
+    if tag_exists(fs2, 'to_select'):
+        add_tag(annotated_fs1, 'to_select')
 
     return annotated_fs1
+
+
+def filesystem_sort(fs):
+    if fs['type'] == 'file':
+        return
+    else:
+        for child in fs['children']:
+            filesystem_sort(child)
+        fs['children'] = sorted(fs['children'], key=lambda x:x['name'])
 
 
 def attribute_diff(attr1, attr2):
@@ -399,6 +419,94 @@ def attribute_diff(attr1, attr2):
     return tag
 
 
+def annotate_selected_path(fs, task_type, paths):
+    """Annotate the file system with the selected path."""
+    for path in paths:
+        print(path.as_posix())
+        steps = path.as_posix().split('/')
+        stack = [fs]
+        node = fs
+        stop_search = False
+        for i in range(1, len(steps)):
+            step = steps[i]
+            for child in node['children']:
+                print(child['name'])
+                print(step)
+                if child['name'] == step:
+                    print(i)
+                    print(len(steps))
+                    if tag_exists(child, 'missing'):
+                        # file selection is not denoted in extra or missing nodes
+                        stop_search = True
+                        break
+                    if i == len(steps) - 1:
+                        if task_type == 'filesystem':
+                            # file search commands does not affect task completion
+                            # simply show what is selected
+                            add_tag(child, 'selected', 0)
+                        else:
+                            if tag_exists(child, 'to_select'):
+                                add_tag(child, 'selected', 0)
+                            else:
+                                add_tag(child, 'selected', 1)
+                                for ancestor in stack:
+                                    inc_tag(ancestor, 'incorrect')
+                    else:
+                        node = child
+                        stack.append(node)
+                    break
+            if stop_search:
+                break
+
+    def mark_unselected(node):
+        if not tag_exists(node, 'missing'):
+            incorrect = False
+            if tag_exists(node, 'to_select') and not tag_exists(node, 'selected'):
+                add_tag(node, 'selected', -1)
+                incorrect = True
+            if node['type'] == 'directory':
+                for child in node['children']:
+                    if mark_unselected(child):
+                        inc_tag(node, 'incorrect')
+                        incorrect = True
+            return incorrect
+        else:
+            return True
+
+    mark_unselected(fs)
+
+
+def tag_exists(node, tag):
+    if 'tag' in node:
+       if tag in node['tag']:
+           return True
+    return False
+
+
+def add_tag(node, tag, value=1):
+    if not 'tag' in node:
+        node['tag'] = {}
+    node['tag'][tag] = value
+
+
+def inc_tag(node, tag):
+    if not 'tag' in node:
+        node['tag'] = {}
+        node['tag'][tag] = 1
+    else:
+        node['tag'][tag] += 1
+
+
+def extract_path(input):
+    """Extract absolute file paths from an input string."""
+    path_pattern = re.compile("([^ ]*\/)+[^ ]*$")
+    match = re.search(path_pattern, input)
+    if match:
+        return match.group(0).strip()
+    else:
+        return None
+
+
 if __name__=="__main__":
     with open('fs1.json') as data_file:    
         fs1 = json.load(data_file)
@@ -409,7 +517,3 @@ if __name__=="__main__":
     #tag_intermediate(diff_fs)
     #find_highest_non_modified(diff_fs)
     print(json.dumps(fs))
-
-
-
-
