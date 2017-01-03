@@ -2423,7 +2423,7 @@
     overflow-y: hidden;
     -webkit-transition: all 0.4s ease-out;
     transition: all 0.4s ease-out;
-    background-color: white
+    background-color: white;
 }
 .accordion-section-body .accordion-section-body__no-bg {
     background-color: #f1f2f3

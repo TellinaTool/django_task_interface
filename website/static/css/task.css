@@ -50,11 +50,14 @@ nav {
 	padding-left: 0px;
 }
 
+.terminal-headline {
+    color: #fffff;
+}
+
 .terminal-header {
 	background: #40454f;
-	font-weight: light;
 }
 
 .terminal-container {
-	height: 95%;
+	height: 100%;
 }
