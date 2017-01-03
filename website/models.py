@@ -23,8 +23,8 @@ import subprocess
 # from typing import Optional
 
 
-PART_I_TASKS = [1]
-PART_II_TASKS = [2, 3]
+PART_I_TASKS = [2]
+PART_II_TASKS = [3]
 
 
 class User(models.Model):
