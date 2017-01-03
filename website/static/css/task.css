@@ -19,6 +19,19 @@ nav {
 .tree-vis-panel .selected{
 	text-decoration: underline;
 }
+
+.tree-vis-panel .correct_select{
+    border: 1px solid black ;
+}
+
+.tree-vis-panel .extra_select{
+    border: 1px solid red ;
+}
+
+.tree-vis-panel .miss_select{
+    border: 1px solid rgba(0, 0, 0, .3);
+}
+
 .tree-vis-panel .node {
 	position: absolute;
 	list-style: none;

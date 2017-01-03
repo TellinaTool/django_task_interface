@@ -8,16 +8,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
-from .filesystem import dict_2_disk, disk_2_dict, filesystem_diff
+from .filesystem import *
 from .constants import *
 
 from . import functions
-import http.cookies
-import uuid
-import datetime
-import docker
-import traceback
-import time
 import subprocess
 import json
 import pathlib
@@ -88,13 +82,14 @@ def get_task_duration(request, task_session):
     study_session = task_session.study_session
     container = study_session.container
 
-    goal = task.initial_filesystem if task.type == 'stdout' else task.goal
+    goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
+        else task.goal
 
     return json_response({
         # "current_filesystem": task.initial_filesystem,
         "current_filesystem": disk_2_dict(
             pathlib.Path('/{}/home'.format(container.filesystem_name))),
-        "goal_filesystem": json.loads(goal),
+        "goal_filesystem": json.loads(goal_filesystem),
         "duration": task.duration.seconds
     })
 
@@ -243,6 +238,18 @@ def on_command_execution(request, task_session):
         action_time = timezone.now()
     )
 
+    # check if there are file path in the stdout
+    stdout_lines = stdout.split('\n')
+    current_dir = stdout_lines[-1][16:-2]
+    stdout_paths = []
+    for stdout_line in stdout_lines[1:-1]:
+        path = extract_path(stdout_line)
+        if path and not path in ['.', './']:
+            if path.startswith('./'):
+                path = path[2:]
+            stdout_paths.append(pathlib.Path(
+                os.path.join(current_dir, path)))
+
     # compute distance between current file system and the goal file system
     study_session = task_session.study_session
     container = study_session.container
@@ -251,13 +258,17 @@ def on_command_execution(request, task_session):
     goal = task.initial_filesystem if task.type == 'stdout' else task.goal
     fs_diff = filesystem_diff(current_file_system, json.loads(goal))
 
+    # annotate the fs_diff with the stdout_paths
+    annotate_selected_path(fs_diff, task.type, stdout_paths)
+
     task_completed = False
     if task.type == 'stdout':
         # check if stdout signals task completion
-        stdout_lines = stdout.split('\n')
+        # the files/directories being checked must be presented in full paths
+        # the file/directory names cannot contain spaces
         if task.goal in stdout_lines[-2]:
             task_completed = True
-    elif task.type == 'filesystem':
+    elif task.type == 'filesearch' or task.type == 'filesystem':
         # check if the current file system is the same as the goal file system
         if not fs_diff['tag']:
             task_completed = True
