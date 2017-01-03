@@ -420,7 +420,7 @@ def attribute_diff(attr1, attr2):
 
 
 def annotate_selected_path(fs, task_type, paths):
-    """Annotate the file system with the selected path."""
+    """Annotate the paths that are selected in the stdout in a file system."""
     for path in paths:
         print(path.as_posix())
         steps = path.as_posix().split('/')
