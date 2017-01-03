@@ -29,7 +29,7 @@ nav {
 }
 
 .tree-vis-panel .miss_select{
-    border: 1px solid rgba(0, 0, 0, .3);
+    border: 1px solid orange ;
 }
 
 .tree-vis-panel .node {
