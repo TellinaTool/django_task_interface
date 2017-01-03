@@ -96,9 +96,12 @@ function build_fs_tree_vis(data, div_id) {
             && (d.tag.hasOwnProperty('selected') && d.tag.selected === 1);
         })
 
+        // there are two different missed selections:
+        // 1. a file to be selected is not selected by the issued command
+        // 2. a file to be selected is missing from the current directory (likely caused by accidental deletion)
         nodeEls.classed('miss_select', function(d) {
             return d.hasOwnProperty('tag') && d.tag.hasOwnProperty('to_select')
-            && !d.tag.hasOwnProperty('missing') && (d.tag.hasOwnProperty('selected') && d.tag.selected === -1);
+            && (d.tag.hasOwnProperty('missing') || (d.tag.hasOwnProperty('selected') && d.tag.selected === -1));
         })
 
         //update position with transition: if 
