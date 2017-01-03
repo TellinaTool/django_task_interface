@@ -60,6 +60,15 @@ and four are incorrect.
                     exists in the target FS, but the attribute value in incorrect
                     in this case the correct attribute value is added as a suffix
                     to the current value
+               # (6) to_select (filesearch tasks only): a node should be selected in the
+                    target
+               # (7) selected (filesearch tasks only): correctness of a node selection
+                    operation, which takes the following three values:
+                    -1: a node is in the target but was not selected by the last 
+                        executed command
+                    0: a node is corrected selected
+                    1: a node is not in the target but was selected by the last 
+                        executed command
 """
 
 import collections
