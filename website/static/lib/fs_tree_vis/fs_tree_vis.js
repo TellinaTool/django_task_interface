@@ -87,8 +87,8 @@ function build_fs_tree_vis(data, div_id) {
         nodeEls.select("span").style("vertical-align", "40%");
 
         nodeEls.classed('correct_select', function(d) {
-            return d.hasOwnProperty('tag') && d.tag.hasOwnProperty('to_select')
-            && !d.tag.hasOwnProperty('missing') && (!d.tag.hasOwnProperty('selected') || d.tag.selected === 0);
+            return d.hasOwnProperty('tag') && !d.tag.hasOwnProperty('missing')
+            && ((!d.tag.hasOwnProperty('selected') && d.tag.hasOwnProperty('to_select')) || d.tag.selected === 0);
         })
 
         nodeEls.classed('extra_select', function(d) {
