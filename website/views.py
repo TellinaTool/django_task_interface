@@ -170,7 +170,7 @@ def get_current_task(request, task_session):
     task = task_session.task
 
     study_session = task_session.study_session
-    if study_session.num_tasks_completed < len(PART_I_TASKS):
+    if study_session.num_tasks_completed < len(TASK_BLOCK_I):
         task_part = 'I'
     else:
         task_part = 'II'
@@ -204,13 +204,13 @@ def pick_task(num_tasks_completed):
     """
     Pick a task from the database for the user to work on next.
     """
-    if PART_I_TASKS is not None:
-        if num_tasks_completed < len(PART_I_TASKS):
+    if TASK_BLOCK_I is not None:
+        if num_tasks_completed < len(TASK_BLOCK_I):
             # user is in the first part of the study
-            task_id = PART_I_TASKS[num_tasks_completed]
+            task_id = TASK_BLOCK_I[num_tasks_completed]
         else:
             # user is in the second part of the study
-            task_id = PART_II_TASKS[num_tasks_completed - len(PART_I_TASKS)]
+            task_id = TASK_BLOCK_II[num_tasks_completed - len(TASK_BLOCK_I)]
     else:
         # randomly select an unseen task from the database
         raise NotImplementedError

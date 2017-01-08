@@ -23,8 +23,8 @@ import subprocess
 # from typing import Optional
 
 
-PART_I_TASKS = [2]
-PART_II_TASKS = [3]
+TASK_BLOCK_I = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+TASK_BLOCK_II = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
 
 class User(models.Model):
@@ -35,6 +35,11 @@ class User(models.Model):
         Participants will use this to log into the task interface.
     :member first_name: user's first name
     :member last_name: user's last name
+    :member group: user's group assignment
+        Group 1: task block 1 + Tellina / task block 2 + Google
+        Group 2: task block 1 + Google / task block 2 + Tellina
+        Group 3: task block 2 + Tellina / task block 1 + Google
+        Group 4: task block 2 + Google / task block 1 + Tellina
 
     :member treatment_order: a user is 50/50 randomly assigned one of the
         following two treatment orders
@@ -44,7 +49,7 @@ class User(models.Model):
     access_code = models.TextField()
     first_name = models.TextField()
     last_name = models.TextField()
-    treatment_order = models.TextField()
+    group = models.TextField()
 
 class Task(models.Model):
     """
