@@ -40,11 +40,6 @@ class User(models.Model):
         Group 2: task block 1 + Google / task block 2 + Tellina
         Group 3: task block 2 + Tellina / task block 1 + Google
         Group 4: task block 2 + Google / task block 1 + Tellina
-
-    :member treatment_order: a user is 50/50 randomly assigned one of the
-        following two treatment orders
-        - Tellina / Google
-        - Google / Tellina
     """
     access_code = models.TextField()
     first_name = models.TextField()
