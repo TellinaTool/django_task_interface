@@ -161,19 +161,17 @@ def get_current_task(request, task_session):
     Args:
         task_session
 
-    Returns the
-        - description
-        - goal directory
-        - order number in the study session
-    of the currently served task in the user's study session.
+    Returns the information of the currently task in the user's study session.
     """
     task = task_session.task
 
     study_session = task_session.study_session
+    user = study_session.user
     if study_session.num_tasks_completed < len(PART_I_TASKS):
         task_part = 'I'
     else:
         task_part = 'II'
+    if user.
     order_number = study_session.num_tasks_completed + 1
 
     # Initialize filesystem
@@ -187,8 +185,9 @@ def get_current_task(request, task_session):
 
     context = {
         "status": filesystem_status,
-        "task_description": task.description,
         "task_part": task_part,
+        "task_part_instruction": task_part_instruction,
+        "task_description": task.description,
         "task_goal": task.goal,
         "task_order_number": order_number,
         "total_num_tasks": study_session.total_num_tasks,
@@ -219,6 +218,7 @@ def pick_task(num_tasks_completed):
     return task
 
 # --- Terminal I/O Management --- #
+
 @task_session_id_required
 @csrf_exempt
 def on_command_execution(request, task_session):
@@ -467,4 +467,3 @@ def sample(request):
     template = loader.get_template('sample.html')
     context = {}
     return HttpResponse(template.render(context, request))
-
