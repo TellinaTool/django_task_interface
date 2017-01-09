@@ -157,7 +157,7 @@ class FileAttributes(object):
         d = {}
         for attr in self.__dict__:
             if self.__dict__[attr] is not None:
-                d[attr] = self.__dict__[attr]
+                d[attr] = str(self.__dict__[attr])
         return d
 
 
@@ -177,7 +177,7 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
                 node.children.append(subtree)
         else:
             node = File(path.name)
-            if len(attrs) > 1:
+            if len(attrs) > 0:
                 file_stat = os.stat(path.as_posix())
             for attr in attrs:
                 if attr == _USER:
@@ -216,7 +216,8 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
         else root_path
 
     if tree['type'] == 'file':
-        if 'size' in tree['attributes']:
+        attrs = tree['attributes'] if 'attributes' in tree else []
+        if 'size' in attrs:
             # 'size' is the only attribute we consider that have something
             # to do with file content (besides file content itself)
             size = tree['attributes']['size']
@@ -234,6 +235,8 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
                     size = int(filter(str.isdigit, size)) * pow(1024, 4)
                 else:
                     raise NotImplementedError
+            else:
+                size = int(size)
             create_file_by_size(path.as_posix(), size)
         else:
             try:
@@ -242,7 +245,6 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path):
             except Exception as err:
                 return str(err)
 
-        attrs = tree['attributes']
         if 'user' in attrs:
             shutil.chown(path.as_posix(), user=attrs['user'])
         if 'group' in attrs:
@@ -423,6 +425,8 @@ def attribute_diff(attr1, attr2):
     annotated_attr = copy.deepcopy(attr1)
     for key in attr1:
         if attr1[key] != attr2[key]:
+            print(attr1[key])
+            print(attr2[key])
             annotated_attr[key] += ':::{}'.format(attr2[key])
             tag = 'incorrect'
     return tag

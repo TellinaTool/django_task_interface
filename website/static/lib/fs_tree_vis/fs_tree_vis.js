@@ -76,6 +76,24 @@ function build_fs_tree_vis(data, div_id) {
         //add text
         entered.append("span").attr("class", "filename")
             .html(function (d) { return d.name; });
+        entered.append("span").attr("class", "fileattributes")
+            .html(function (d) {
+                if (d.hasOwnProperty('attributes')) {
+                    str = '';
+                    for (var key in d.attributes) {
+                        if (d.attributes.hasOwnProperty(key)) {
+                            str += (key + ', ' + d.attributes[key]);
+                        }
+                    }
+                    if (str == '')
+                        return '';
+                    else
+                        return '(' + str + ')';
+                    return str;
+                } else {
+                    return '';
+                }
+            })
         //update caret direction
         nodeEls.select("span").attr("class", function (d) {
             var icon = d.children ? " glyphicon-chevron-down"

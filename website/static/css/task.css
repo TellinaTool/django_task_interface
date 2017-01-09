@@ -16,6 +16,11 @@ nav {
 	margin-right: 3px;
 }
 
+.tree-vis-panel .fileattributes {
+    color: #000000;
+    font-size: 14px;
+}
+
 .tree-vis-panel .selected{
 	text-decoration: underline;
 }

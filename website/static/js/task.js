@@ -90,7 +90,7 @@ $(document).ready(function () {
         };
 
         // start timing the task
-        $.get(`/get_task_duration`, function(data) {
+        $.get(`/get_additional_task_info`, function(data) {
             task_time_out = setTimeout(function() {
                 console.log('task time out');
                 clearTimeout(task_time_out);
