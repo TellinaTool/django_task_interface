@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+    {% block head %}
+        <link href="/static/lib/codecademy.themes/core.css" media="screen" rel="stylesheet" type="text/css" />
+        <link href="/static/lib/codecademy.themes/exercise.css" media="screen" rel="stylesheet" type="text/css" />
+        <link href="/static/lib/codecademy.themes/vendor.css" media="screen" rel="stylesheet" type="text/css" />
+        <link href="/static/lib/codecademy.themes/platform.css" media="screen" rel="stylesheet" type="text/css" />
+        <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+        <link href="/static/css/instruction.css" rel="stylesheet">
+    {% endblock %}
+
+    {% block body %}
+        <div class="react-root" data-react-class="PlatformRouter">
+            <section class="_255U1OEW5iAFH7qz_pHXM8" data-reactroot="" data-reactid="1" data-react-checksum="-96644366">
+                <div id="workspace" class="francine" data-reactid="2">
+                   <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" data-reactid="4">
+                      <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj" data-reactid="5">
+                         <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
+                            Tellina User Study - Instructions
+                         </section>
+                         <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD" data-reactid="10">
+                         </section>
+                         <section class="_2zSA2d9oAw82vmGaiCI6HM _1KKDVD6unnpNtKqV9PPUQP _2kwp78w4gxSQjvTSajoa6Q" data-reactid="14">
+                            <div class="_3bI54mnYg5essxyEwnBsko _3nDVtg6dS-0_R6p0nDL-1S" data-reactid="15">
+                               <div class="_3KAEuux4zG-obsW0jpG9gw" data-reactid="16"><span data-reactid="17"></span></div>
+                            </div>
+                            <div class="_3bI54mnYg5essxyEwnBsko _1f1KmfrKUtLxZllTyx0TrC _3nDVtg6dS-0_R6p0nDL-1S _2kwp78w4gxSQjvTSajoa6Q" data-reactid="18">
+                               <div class="fcn-godex-status-container" data-reactid="19">
+                                  <div class="fcn-godex-status--hidden fcn-godex-status" data-reactid="20">
+                                     <div class="fcn-godex-status__glow" data-reactid="22"></div>
+                                  </div>
+                               </div>
+                            </div>
+
+                            <div class="_3bI54mnYg5essxyEwnBsko _1f1KmfrKUtLxZllTyx0TrC _3nDVtg6dS-0_R6p0nDL-1S" data-reactid="30">
+                               <div class="_3wrXGt5j2uE4fjlPLrDXEA" data-reactid="31">
+                                  <div class="Y8dknuoW8NLiudcM-zQib _1pl0auxsnexFW5uqwCQW_x _2tbl3cOSPjsfIWBMlHZgcG" data-reactid="33">
+                                     <img class="wXEAS7H2e7UsikVkXNety" src="http://www.gravatar.com/avatar/?d=mm" data-reactid="34"/>
+                                  </div>
+                               </div>
+                            </div>
+                            {% if first_name and last_name %}
+                            <span>{{first_name}}&nbsp;{{last_name}}&nbsp;</span>
+                            {% endif %}
+                         </section>
+                      </nav>
+                   </header>
+
+                    <div class="fcn-grid" style="cursor:auto;" data-reactid="51">
+                       <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor"
+                            style="position:absolute;top:0%;right:25%;bottom:0%;left:25%;">
+                           <div class="fcn-component">
+                                <div class="instruction-panel">
+                                    <div class="instruction-heading">
+                                        <h2>Instructions</h2>
+                                    </div>
+
+                                    <div class="instruction-body">
+                                        <p>Welcome to the bash commands user study! Please read the instructions below carefully.</p>
+                                        <br>
+                                        <h4>1. Bash tasks</h4>
+                                        <p>You will be given <b>18 tasks related to file system operations</b>.
+                                            The desired outcome of each task is either a list of files or a change in the
+                                            file system to delete, add, or modify files. Your goal is to <b>write a
+                                            bash one-liner</b> that performs the desired operation without causing extra
+                                            file system changes.
+                                        </p>
+                                        <p>For each task, you can <b>write and execute bash commands in a bash shell</b> in your web browser.
+					  If the command is correct, you will proceed to the next task.
+					  If the command is incorrect, you will be shown the difference between
+					  the command's output and the goal output.
+                                        </p>
+                                        <p>You may attempt the task <b>multiple times</b>. You can
+                                            <b>reset the file system</b> at any time.
+                                        </p>
+                                        <p>Each task has a <b>time limit of 5 minutes</b>, after which you will
+					proceed to the next task even if you have not yet completed the
+					current task.
+                                        </p>
+                                        <br>
+                                        <h4>2. Tool assistance</h4>
+                                        <p>For all tasks, you will be permitted to use Google search and any other resources you can find on the Internet.
+					  For some tasks, you will be given additional tool support.
+					</p>
+					<p>
+					  You will be given training, and will complete a training task,
+					  before the study starts and for each tool.
+					  The training tasks will familiarize you with the task platform
+                                            and the tools.
+                                        </p>
+                                        <br>
+                                        <h4>3. Questionnaire</h4>
+                                        <p>You will <b>fill in a post-study questionnaire</b> at the end of the study.
+                                        </p>
+                                        <br>
+                                        <p>Please click the button below to proceed.</p>
+                                    </div>
+
+                                    <div class="instruction-ack">
+                                        <button id="instructions-read" class="btn btn-primary" type="submit">I have read the instructions carefully.</button>
+                                    </div>
+                                </div>
+                           </div>
+                       </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    {% endblock %}
+
+    {% block other-scripts %}
+    {% endblock %}
+
+<!--  LocalWords:  html endblock endif
+ -->

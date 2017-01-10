@@ -16,6 +16,11 @@ nav {
 	margin-right: 3px;
 }
 
+.tree-vis-panel .fileattributes {
+    color: #000000;
+    font-size: 14px;
+}
+
 .tree-vis-panel .selected{
 	text-decoration: underline;
 }
@@ -29,7 +34,7 @@ nav {
 }
 
 .tree-vis-panel .miss_select{
-    border: 1px solid rgba(0, 0, 0, .3);
+    border: 1px solid orange ;
 }
 
 .tree-vis-panel .node {
@@ -46,15 +51,16 @@ nav {
 }
 
 .tree-vis-panel {
-	padding-top: 10px;
 	padding-left: 0px;
+	background: #ffffff;
 }
 
 .terminal-header {
+    color: #ffffff;
 	background: #40454f;
-	font-weight: light;
+	border: 0px;
 }
 
 .terminal-container {
-	height: 95%;
+    height: 100%;
 }

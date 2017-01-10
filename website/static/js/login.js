@@ -122,6 +122,17 @@ $(document).ready(function () {
                             }
                         }]
                     });
+                } else if (data.status == "TASK_SESSION_CREATION_FAILED") {
+                    BootstrapDialog.show({
+                        message: "Task session creation failed. Please try a few seconds later.",
+                        buttons: [{
+                            label: "Retry",
+                            cssClass: "btn-primary",
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                            }
+                        }]
+                    });
                 }
             });
         }

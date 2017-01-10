@@ -1,206 +1,186 @@
 <!--
 The full task interface is implemented in this file. All interaction with the
-server is done through HTTP AJAX calls.
+task interface server is done through HTTP AJAX calls.
 -->
 
-<html>
-<head>
-   <meta charset="utf-8">
-   <meta http-equiv="x-ua-compatible" content="ie=edge">
-   <title>Tellina User Study</title>
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+{% extends "base.html" %}
+   {% block head %}
+      <link rel="stylesheet" href="/static/lib/xterm.js/xterm.css" />
+      <link href="/static/lib/codecademy.themes/core.css" media="screen" rel="stylesheet" type="text/css" />
+      <link href="/static/lib/codecademy.themes/exercise.css" media="screen" rel="stylesheet" type="text/css" />
+      <link href="/static/lib/codecademy.themes/vendor.css" media="screen" rel="stylesheet" type="text/css" />
+      <link href="/static/lib/codecademy.themes/platform.css" media="screen" rel="stylesheet" type="text/css" />
+      <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+      <link href="/static/css/task.css" rel="stylesheet" media="screen">
+   {% endblock %}
 
-   <!-- Bootstrap and other CSS -->
-   <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-   <link href="/static/css/jquery-ui.min.css" rel="stylesheet">
-   <link rel="stylesheet" href="/static/lib/xterm.js/xterm.css" />
-   <link href="/static/lib/codecademy.themes/core.css" media="screen" rel="stylesheet"
-   type="text/css" />
-   <link href="/static/lib/codecademy.themes/exercise.css" media="screen" rel="stylesheet"
-   type="text/css" />
-   <link href="/static/lib/codecademy.themes/vendor.css"
-   media="screen" rel="stylesheet" type="text/css" />
-   <link href="/static/lib/codecademy.themes/platform.css"
-   media="screen" rel="stylesheet" type="text/css" />
-   <link href="/static/css/task.css" rel="stylesheet" media="screen">
-   <link rel="shortcut icon" href="/static/img/user_study.png"/>
-   <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
-</head>
-<body>
-   <div class="react-root" data-react-class="PlatformRouter">
-      <section class="_255U1OEW5iAFH7qz_pHXM8" data-reactroot="" data-reactid="1" data-react-checksum="-96644366">
-         <div id="workspace" class="francine" data-reactid="2">
-            <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" data-reactid="4">
-               <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj" data-reactid="5">
-                  <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
-                     {% if task_part %}
-                     Tellina User Study - Part {{task_part}}
-                     {% endif %}
-                  </section>
-                  <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD" data-reactid="10">
-                  </section>
-                  <section class="_2zSA2d9oAw82vmGaiCI6HM _1KKDVD6unnpNtKqV9PPUQP _2kwp78w4gxSQjvTSajoa6Q" data-reactid="14">
-                     <div class="_3bI54mnYg5essxyEwnBsko _3nDVtg6dS-0_R6p0nDL-1S" data-reactid="15">
-                        <div class="_3KAEuux4zG-obsW0jpG9gw" data-reactid="16"><span data-reactid="17"></span></div>
-                     </div>
-                     <div class="_3bI54mnYg5essxyEwnBsko _1f1KmfrKUtLxZllTyx0TrC _3nDVtg6dS-0_R6p0nDL-1S _2kwp78w4gxSQjvTSajoa6Q" data-reactid="18">
-                        <div class="fcn-godex-status-container" data-reactid="19">
-                           <div class="fcn-godex-status--hidden fcn-godex-status" data-reactid="20">
-                              <div class="fcn-godex-status__glow" data-reactid="22"></div>
+   {% block body %}
+      <div class="react-root" data-react-class="PlatformRouter">
+         <section class="_255U1OEW5iAFH7qz_pHXM8" data-reactroot="" data-reactid="1" data-react-checksum="-96644366">
+            <div id="workspace" class="francine" data-reactid="2">
+               <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" data-reactid="4">
+                  <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj" data-reactid="5">
+                     <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
+                        {% if task_part %}
+                        Tellina User Study - Part {{task_part}}
+                        {% endif %}
+                     </section>
+                     <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD" data-reactid="10">
+                     </section>
+                     <section class="_2zSA2d9oAw82vmGaiCI6HM _1KKDVD6unnpNtKqV9PPUQP _2kwp78w4gxSQjvTSajoa6Q" data-reactid="14">
+                        <div class="_3bI54mnYg5essxyEwnBsko _3nDVtg6dS-0_R6p0nDL-1S" data-reactid="15">
+                           <div class="_3KAEuux4zG-obsW0jpG9gw" data-reactid="16"><span data-reactid="17"></span></div>
+                        </div>
+                        <div class="_3bI54mnYg5essxyEwnBsko _1f1KmfrKUtLxZllTyx0TrC _3nDVtg6dS-0_R6p0nDL-1S _2kwp78w4gxSQjvTSajoa6Q" data-reactid="18">
+                           <div class="fcn-godex-status-container" data-reactid="19">
+                              <div class="fcn-godex-status--hidden fcn-godex-status" data-reactid="20">
+                                 <div class="fcn-godex-status__glow" data-reactid="22"></div>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div class="_3bI54mnYg5essxyEwnBsko _1f1KmfrKUtLxZllTyx0TrC _3nDVtg6dS-0_R6p0nDL-1S" data-reactid="30">
+                           <div class="_3wrXGt5j2uE4fjlPLrDXEA" data-reactid="31">
+                              <div class="Y8dknuoW8NLiudcM-zQib _1pl0auxsnexFW5uqwCQW_x _2tbl3cOSPjsfIWBMlHZgcG" data-reactid="33">
+                                 <img class="wXEAS7H2e7UsikVkXNety" src="http://www.gravatar.com/avatar/?d=mm" data-reactid="34"/>
+                              </div>
+                           </div>
+                        </div>
+                        {% if first_name and last_name %}
+                        <span>{{first_name}}&nbsp;{{last_name}}&nbsp;</span>
+                        {% endif %}
+                     </section>
+                  </nav>
+               </header>
+
+               <div class="fcn-grid" style="cursor:auto;" data-reactid="51">
+                  <!-- Task info -->
+                  <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor"
+                  style="position:absolute;top:0%;right:80%;bottom:0%;left:0%;">
+                     <div class="fcn-component" data-reactid="67">
+                        <div class="accordion-container" data-reactid="70">
+                           <div class="accordion">
+                              <div class="accordion-section">
+                                 <div class="accordion-section-heading" data-reactid="73">
+                                    {% if task_order_number %}
+                                    <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
+                                       Task {{task_order_number}}
+                                    </div>
+                                    {% endif %}
+                                 </div>
+                                 <div class="accordion-section-body" data-reactid="77">
+                                    {% if task_description %}
+                                    <div class="jfdpfOzslotw2euWgxJNN _1PzvoBkjTI2SFvb5o9YAHW" data-reactid="78">
+                                       <p>{{task_description}}</p>
+                                    </div>
+                                    {% endif %}
+                                 </div>
+                              </div>
                            </div>
                         </div>
                      </div>
-                     
-                     <div class="_3bI54mnYg5essxyEwnBsko _1f1KmfrKUtLxZllTyx0TrC _3nDVtg6dS-0_R6p0nDL-1S" data-reactid="30">
-                        <div class="_3wrXGt5j2uE4fjlPLrDXEA" data-reactid="31">
-                           <div class="Y8dknuoW8NLiudcM-zQib _1pl0auxsnexFW5uqwCQW_x _2tbl3cOSPjsfIWBMlHZgcG" data-reactid="33">
-                              <img class="wXEAS7H2e7UsikVkXNety" src="http://www.gravatar.com/avatar/?d=mm" data-reactid="34"/>
+                  </div>
+
+                  <!-- xterms.js -->
+                  <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor"
+                  style="position:absolute;top:0%;right:30%;bottom:0%;left:20%;">
+                     <div class="fcn-component">
+                        <div class="accordion-section-heading terminal-header">
+                           <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
+                              Bash Terminal
+                           </div>
+                        </div>
+                        <div class="accordion-section-body terminal-container" id="bash-terminal">
+                        </div>
+                     </div>
+                  </div>
+
+                  <!-- Direcotry Visualization -->
+                  <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor"
+                       style="position:absolute;top:0%;right:0%;bottom:0%;left:70%;">
+                     <!-- Current Directory -->
+                     <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-right-neighbor" style="position:relative;height:50%;">
+                        <div class="fcn-component">
+                           <div class="accordion">
+                              <div class="accordion-section">
+                                 <div class="accordion-section-heading">
+                                    <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
+                                       Current Directory
+                                    </div>
+                                 </div>
+                                 <div class="accordion-section-body tree-vis-panel" id="current-tree-vis">
+                                 </div>
+                              </div>
                            </div>
                         </div>
                      </div>
-                     {% if first_name and last_name %}
-                     <span>{{first_name}}&nbsp;{{last_name}}&nbsp;</span>
-                     {% endif %}
+
+                     <!-- Goal Directory -->
+                     <div class="fcn-slot fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor" style="position:relative;height:50%;">
+                        <div class="fcn-component">
+                           <div class="accordion">
+                              <div class="accordion-section">
+                                 <div class="accordion-section-heading">
+                                    <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
+                                       Goal Directory
+                                    </div>
+                                 </div>
+                                 <div class="accordion-section-body tree-vis-panel" id="goal-tree-vis">
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <nav class="y7tvmmg7fKu4JpdaYECtN uLjMYUmq7NHQCvtXjbgKs _3bR5y3xpD2FPv1oUg-7n_p" data-reactid="111">
+                  <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="112">
+                     <button class="fcn-button fcn-button--warning" id="quit-button">
+                        <i class="glyphicon glyphicon-warning-sign"></i>&nbsp;Give Up Current Task
+                     </button>
                   </section>
+                  <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD" data-reactid="117">
+                     <div class="fcn-nav-wrapper" data-reactid="118">
+                        <div class="fcn-nav-wrapper__center fcn-progress-container" data-reactid="119">
+                           {% if task_order_number and total_num_tasks %}
+                           <div class="fnc-nav__exercise-count" data-reactid="121">
+                              Task {{task_order_number}} / {{total_num_tasks}}.
+                           </div>
+                           {% endif %}
+                        </div>
+                     </div>
+                  </section>
+                  <section class="_2zSA2d9oAw82vmGaiCI6HM _1KKDVD6unnpNtKqV9PPUQP" data-reactid="123">
+                     <button class="fcn-button fcn-button--lantern" id="reset-button">
+                        <!-- react-text: 125 -->Reset File System<!-- /react-text --><!-- react-empty: 126 -->
+                     </button>
+                  </section>
+                  <!-- react-empty: 127 -->
                </nav>
-            </header>
-
-            <div class="fcn-grid" style="cursor:auto;" data-reactid="51">
-               <!-- Task info -->
-               <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor"
-               style="position:absolute;top:0%;right:80%;bottom:0%;left:0%;">
-               <div class="fcn-component" data-reactid="67">
-                  <div class="overlay" data-reactid="68"></div>
-                  <div class="accordion-container" data-reactid="70">
-                     <div class="accordion" data-reactid="71">
-                        <div class="accordion-section" data-reactid="72">
-                           <div data-index="0" class="accordion-section-heading" data-reactid="73">
-                              {% if task_order_number %}
-                              <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG learn-header">
-                                 Task {{task_order_number}}
-                              </div>
-                              {% endif %}
-                           </div>
-                           <div class="accordion-section-body" data-reactid="77">
-                              {% if task_description %}
-                              <div class="jfdpfOzslotw2euWgxJNN _1PzvoBkjTI2SFvb5o9YAHW" data-reactid="78">
-                                 <p>{{task_description}}</p>
-                              </div>
-                              {% endif %}
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
             </div>
-
-            <!-- xterms.js -->
-            <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor"
-            style="position:absolute;top:0%;right:30%;bottom:0%;left:20%;">
-            <div class="fcn-component">
-               <div class="accordion-container terminal">
-                  <div class="accordion-section">
-                     <div data-index="0" class="accordion-section-heading terminal-header">
-                        <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                           Bash Terminal
-                        </div>
-                     </div>
-                     <div class="accordion-section-body">
-                        <div class="terminal-container" id="bash-terminal"></div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         <!-- Direcotry Visualization -->
-         <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor" style="position:absolute;top:0%;right:0%;bottom:0%;left:70%;"
-         data-fcn-arrangement="03" data-reactid="66">
-
-         <!-- Current Directory -->
-         <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor" style="position:relative;height:50%;">
-            <div class="fcn-component">
-               <div class="accordion-container" id="cur_dir_vis">
-                  <div data-index="0" class="accordion-section-heading">
-                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG learn-header">
-                        Current Directory
-                     </div>
-                  </div>
-                  <div class="accordion-section-body">
-                     <div class="tree-vis-panel" id="current-tree-vis" style="height:85%"></div>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         <!-- Goal Directory -->
-         <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor" style="position:relative;height:50%;">
-            <div class="fcn-component">
-               <div class="accordion-container" id="goal_dir_vis">
-                  <div data-index="0" class="accordion-section-heading">
-                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG learn-header">
-                        Goal Directory
-                     </div>
-                  </div>
-                  <div class="accordion-section-body">
-                     <div class="tree-vis-panel" id="goal-tree-vis" style="height:85%"></div>
-                  </div>
-               </div>
-            </div>
-         </div>
+         </section>
       </div>
-   </div>
+   {% endblock %}
 
-   <nav class="y7tvmmg7fKu4JpdaYECtN uLjMYUmq7NHQCvtXjbgKs _3bR5y3xpD2FPv1oUg-7n_p" data-reactid="111">
-      <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="112">
-         <button class="fcn-button fcn-button--warning" id="quit-button">
-            <i class="glyphicon glyphicon-warning-sign"></i>&nbsp;Give Up Current Task
-         </button>
-      </section>
-      <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD" data-reactid="117">
-         <div class="fcn-nav-wrapper" data-reactid="118">
-            <div class="fcn-nav-wrapper__center fcn-progress-container" data-reactid="119">
-               {% if task_order_number and total_num_tasks %}
-               <div class="fnc-nav__exercise-count" data-reactid="121">
-                  Task {{task_order_number}} / {{total_num_tasks}}.
-               </div>
-               {% endif %}
-            </div>
-         </div>
-      </section>
-      <section class="_2zSA2d9oAw82vmGaiCI6HM _1KKDVD6unnpNtKqV9PPUQP" data-reactid="123">
-         <button class="fcn-button fcn-button--lantern" id="reset-button">
-            <!-- react-text: 125 -->Reset File System<!-- /react-text --><!-- react-empty: 126 -->
-         </button>
-      </section>
-      <!-- react-empty: 127 -->
-   </nav>
-</div>
-</section>
-</div>
+   {% block other-scripts %}
+      <script src="/static/lib/xterm.js/xterm.js"></script>
+      <script src="/static/lib/xterm.js/addons/attach.js"></script>
+      <script src="/static/lib/xterm.js/addons/fit.js"></script>
+      <script>
+      $(document).ready(function () {
+         console.log("{{status}}");
+         {% ifnotequal status "FILE_SYSTEM_WRITTEN_TO_DISK" %}
+            {% ifnotequal status "FILE_SYSTEM_IS_EMPTY" %}
+               alert("{{status}}");
+            {% endifnotequal %}
+         {% endifnotequal %}
+      })
+      </script>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+      <script src="https://d3js.org/d3.v3.min.js"></script>
+      <script src="/static/lib/fs_tree_vis/treelist.js"></script>
+      <script src="/static/lib/fs_tree_vis/fs_tree_vis.js"></script>
 
-<script src="/static/lib/xterm.js/xterm.js"></script>
-<script src="/static/lib/xterm.js/addons/attach.js"></script>
-<script src="/static/lib/xterm.js/addons/fit.js"></script>
-<script>
-$(document).ready(function () {
-   console.log("{{status}}");
-   {% ifnotequal status "FILE_SYSTEM_WRITTEN_TO_DISK" %}
-   alert("{{status}}");
-   {% endifnotequal %}
-})
-</script>
-
-<script src="https://d3js.org/d3.v3.min.js"></script>
-<script src="/static/lib/fs_tree_vis/treelist.js"></script>
-<script src="/static/lib/fs_tree_vis/fs_tree_vis.js"></script>
-
-<script src="/static/js/bootstrap-modal.js"> </script>
-<script src="/static/js/bootstrap-dialog.js"></script>
-
-<script src="/static/js/task.js"></script>
-</body>
-</html>
+      <script src="/static/js/task.js"></script>
+   {% endblock %}

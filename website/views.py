@@ -11,13 +11,10 @@ from .models import *
 from .filesystem import *
 from .constants import *
 
-from . import functions
+from . import functions, filesystem
 import subprocess
 import json
 import pathlib
-
-def get_task_session_id(study_session_id, num_tasks_completed):
-    return study_session_id + '/task-{}'.format(num_tasks_completed + 1)
 
 def json_response(d={}, status='SUCCESS'):
     d.update({'status': status})
@@ -69,13 +66,13 @@ def get_container_port(request, study_session):
     })
 
 @task_session_id_required
-def get_task_duration(request, task_session):
+def get_additional_task_info(request, task_session):
     """
 
     Args:
         task_session:
 
-    Returns the maximum time length the user is allowed to spend on the task.
+    Returns additional the maximum time length the user is allowed to spend on the task.
 
     """
     task = task_session.task
@@ -85,10 +82,16 @@ def get_task_duration(request, task_session):
     goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
         else task.goal
 
+    # with open('fs-1.json', 'w') as o_f:
+    #     json.dump(disk_2_dict(
+    #         pathlib.Path('/{}/home'.format(container.filesystem_name)),
+    #         [filesystem._USER]), o_f)
+
     return json_response({
         # "current_filesystem": task.initial_filesystem,
         "current_filesystem": disk_2_dict(
-            pathlib.Path('/{}/home'.format(container.filesystem_name))),
+            pathlib.Path('/{}/home'.format(container.filesystem_name)),
+            json.loads(task.file_attributes)),
         "goal_filesystem": json.loads(goal_filesystem),
         "duration": task.duration.seconds
     })
@@ -109,16 +112,15 @@ def go_to_next_task(request, task_session):
     # if a task session has ended, ignore requests for updating task attributes
     if current_task_session.status == 'running':
         # close current_task_session
-        current_task_session.end_time = timezone.now()
-        current_task_session.status = request.GET['reason_for_close']
-        current_task_session.save()
-        study_session.num_tasks_completed += 1
+        current_task_session.close(request.GET['reason_for_close'])
+        study_session.create_new_container()
+        study_session.inc_num_tasks_completed()
 
     # check for user study completion
     num_tasks_completed = study_session.num_tasks_completed
     assert(num_tasks_completed <= study_session.total_num_tasks)
     if num_tasks_completed == study_session.total_num_tasks:
-        close_study_session(study_session, 'finished')
+        study_session.close('finished')
         resp = json_response(
             {
                 "num_passed": TaskSession.objects.filter(
@@ -133,21 +135,13 @@ def go_to_next_task(request, task_session):
     else:
         # wipe out everything in the user's home directory
         container = study_session.container
-        subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
-            'rm', '-r', '/home/{}'.format(USER_NAME)])
+        container.destroy()
+        study_session.create_new_container()
+        # subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
+        #     'rm', '-r', '/home/{}'.format(USER_NAME)])
 
-        next_task_session_id = get_task_session_id(study_session.session_id,
-                                                   num_tasks_completed)
-        study_session.current_task_session_id = next_task_session_id
-        study_session.save()
-
-        TaskSession.objects.create(
-            study_session = study_session,
-            session_id = next_task_session_id,
-            task = pick_task(num_tasks_completed=num_tasks_completed),
-            start_time = timezone.now(),
-            status = 'running'
-        )
+        next_task_session_id = study_session.update_current_task_session_id()
+        create_task_session(study_session)
 
         resp = json_response({"task_session_id": next_task_session_id},
                              status='RUNNING')
@@ -161,34 +155,29 @@ def get_current_task(request, task_session):
     Args:
         task_session
 
-    Returns the
-        - description
-        - goal directory
-        - order number in the study session
-    of the currently served task in the user's study session.
+    Returns the information of the currently task in the user's study session.
     """
     task = task_session.task
 
     study_session = task_session.study_session
-    if study_session.num_tasks_completed < len(PART_I_TASKS):
-        task_part = 'I'
-    else:
-        task_part = 'II'
+    task_part = task_session.study_session.get_part()
+
     order_number = study_session.num_tasks_completed + 1
 
     # Initialize filesystem
     container = study_session.container
     container_id = container.container_id
     filesystem_status = dict_2_disk(json.loads(task.initial_filesystem),
-                pathlib.Path('/{}/home'.format(container.filesystem_name)))
+                pathlib.Path('/{}/home'.format(container.filesystem_name)),
+                is_root_dir=True)
     subprocess.call(['docker', 'exec', '-u', 'root', container_id,
         'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
         '/home/{}'.format(USER_NAME)])
 
     context = {
         "status": filesystem_status,
-        "task_description": task.description,
         "task_part": task_part,
+        "task_description": task.description,
         "task_goal": task.goal,
         "task_order_number": order_number,
         "total_num_tasks": study_session.total_num_tasks,
@@ -200,25 +189,39 @@ def get_current_task(request, task_session):
     return HttpResponse(template.render(context, request))
 
 
-def pick_task(num_tasks_completed):
+def create_task_session(study_session):
     """
-    Pick a task from the database for the user to work on next.
+    Pick a task from the database and initialize a new task session
+    for the user.
     """
-    if PART_I_TASKS is not None:
-        if num_tasks_completed < len(PART_I_TASKS):
-            # user is in the first part of the study
-            task_id = PART_I_TASKS[num_tasks_completed]
-        else:
-            # user is in the second part of the study
-            task_id = PART_II_TASKS[num_tasks_completed - len(PART_I_TASKS)]
-    else:
-        # randomly select an unseen task from the database
-        raise NotImplementedError
+    user = study_session.user
+    study_session_part = study_session.get_part()
+    task_session_id = study_session.current_task_session_id
+    print(study_session_part)
+    print(user.group)
+    if (user.group == 'group1' and study_session_part == 'I') or \
+        (user.group == 'group2' and study_session_part == 'II') or \
+        (user.group == 'group3' and study_session_part == 'II') or \
+        (user.group == 'group4' and study_session_part == 'I'):
+        task_id = TASK_BLOCK_I[study_session.num_tasks_completed]
+    if (user.group == 'group1' and study_session_part == 'II') or \
+        (user.group == 'group2' and study_session_part == 'I') or \
+        (user.group == 'group3' and study_session_part == 'I') or \
+        (user.group == 'group4' and study_session_part == 'II'):
+        task_id = TASK_BLOCK_II[study_session.num_tasks_completed -
+                                len(TASK_BLOCK_I)]
 
-    task = Task.objects.get(task_id=task_id)
-    return task
+    TaskSession.objects.create(
+        study_session = study_session,
+        study_session_part = study_session.get_part(),
+        session_id = task_session_id,
+        task = Task.objects.get(task_id=task_id),
+        start_time = timezone.now(),
+        status = 'running'
+    )
 
 # --- Terminal I/O Management --- #
+
 @task_session_id_required
 @csrf_exempt
 def on_command_execution(request, task_session):
@@ -254,7 +257,8 @@ def on_command_execution(request, task_session):
     study_session = task_session.study_session
     container = study_session.container
     current_file_system = disk_2_dict(
-            pathlib.Path('/{}/home'.format(container.filesystem_name)))
+            pathlib.Path('/{}/home'.format(container.filesystem_name)),
+            json.loads(task.file_attributes))
     goal = task.initial_filesystem if task.type == 'stdout' else task.goal
     fs_diff = filesystem_diff(current_file_system, json.loads(goal))
 
@@ -296,17 +300,9 @@ def reset_file_system(request, task_session):
     container = study_session.container
     container_id = container.container_id
 
-    # wipe out everything in the user's home directory and reinitialize
-    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
-        'rm', '-r', '/home/{}'.format(USER_NAME)])
-
-    # re-initialize file system
-    task = task_session.task
-    filesystem_status = dict_2_disk(json.loads(task.initial_filesystem),
-                pathlib.Path('/{}/home'.format(container.filesystem_name)))
-    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
-        'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
-        '/home/{}'.format(USER_NAME)])
+    # destroy the current container and create a new one
+    container.destroy()
+    study_session.create_new_container()
 
     ActionHistory.objects.create(
         task_session=task_session,
@@ -316,19 +312,11 @@ def reset_file_system(request, task_session):
 
     return json_response({
         'container_id': container_id,
-        'current_filesystem': json.loads(task.initial_filesystem)
-    },status=filesystem_status)
-
-# --- Study Session Management --- #
-def close_study_session(session, reason_for_close):
-    # ignore already closed study sessions
-    if session.status == 'running' or session.status == 'paused':
-        session.current_task_session_id = ''
-        session.status = reason_for_close
-        session.save()
-
-        # destroy the container associated with the study session
-        session.container.destroy()
+        'container_port': study_session.container.port,
+        'current_filesystem': disk_2_dict(
+            pathlib.Path('/{}/home'.format(container.filesystem_name)),
+            json.loads(task_session.task.file_attributes))
+    })
 
 # --- User Login --- #
 
@@ -389,15 +377,15 @@ def user_login(request):
                         == 'paused':
                         healthy_sessions.append(session)
                     else:
-                        close_study_session(session, 'closed_with_error')
+                        session.close('closed_with_error')
                 except ObjectDoesNotExist:
                     # task session is corrupted
-                    close_study_session(session, 'closed_with_error')
+                    session.close('closed_with_error')
             if healthy_sessions:
                 # close previous running sessions if not properly closed
                 existing_sessions = healthy_sessions
                 for session in existing_sessions[:-1]:
-                    close_study_session(session, 'closed_with_error')
+                    session.close('closed_with_error')
                 session = existing_sessions[-1]
                 # remember the study session id and the task session id with cookies
                 resp = JsonResponse({
@@ -413,7 +401,6 @@ def user_login(request):
             # register a new study session for the user
             session_id = '-'.join([access_code, "study_session",
                 str(StudySession.objects.filter(user=user).count() + 1)])
-            init_task_session_id = get_task_session_id(session_id, 0)
 
             # create the container of the study session
             container = create_container(session_id)
@@ -423,27 +410,24 @@ def user_login(request):
                 session_id = session_id,
                 container = container,
                 creation_time = timezone.now(),
-
-                current_task_session_id = init_task_session_id,
-                status = 'running'
+                
+		        status = 'running'
             )
 
             # initialize the first task session
-            TaskSession.objects.create(
-                study_session = session,
-                session_id = init_task_session_id,
-                task = pick_task(num_tasks_completed = 0),
-                start_time = timezone.now(),
-                status = 'running'
-            )
+            init_task_session_id = session.update_current_task_session_id()
+            session.save()
 
-            resp = json_response({"task_session_id": init_task_session_id},
-                                 status="SESSION_CREATED")
-
-            # remember the study session id and the task session id with cookies
-            resp.set_cookie('session_id', session_id)
-            resp.set_cookie('task_session_id', init_task_session_id)
-
+            try:
+                create_task_session(session)
+                # remember the study session id and the task session id with cookies
+                resp = json_response({"task_session_id": init_task_session_id},
+                                     status="SESSION_CREATED")
+                resp.set_cookie('session_id', session_id)
+                resp.set_cookie('task_session_id', init_task_session_id)
+            except ObjectDoesNotExist:
+                session.close('closed_with_error')
+                resp = json_response(status='TASK_SESSION_CREATION_FAILED')
     except ObjectDoesNotExist:
         resp = json_response(status='USER_DOES_NOT_EXIST')
 
@@ -463,8 +447,7 @@ def retrieve_access_code(request):
             "access_code": 'USER_DOES_NOT_EXIST'
         })
 
-def sample(request):
-    template = loader.get_template('sample.html')
+def instruction(request):
+    template = loader.get_template('instruction.html')
     context = {}
     return HttpResponse(template.render(context, request))
-

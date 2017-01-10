@@ -1,13 +1,29 @@
 {
   "task_duration_in_seconds": 30,
   "superuser": {
-    "username": "admin",
-    "password": "userstudy"
+    "username": "...",
+    "password": "..."
   },
   "users": [
     {
       "first_name": "V",
-      "last_name": "V"
+      "last_name": "V",
+      "group": "group1"
+    },
+    {
+      "first_name": "W",
+      "last_name": "W",
+      "group": "group2"
+    },
+    {
+      "first_name": "X",
+      "last_name": "X",
+      "group": "group3"
+    },
+    {
+      "first_name": "Y",
+      "last_name": "Y",
+      "group": "group4"
     }
   ],
   "tasks": [

@@ -1,2 +1,2 @@
 USER_NAME = 'me'
-HOME = '~'
+HOME = 'data/class-website-template'

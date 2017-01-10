@@ -7,6 +7,7 @@ Create an SQL database with these model definitions by running:
 python3 manage.py makemigrations website
 python3 manage.py migrate
 """
+
 from django.db import models
 from django.utils import timezone
 from .constants import *
@@ -22,10 +23,28 @@ import subprocess
 # import json
 # from typing import Optional
 
+WEBSITE_DEVELOP = True
 
-PART_I_TASKS = [2]
-PART_II_TASKS = [3]
+# unimplemented tasks: 3, 7, 8, 9, 10
+TASK_BLOCK_I = [1,2,4,5]
+TASK_BLOCK_II = [6,11,12]
 
+treatment_A = 'Tellina or Google Search'
+treatment_B = 'Google Search'
+
+treatment_A_training_tasks = [1]
+treatment_B_training_tasks = [2]
+
+treatment_assignments = {
+    'group1I': 'A',
+    'group1II': 'B',
+    'group2I': 'B',
+    'group2II': 'A',
+    'group3I': 'A',
+    'group3II': 'B',
+    'group4I': 'A',
+    'group4II': 'B'
+}
 
 class User(models.Model):
     """
@@ -35,16 +54,16 @@ class User(models.Model):
         Participants will use this to log into the task interface.
     :member first_name: user's first name
     :member last_name: user's last name
-
-    :member treatment_order: a user is 50/50 randomly assigned one of the
-        following two treatment orders
-        - Tellina / Google
-        - Google / Tellina
+    :member group: user's group assignment
+        Group 1: task block 1 + Tellina / task block 2 + Google
+        Group 2: task block 1 + Google / task block 2 + Tellina
+        Group 3: task block 2 + Tellina / task block 1 + Google
+        Group 4: task block 2 + Google / task block 1 + Tellina
     """
     access_code = models.TextField()
     first_name = models.TextField()
     last_name = models.TextField()
-    treatment_order = models.TextField()
+    group = models.TextField()
 
 class Task(models.Model):
     """
@@ -54,6 +73,7 @@ class Task(models.Model):
         implementation of task scheduler easier.
     :member type: The type of task. Can be 'stdout' or 'filesystem'.
     :member description: A human-readable description of the task.
+    :member file_attributes: File attributes used in the tasks.
     :member initial_filesystem: JSON representation of the user's starting home
         directory
     :member goal: Goal stdout (if type is 'stdout') or JSON representation of
@@ -63,6 +83,7 @@ class Task(models.Model):
     task_id = models.PositiveIntegerField()
     type = models.TextField()
     description = models.TextField()
+    file_attributes = models.TextField()
     initial_filesystem = models.TextField()
     goal = models.TextField()
     duration = models.DurationField()
@@ -94,7 +115,6 @@ class Container(models.Model):
         # Delete table entry
         # self.delete()
 
-
 def create_container(filesystem_name):
     """
     Creates a container whose filesystem is located at /{filesystem_name}/home
@@ -103,7 +123,7 @@ def create_container(filesystem_name):
     """
 
     # Make virtual filesystem
-    subprocess.run(['/bin/bash', 'make_filesystem.bash', filesystem_name])
+    subprocess.run(['/bin/bash', 'make_filesystem.bash', filesystem_name, HOME])
 
     # Create Docker container
     # NOTE: the created container does not run yet
@@ -167,8 +187,8 @@ class StudySession(models.Model):
     :member container: The Container model associated with the session. None if
         no container is associated.
     :member total_num_tasks: Total number of tasks in the study session.
-    :member creation_time: Time the study session is created. Used for managing
-        unexpectedly interrupted sessions.
+    :member creation_time: Time the study session is created.
+    :member close_time: Time the study session is closed.
 
     :member current_task_session_id: The id of the task session that the user
         is undertaking. '' if no task session is running.
@@ -184,12 +204,49 @@ class StudySession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     session_id = models.TextField(primary_key=True)
     container = models.ForeignKey(Container, default=None)
-    total_num_tasks = models.PositiveIntegerField(default=2)
-    creation_time = models.DateTimeField()
+    total_num_tasks = models.PositiveIntegerField(default=
+        len(TASK_BLOCK_I) + len(TASK_BLOCK_II))
+    creation_time = models.DateTimeField(default='')
+    end_time = models.DateTimeField(default='1111-11-11 00:00:00')
 
     current_task_session_id = models.TextField()
     num_tasks_completed = models.PositiveIntegerField(default=0)
     status = models.TextField()
+
+    def create_new_container(self):
+        self.container = create_container(self.session_id)
+        self.save()
+
+    def close(self, reason_for_close):
+        # ignore already closed study sessions
+        if self.status == 'running' or self.status == 'paused':
+            self.current_task_session_id = ''
+            self.close_time = timezone.now()
+            self.status = reason_for_close
+            self.save()
+
+            # destroy the container associated with the study session
+            self.container.destroy()
+
+    def get_part(self):
+        # compute which
+        if not WEBSITE_DEVELOP:
+            assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
+        if self.num_tasks_completed < len(TASK_BLOCK_I):
+            return 'I'
+        else:
+            return 'II'
+
+    def inc_num_tasks_completed(self):
+        self.num_tasks_completed += 1
+        self.save()
+
+    def update_current_task_session_id(self):
+        new_task_session_id = self.session_id + \
+               '/task-{}'.format(self.num_tasks_completed + 1)
+        self.current_task_session_id = new_task_session_id
+        self.save()
+        return new_task_session_id
 
 
 class TaskSession(models.Model):
@@ -197,6 +254,8 @@ class TaskSession(models.Model):
     A task performed by a user in a study session.
 
     :member study_session: The study session to which the task session belong.
+    :member study_session_part: The part of the study session the task session
+        is in.
     :member session_id: an application-wide unique task session ID.
     :member task: The task being performed in the task session.
     :member start_time: The start time of a task session.
@@ -211,11 +270,22 @@ class TaskSession(models.Model):
         - 'passed':      The user started the task and passed it
     """
     study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
+    study_session_part = models.TextField()
     session_id = models.TextField(primary_key=True)
     task = models.ForeignKey(Task)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(default='1111-11-11 00:00:00')
     status = models.TextField()
+
+    def close(self, reason_for_close):
+        self.end_time = timezone.now()
+        self.study_session.container.destroy()
+        self.status = reason_for_close
+        self.save()
+
+    def get_treatment(self):
+        user = self.study_session.user
+        return treatment_assignments[user.group + self.study_session_part]
 
 
 class ActionHistory(models.Model):
