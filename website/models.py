@@ -63,7 +63,7 @@ class User(models.Model):
     access_code = models.TextField()
     first_name = models.TextField()
     last_name = models.TextField()
-    group = models.TextField()
+    group = models.TextField(default='group1')
 
 class Task(models.Model):
     """
