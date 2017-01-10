@@ -25,9 +25,6 @@ setup_db:
 	python3 manage.py makemigrations website
 	python3 manage.py migrate
 
-# Create superuser:
-# 	python3 manage.py createsuperuser
-
 # Install Django server dependencies
 install_python_dependencies:
 	sudo -H pip3 install -r `pwd`/requirements.txt
