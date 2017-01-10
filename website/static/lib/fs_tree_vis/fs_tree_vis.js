@@ -82,7 +82,7 @@ function build_fs_tree_vis(data, div_id) {
                     str = '';
                     for (var key in d.attributes) {
                         if (d.attributes.hasOwnProperty(key)) {
-                            str += (key + ', ' + d.attributes[key]);
+                            str += (key + ': ' + d.attributes[key]);
                         }
                     }
                     if (str == '')

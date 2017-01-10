@@ -51,6 +51,11 @@ class User(models.Model):
         Participants will use this to log into the task interface.
     :member first_name: user's first name
     :member last_name: user's last name
+    :member group: user's group assignment
+        Group 1: task block 1 + Tellina / task block 2 + Google
+        Group 2: task block 1 + Google / task block 2 + Tellina
+        Group 3: task block 2 + Tellina / task block 1 + Google
+        Group 4: task block 2 + Google / task block 1 + Tellina
     """
     access_code = models.TextField()
     first_name = models.TextField()

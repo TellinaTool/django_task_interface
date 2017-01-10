@@ -51,15 +51,16 @@ nav {
 }
 
 .tree-vis-panel {
-	padding-top: 10px;
 	padding-left: 0px;
+	background: #ffffff;
 }
 
 .terminal-header {
+    color: #ffffff;
 	background: #40454f;
-	font-weight: light;
+	border: 0px;
 }
 
 .terminal-container {
-	height: 95%;
+    height: 100%;
 }

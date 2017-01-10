@@ -406,8 +406,8 @@ def user_login(request):
                 session_id = session_id,
                 container = container,
                 creation_time = timezone.now(),
-
-                status = 'running'
+                
+		status = 'running'
             )
 
             # initialize the first task session
@@ -443,7 +443,7 @@ def retrieve_access_code(request):
             "access_code": 'USER_DOES_NOT_EXIST'
         })
 
-def sample(request):
-    template = loader.get_template('sample.html')
+def instruction(request):
+    template = loader.get_template('instruction.html')
     context = {}
     return HttpResponse(template.render(context, request))

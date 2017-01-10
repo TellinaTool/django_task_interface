@@ -1,55 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
- <meta charset="UTF-8">
- <title>Tellina User Study Login</title>
+{% extends "base.html" %}
+  {% block head %}
+    <link href="/static/css/login.css" rel="stylesheet">
+  {% endblock %}
 
- <!-- Bootstrap and other CSS -->
- <link href="/static/css/bootstrap.min.css" rel="stylesheet">
- <link href="/static/css/jquery-ui.min.css" rel="stylesheet">
- <link href="/static/css/login.css" rel="stylesheet">
-
- <link rel="shortcut icon" href="/static/img/user_study.png"/>
-</head>
-<body>
-
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <span class="navbar-brand" style="cursor:default">Tellina User Study Platform</span>
+  {% block body %}
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <span class="navbar-brand" style="cursor:default">Tellina User Study Platform</span>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse navbar-right">
+          <ul class="nav navbar-nav">
+            <li id="forget-access-code"><a href="#contact">Forget access code?</a></li>
+          </ul>
+        </div>
       </div>
-      <div id="navbar" class="collapse navbar-collapse navbar-right">
-        <ul class="nav navbar-nav">
-          <li id="forget-access-code"><a href="#contact">Forget access code?</a></li>
-        </ul>
+    </nav>
+
+    <div>
+      <form class="form-signin">
+        <h2 class="form-signin-heading">Login</h2><br/>
+        <input id="username" class="form-control" required placeholder="Access Code"/>
+        <br/><button id="user-log-in" class="btn btn-primary btn-block" type="submit">Submit</button>
+        <br/>
+      </form>
+      <a id="new-user-registration">Click here to get an access code if you don't have one!</a>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModalNorm" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content"></div>
       </div>
     </div>
-  </nav>
+  {% endblock %}
 
-  <div>
-    <form class="form-signin">
-      <h2 class="form-signin-heading">Login</h2><br/>
-      <input id="username" class="form-control" required placeholder="Access Code"/>
-      <br/><button id="user-log-in" class="btn btn-primary btn-block" type="submit">Submit</button>
-      <br/>
-    </form>
-    <a id="new-user-registration">Click here to get an access code if you don't have one!</a>
-  </div>
+  {% block other-scripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="/static/js/jquery.layout.js"></script>
 
-  <!-- Modal -->
-  <div class="modal fade" id="myModalNorm" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content"></div>
-    </div>
-  </div>
-
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-  <script src="/static/js/jquery.layout.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script src="/static/js/bootstrap-modal.js"> </script>
-  <script src="/static/js/bootstrap-dialog.js"></script>
-
-  <script src="/static/js/login.js"></script>
-</body>
-</html>
+    <script src="/static/js/login.js"></script>
+  {% endblock %}
