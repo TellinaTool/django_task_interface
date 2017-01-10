@@ -11,7 +11,7 @@ from .models import *
 from .filesystem import *
 from .constants import *
 
-from . import functions
+from . import functions, filesystem
 import subprocess
 import json
 import pathlib
@@ -82,6 +82,11 @@ def get_additional_task_info(request, task_session):
     goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
         else task.goal
 
+    # with open('fs-1.json', 'w') as o_f:
+    #     json.dump(disk_2_dict(
+    #         pathlib.Path('/{}/home'.format(container.filesystem_name)),
+    #         [filesystem._USER]), o_f)
+
     return json_response({
         # "current_filesystem": task.initial_filesystem,
         "current_filesystem": disk_2_dict(
@@ -108,6 +113,7 @@ def go_to_next_task(request, task_session):
     if current_task_session.status == 'running':
         # close current_task_session
         current_task_session.close(request.GET['reason_for_close'])
+        study_session.create_new_container()
         study_session.inc_num_tasks_completed()
 
     # check for user study completion
@@ -129,8 +135,10 @@ def go_to_next_task(request, task_session):
     else:
         # wipe out everything in the user's home directory
         container = study_session.container
-        subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
-            'rm', '-r', '/home/{}'.format(USER_NAME)])
+        container.destroy()
+        study_session.create_new_container()
+        # subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
+        #     'rm', '-r', '/home/{}'.format(USER_NAME)])
 
         next_task_session_id = study_session.update_current_task_session_id()
         create_task_session(study_session)
@@ -160,7 +168,8 @@ def get_current_task(request, task_session):
     container = study_session.container
     container_id = container.container_id
     filesystem_status = dict_2_disk(json.loads(task.initial_filesystem),
-                pathlib.Path('/{}/home'.format(container.filesystem_name)))
+                pathlib.Path('/{}/home'.format(container.filesystem_name)),
+                is_root_dir=True)
     subprocess.call(['docker', 'exec', '-u', 'root', container_id,
         'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
         '/home/{}'.format(USER_NAME)])
@@ -291,17 +300,9 @@ def reset_file_system(request, task_session):
     container = study_session.container
     container_id = container.container_id
 
-    # wipe out everything in the user's home directory and reinitialize
-    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
-        'rm', '-r', '/home/{}'.format(USER_NAME)])
-
-    # re-initialize file system
-    task = task_session.task
-    filesystem_status = dict_2_disk(json.loads(task.initial_filesystem),
-                pathlib.Path('/{}/home'.format(container.filesystem_name)))
-    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
-        'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
-        '/home/{}'.format(USER_NAME)])
+    # destroy the current container and create a new one
+    container.destroy()
+    study_session.create_new_container()
 
     ActionHistory.objects.create(
         task_session=task_session,
@@ -311,8 +312,11 @@ def reset_file_system(request, task_session):
 
     return json_response({
         'container_id': container_id,
-        'current_filesystem': json.loads(task.initial_filesystem)
-    },status=filesystem_status)
+        'container_port': study_session.container.port,
+        'current_filesystem': disk_2_dict(
+            pathlib.Path('/{}/home'.format(container.filesystem_name)),
+            json.loads(task_session.task.file_attributes))
+    })
 
 # --- User Login --- #
 
@@ -407,7 +411,7 @@ def user_login(request):
                 container = container,
                 creation_time = timezone.now(),
                 
-		status = 'running'
+		        status = 'running'
             )
 
             # initialize the first task session

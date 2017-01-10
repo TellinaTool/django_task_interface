@@ -171,7 +171,9 @@ task interface server is done through HTTP AJAX calls.
       $(document).ready(function () {
          console.log("{{status}}");
          {% ifnotequal status "FILE_SYSTEM_WRITTEN_TO_DISK" %}
-         alert("{{status}}");
+            {% ifnotequal status "FILE_SYSTEM_IS_EMPTY" %}
+               alert("{{status}}");
+            {% endifnotequal %}
          {% endifnotequal %}
       })
       </script>

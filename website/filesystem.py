@@ -201,19 +201,21 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
         return node
 
     fs = create_filesystem(path, attrs)
-    fs.name = HOME
+    fs.name = '~'
 
     return fs.to_dict()
 
 
-def dict_2_disk(tree: dict, root_path: pathlib.Path):
+def dict_2_disk(tree: dict, root_path: pathlib.Path, is_root_dir=False):
     """Writes the directory described by tree to root_path."""
     # check if path exists
     if not root_path.exists():
         return 'ROOT_PATH_DOES_NOT_EXIST'
 
-    path = root_path / tree['name'] if not tree['name'] in ['~', '/'] \
-        else root_path
+    if not tree:
+        return "FILE_SYSTEM_IS_EMPTY"
+
+    path = root_path / tree['name'] if not is_root_dir else root_path
 
     if tree['type'] == 'file':
         attrs = tree['attributes'] if 'attributes' in tree else []
@@ -412,7 +414,7 @@ def filesystem_diff(fs1, fs2):
 
 
 def filesystem_sort(fs):
-    if fs['type'] == 'file':
+    if not fs or fs['type'] == 'file':
         return
     else:
         for child in fs['children']:

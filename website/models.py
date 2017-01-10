@@ -23,8 +23,11 @@ import subprocess
 # import json
 # from typing import Optional
 
-TASK_BLOCK_I = [1]
-TASK_BLOCK_II = [2]
+WEBSITE_DEVELOP = True
+
+# unimplemented tasks: 3, 7, 8, 9, 10
+TASK_BLOCK_I = [1,2,4,5]
+TASK_BLOCK_II = [6,11,12]
 
 treatment_A = 'Tellina or Google Search'
 treatment_B = 'Google Search'
@@ -112,7 +115,6 @@ class Container(models.Model):
         # Delete table entry
         # self.delete()
 
-
 def create_container(filesystem_name):
     """
     Creates a container whose filesystem is located at /{filesystem_name}/home
@@ -121,7 +123,7 @@ def create_container(filesystem_name):
     """
 
     # Make virtual filesystem
-    subprocess.run(['/bin/bash', 'make_filesystem.bash', filesystem_name])
+    subprocess.run(['/bin/bash', 'make_filesystem.bash', filesystem_name, HOME])
 
     # Create Docker container
     # NOTE: the created container does not run yet
@@ -211,6 +213,10 @@ class StudySession(models.Model):
     num_tasks_completed = models.PositiveIntegerField(default=0)
     status = models.TextField()
 
+    def create_new_container(self):
+        self.container = create_container(self.session_id)
+        self.save()
+
     def close(self, reason_for_close):
         # ignore already closed study sessions
         if self.status == 'running' or self.status == 'paused':
@@ -224,7 +230,8 @@ class StudySession(models.Model):
 
     def get_part(self):
         # compute which
-        assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
+        if not WEBSITE_DEVELOP:
+            assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
         if self.num_tasks_completed < len(TASK_BLOCK_I):
             return 'I'
         else:
@@ -272,6 +279,7 @@ class TaskSession(models.Model):
 
     def close(self, reason_for_close):
         self.end_time = timezone.now()
+        self.study_session.container.destroy()
         self.status = reason_for_close
         self.save()
 

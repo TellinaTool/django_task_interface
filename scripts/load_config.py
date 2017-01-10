@@ -45,6 +45,7 @@ def run():
 
     for file_name in os.listdir('data'):
         if file_name.startswith('task'):
+            print("load task json file {}...".format(file_name))
             file = open(os.path.join('data/', file_name), 'r')
             content = str(file.read())
             # skip empty task files
