@@ -201,7 +201,7 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
         return node
 
     fs = create_filesystem(path, attrs)
-    fs.name = '~'
+    # fs.name = '~'
 
     return fs.to_dict()
 

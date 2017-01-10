@@ -90,7 +90,7 @@ def get_additional_task_info(request, task_session):
     return json_response({
         # "current_filesystem": task.initial_filesystem,
         "current_filesystem": disk_2_dict(
-            pathlib.Path('/{}/home'.format(container.filesystem_name)),
+            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
             json.loads(task.file_attributes)),
         "goal_filesystem": json.loads(goal_filesystem),
         "duration": task.duration.seconds
@@ -257,7 +257,7 @@ def on_command_execution(request, task_session):
     study_session = task_session.study_session
     container = study_session.container
     current_file_system = disk_2_dict(
-            pathlib.Path('/{}/home'.format(container.filesystem_name)),
+            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
             json.loads(task.file_attributes))
     goal = task.initial_filesystem if task.type == 'stdout' else task.goal
     fs_diff = filesystem_diff(current_file_system, json.loads(goal))
@@ -314,7 +314,7 @@ def reset_file_system(request, task_session):
         'container_id': container_id,
         'container_port': study_session.container.port,
         'current_filesystem': disk_2_dict(
-            pathlib.Path('/{}/home'.format(container.filesystem_name)),
+            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
             json.loads(task_session.task.file_attributes))
     })
 

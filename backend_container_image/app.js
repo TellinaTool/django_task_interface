@@ -7,9 +7,7 @@ wss.on('connection', function connection(ws) {
   
   var term = pty.spawn('bash', [], {
     name: 'xterm-color',
-    // cols: 80,
-    // rows: 24,
-    cwd: '/home/me',
+    cwd: '/home/me/website',
     env: process.env
   });
 
