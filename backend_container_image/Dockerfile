@@ -7,6 +7,9 @@ RUN apt-get update && \
 # Create a non-root user to run the application
 RUN useradd -m -s /bin/bash me
 USER me
+# Create another non-root user
+# RUN useradd -m -s /bin/bash minion
+# USER minion
 
 EXPOSE 10411
 

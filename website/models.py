@@ -27,7 +27,7 @@ WEBSITE_DEVELOP = True
 
 # unimplemented tasks: 3, 7, 8, 9, 10
 TASK_BLOCK_I = [1,2,4,5]
-TASK_BLOCK_II = [6,11,12]
+TASK_BLOCK_II = [6,9,11,12]
 
 treatment_A = 'Tellina or Google Search'
 treatment_B = 'Google Search'

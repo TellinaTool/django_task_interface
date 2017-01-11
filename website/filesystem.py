@@ -181,7 +181,8 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
                 file_stat = os.stat(path.as_posix())
             for attr in attrs:
                 if attr == _USER:
-                    node.attributes.user = pwd.getpwuid(file_stat.st_uid).pw_name
+                    # node.attributes.user = pwd.getpwuid(file_stat.st_uid).pw_name
+                    node.attributes.user = 'me'
                 if attr == _GROUP:
                     node.attributes.group = grp.getgrgid(file_stat.st_gid).gr_name
                 if attr == _SIZE:

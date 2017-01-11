@@ -82,10 +82,10 @@ def get_additional_task_info(request, task_session):
     goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
         else task.goal
 
-    # with open('fs-1.json', 'w') as o_f:
-    #     json.dump(disk_2_dict(
-    #         pathlib.Path('/{}/home'.format(container.filesystem_name)),
-    #         [filesystem._USER]), o_f)
+    with open('fs-1.json', 'w') as o_f:
+        json.dump(disk_2_dict(
+            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
+            [filesystem._USER]), o_f)
 
     return json_response({
         # "current_filesystem": task.initial_filesystem,
@@ -298,11 +298,11 @@ def reset_file_system(request, task_session):
     """
     study_session = task_session.study_session
     container = study_session.container
-    container_id = container.container_id
 
     # destroy the current container and create a new one
     container.destroy()
     study_session.create_new_container()
+    container_id = study_session.container.container_id
 
     ActionHistory.objects.create(
         task_session=task_session,

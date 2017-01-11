@@ -1,25 +1,11 @@
 $(document).ready(function () {
     // create terminal object
-    var term = new Terminal({
-        cursorBlink: true
-    });
+    var term;
     var xtermWebSocket;
 
     var terminalContainer = document.getElementById('bash-terminal');
-    // clean terminal container
-    while (terminalContainer.children.length > 0) {
-        terminalContainer.removeChild(terminalContainer.children[0]);
-    }
-    // associate JS term object with HTML div
-    term.open(terminalContainer);
-    // var charWidth = Math.ceil(term.element.offsetWidth / cols);
-    // var charHeight = Math.ceil(term.element.offsetHeight / rows);
 
-    term.fit();
-
-    /* $('#bash-terminal').resize(function() {
-        term.fit();
-    }); */
+    create_new_terminal();
 
     // connect xterm.js terminal to the study session's container
     $.get(`/get_container_port`, function(data) {
@@ -61,14 +47,13 @@ $(document).ready(function () {
         $("#reset-button").click(function() {
             // close the websocket connection to the old container
             xtermWebSocket.close();
-
             // reset file system
             $.get(`/reset_file_system`, function(data){
                 console.log(data.container_port);
+                create_new_terminal();
                 // open websocket connection to the new container
                 set_websocket(data.container_port);
                 build_fs_tree_vis(data.current_filesystem, "#current-tree-vis");
-                term.clear();
             })
         });
 
@@ -193,4 +178,24 @@ $(document).ready(function () {
             });
         }
     });
+
+    function create_new_terminal() {
+        term = new Terminal({
+            cursorBlink: true
+        });
+        // clean terminal container
+        while (terminalContainer.children.length > 0) {
+            terminalContainer.removeChild(terminalContainer.children[0]);
+        }
+        // associate JS term object with HTML div
+        term.open(terminalContainer);
+        // var charWidth = Math.ceil(term.element.offsetWidth / cols);
+        // var charHeight = Math.ceil(term.element.offsetHeight / rows);
+
+        term.fit();
+
+        /* $('#bash-terminal').resize(function() {
+            term.fit();
+        }); */
+    }
 });
