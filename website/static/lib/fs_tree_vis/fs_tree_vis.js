@@ -17,6 +17,7 @@ function build_fs_tree_vis(data, div_id) {
     function render(data, parent) {
         var nodes = tree.nodes(data),
             duration = 250;
+
         function toggleChildren(d) {
             if (d.children) {
                 d._children = d.children;
@@ -66,17 +67,28 @@ function build_fs_tree_vis(data, div_id) {
                 return "red";
             else if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty('incorrect'))
                 return "orange";
-            else if (d.hasOwnProperty('tag') && (d.tag.hasOwnProperty('ch_missing')
-                     || d.tag.hasOwnProperty('ch_extra') || d.tag.hasOwnProperty('ch_incorrect')))
-                return "orange";
-            else 
+            else
                 return "black";
         });
 
+        ul.selectAll("li.node").style("text-decoration", function(d) {
+            if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty("extra"))
+                return "line-through";
+        });
+
         //add text
-        entered.append("span").attr("class", "filename")
+        entered.append("span").attr("class", 'filename')
             .html(function (d) { return d.name; });
-        entered.append("span").attr("class", "fileattributes")
+        entered.append("span").attr("class", 'sup')
+            .html(function (d) {
+                if (d.hasOwnProperty('tag') && (d.tag.hasOwnProperty('ch_missing')
+                     || d.tag.hasOwnProperty('ch_extra') || d.tag.hasOwnProperty('ch_incorrect'))) {
+                    return '*';
+                } else {
+                    return '';
+                }
+            });
+        entered.append("span").attr("class", 'fileattributes')
             .html(function (d) {
                 if (d.hasOwnProperty('attributes')) {
                     str = '';
@@ -93,7 +105,7 @@ function build_fs_tree_vis(data, div_id) {
                 } else {
                     return '';
                 }
-            })
+            });
         //update caret direction
         nodeEls.select("span").attr("class", function (d) {
             var icon = d.children ? " glyphicon-chevron-down"
@@ -139,14 +151,18 @@ function build_fs_tree_vis(data, div_id) {
     render(data, data);
 
     // collapse the directory if it is the top level non-modified field
-    /*if (init_time) {
-        d3.select(div_id).selectAll("li.node").each(function(d, i) {
+    if (init_time) {
+        ul.selectAll("li.node").each(function(d, i) {
             // decide which folders to hide
-            if (d.tag == "higest_non_modified") {
-                var onClickFunc = d3.select(this).on("click");
-                onClickFunc.apply(this, [d, i]);
+            if (d.hasOwnProperty('tag') && (d.tag.hasOwnProperty('ch_missing') || d.tag.hasOwnProperty('ch_extra') || d.tag.hasOwnProperty('ch_incorrect'))) {
+                console.log(d.name);
+            } else {
+                if (d.name != 'website') {
+                    var onClickFunc = d3.select(this).on("click");
+                    onClickFunc.apply(this, [d, i]);
+                }
             }
         });
         init_time = false;
-    }*/
+    }
 }

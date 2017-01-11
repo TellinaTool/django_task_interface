@@ -201,9 +201,11 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
         return node
 
     fs = create_filesystem(path, attrs)
-    # fs.name = '~'
+    fs_dict = fs.to_dict()
 
-    return fs.to_dict()
+    filesystem_sort(fs_dict)
+
+    return fs_dict
 
 
 def dict_2_disk(tree: dict, root_path: pathlib.Path, is_root_dir=False):
@@ -334,8 +336,10 @@ def filesystem_diff(fs1, fs2):
 
     errors = collections.defaultdict(int)
 
-    fs1_children = sorted(fs1['children'], key=lambda x:x['name'])
-    fs2_children = sorted(fs2['children'], key=lambda x:x['name'])
+    # fs1_children = sorted(fs1['children'], key=lambda x:x['name'])
+    # fs2_children = sorted(fs2['children'], key=lambda x:x['name'])
+    fs1_children = fs1['children']
+    fs2_children = fs2['children']
     annotated_children = []
 
     i = 0
@@ -419,7 +423,10 @@ def filesystem_sort(fs):
     else:
         for child in fs['children']:
             filesystem_sort(child)
-        fs['children'] = sorted(fs['children'], key=lambda x:x['name'])
+        fs['children'] = sorted([c for c in fs['children'] if c['type'] == 'file'],
+                                key=lambda x:x['name']) + \
+                         sorted([c for c in fs['children'] if c['type'] != 'file'],
+                                key=lambda x:x['name'])
 
 
 def attribute_diff(attr1, attr2):
@@ -465,7 +472,7 @@ def annotate_selected_path(fs, task_type, paths):
                             else:
                                 add_tag(child, 'selected', 1)
                                 for ancestor in stack:
-                                    inc_tag(ancestor, 'incorrect')
+                                    inc_tag(ancestor, 'ch_incorrect')
                     else:
                         node = child
                         stack.append(node)
@@ -482,7 +489,7 @@ def annotate_selected_path(fs, task_type, paths):
             if node['type'] == 'directory':
                 for child in node['children']:
                     if mark_unselected(child):
-                        inc_tag(node, 'incorrect')
+                        inc_tag(node, 'ch_incorrect')
                         incorrect = True
             return incorrect
         else:

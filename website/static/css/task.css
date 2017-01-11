@@ -21,20 +21,27 @@ nav {
     font-size: 14px;
 }
 
+.tree-vis-panel .sup{
+    color: #FF0055;
+    /* vertical-align: super; */
+    font-size: smaller;
+}
+
 .tree-vis-panel .selected{
 	text-decoration: underline;
 }
 
 .tree-vis-panel .correct_select{
-    border: 1px solid black ;
+    /* border: 1px solid black ; */
+    background-color: #FEFCD7;
 }
 
 .tree-vis-panel .extra_select{
-    border: 1px solid red ;
+    background-color: #DF9496;
 }
 
 .tree-vis-panel .miss_select{
-    border: 1px solid orange ;
+    background-color: #CCCCCC;
 }
 
 .tree-vis-panel .node {
