@@ -40,6 +40,6 @@ clean:
 	# Destroy Docker containers.
 	-sudo docker rm -f `sudo docker ps -q -a`
 	# Destroy database and migrations.
-	rm -rf db.sqlite3 website/migrations
+	# rm -rf db.sqlite3 website/migrations
 	# Remove log files
 	rm -f *.log
