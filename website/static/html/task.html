@@ -10,8 +10,8 @@ task interface server is done through HTTP AJAX calls.
       <link href="/static/lib/codecademy.themes/exercise.css" media="screen" rel="stylesheet" type="text/css" />
       <link href="/static/lib/codecademy.themes/vendor.css" media="screen" rel="stylesheet" type="text/css" />
       <link href="/static/lib/codecademy.themes/platform.css" media="screen" rel="stylesheet" type="text/css" />
-      <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
-      <link href="/static/css/task.css" rel="stylesheet" media="screen">
+      <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet" />
+      <link href="/static/css/task.css" rel="stylesheet" media="screen" />
    {% endblock %}
 
    {% block body %}
@@ -55,8 +55,8 @@ task interface server is done through HTTP AJAX calls.
 
                <div class="fcn-grid" style="cursor:auto;" data-reactid="51">
                   <!-- Task info -->
-                  <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor"
-                  style="position:absolute;top:0%;right:80%;bottom:0%;left:0%;">
+                  <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-left-neighbor"
+                  style="position:absolute;top:0%;right:30%;bottom:80%;left:0%;">
                      <div class="fcn-component" data-reactid="67">
                         <div class="accordion-container" data-reactid="70">
                            <div class="accordion">
@@ -64,7 +64,7 @@ task interface server is done through HTTP AJAX calls.
                                  <div class="accordion-section-heading" data-reactid="73">
                                     {% if task_order_number %}
                                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                                       Task {{task_order_number}}
+                                       Description
                                     </div>
                                     {% endif %}
                                  </div>
@@ -83,7 +83,7 @@ task interface server is done through HTTP AJAX calls.
 
                   <!-- xterms.js -->
                   <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor"
-                  style="position:absolute;top:0%;right:30%;bottom:0%;left:20%;">
+                  style="position:absolute;top:20%;right:30%;bottom:0%;left:0%;">
                      <div class="fcn-component">
                         <div class="accordion-section-heading terminal-header">
                            <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
@@ -96,16 +96,17 @@ task interface server is done through HTTP AJAX calls.
                   </div>
 
                   <!-- Direcotry Visualization -->
-                  <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor"
+                  <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor"
                        style="position:absolute;top:0%;right:0%;bottom:0%;left:70%;">
                      <!-- Current Directory -->
-                     <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-right-neighbor" style="position:relative;height:50%;">
+                     <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor"
+                          style="position:absolute;top:0%;right:0%;bottom:0%;left:0%;">
                         <div class="fcn-component">
                            <div class="accordion">
                               <div class="accordion-section">
                                  <div class="accordion-section-heading">
                                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                                       Current Directory
+                                       File System
                                     </div>
                                  </div>
                                  <div class="accordion-section-body tree-vis-panel" id="current-tree-vis">
@@ -116,7 +117,8 @@ task interface server is done through HTTP AJAX calls.
                      </div>
 
                      <!-- Goal Directory -->
-                     <div class="fcn-slot fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor" style="position:relative;height:50%;">
+                     <!-- <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor"
+                          style="position:absolute;top:0%;right:0%;bottom:0%;left:50%;">
                         <div class="fcn-component">
                            <div class="accordion">
                               <div class="accordion-section">
@@ -130,7 +132,7 @@ task interface server is done through HTTP AJAX calls.
                               </div>
                            </div>
                         </div>
-                     </div>
+                     </div> -->
                   </div>
                </div>
 
@@ -161,9 +163,17 @@ task interface server is done through HTTP AJAX calls.
             </div>
          </section>
       </div>
+
+      <div id="wait-dialog" class="hidden" style="text-align: center">
+           <img  src="css/images/loading_black.gif" />
+           <div style="margin-top: 10px; color: white">
+               <b>Please wait while we are setting up the next task...</b>
+           </div>
+      </div>
    {% endblock %}
 
    {% block other-scripts %}
+      <script src="/static/js/ww.jquery.min.js"></script>
       <script src="/static/lib/xterm.js/xterm.js"></script>
       <script src="/static/lib/xterm.js/addons/attach.js"></script>
       <script src="/static/lib/xterm.js/addons/fit.js"></script>

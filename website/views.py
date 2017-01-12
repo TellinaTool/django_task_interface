@@ -82,16 +82,18 @@ def get_additional_task_info(request, task_session):
     goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
         else task.goal
 
-    with open('fs-1.json', 'w') as o_f:
-        json.dump(disk_2_dict(
+    # with open('fs-1.json', 'w') as o_f:
+    #     json.dump(disk_2_dict(
+    #         pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
+    #         [filesystem._USER]), o_f)
+
+    current_filesystem = disk_2_dict(
             pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
-            [filesystem._USER]), o_f)
+            json.loads(task.file_attributes))
+    fs_diff = filesystem_diff(current_filesystem, json.loads(goal_filesystem))
 
     return json_response({
-        # "current_filesystem": task.initial_filesystem,
-        "current_filesystem": disk_2_dict(
-            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
-            json.loads(task.file_attributes)),
+        "current_filesystem": fs_diff,
         "goal_filesystem": json.loads(goal_filesystem),
         "duration": task.duration.seconds
     })
@@ -296,6 +298,8 @@ def reset_file_system(request, task_session):
 
     Reset the file system of the current task session.
     """
+    task = task_session.task
+
     study_session = task_session.study_session
     container = study_session.container
 
@@ -310,12 +314,17 @@ def reset_file_system(request, task_session):
         action_time = timezone.now()
     )
 
+    current_filesystem = disk_2_dict(
+            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
+            json.loads(task_session.task.file_attributes))
+    goal_filesystem = goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
+        else task.goal
+    fs_diff = filesystem_diff(current_filesystem, json.loads(goal_filesystem))
+
     return json_response({
         'container_id': container_id,
         'container_port': study_session.container.port,
-        'current_filesystem': disk_2_dict(
-            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
-            json.loads(task_session.task.file_attributes))
+        'current_filesystem': fs_diff
     })
 
 # --- User Login --- #
