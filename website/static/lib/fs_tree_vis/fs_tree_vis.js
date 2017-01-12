@@ -154,9 +154,7 @@ function build_fs_tree_vis(data, div_id) {
     if (init_time) {
         ul.selectAll("li.node").each(function(d, i) {
             // decide which folders to hide
-            if (d.hasOwnProperty('tag') && (d.tag.hasOwnProperty('ch_missing') || d.tag.hasOwnProperty('ch_extra') || d.tag.hasOwnProperty('ch_incorrect'))) {
-                console.log(d.name);
-            } else {
+            if (!(d.hasOwnProperty('tag') && (d.tag.hasOwnProperty('ch_missing') || d.tag.hasOwnProperty('ch_extra') || d.tag.hasOwnProperty('ch_incorrect')))) {
                 if (d.name != 'website') {
                     var onClickFunc = d3.select(this).on("click");
                     onClickFunc.apply(this, [d, i]);

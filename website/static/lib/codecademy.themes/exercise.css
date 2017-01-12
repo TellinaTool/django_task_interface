@@ -2387,9 +2387,10 @@
     right: 0
 }
 .accordion-section-heading {
-    padding: 10px;
+    padding: 5px;
     font-size: 16px;
-    min-height: 40px;
+    height: 30px;
+    min-height: 30px;
     background: #d4d5d6;
     border-bottom: 1px solid #e9eaea;
     cursor: pointer;
@@ -2419,7 +2420,7 @@
     pointer-events: none
 }
 .accordion-section-body {
-    overflow: hidden;
+    overflow-x: hidden;
     overflow-y: hidden;
     -webkit-transition: all 0.4s ease-out;
     transition: all 0.4s ease-out;

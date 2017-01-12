@@ -1,4 +1,15 @@
 $(document).ready(function () {
+    // restore the $.browser method of jQuery<1.9
+    jQuery.browser = {};
+    (function () {
+        jQuery.browser.msie = false;
+        jQuery.browser.version = 0;
+        if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
+            jQuery.browser.msie = true;
+            jQuery.browser.version = RegExp.$1;
+        }
+    })();
+
     // create terminal object
     var term;
     var xtermWebSocket;
@@ -47,10 +58,10 @@ $(document).ready(function () {
         $("#reset-button").click(function() {
             // close the websocket connection to the old container
             xtermWebSocket.close();
+            create_new_terminal();
             // reset file system
             $.get(`/reset_file_system`, function(data){
                 console.log(data.container_port);
-                create_new_terminal();
                 // open websocket connection to the new container
                 set_websocket(data.container_port);
                 build_fs_tree_vis(data.current_filesystem, "#current-tree-vis");
@@ -153,6 +164,7 @@ $(document).ready(function () {
 
         function switch_task(reason) {
             $("button").attr("disabled", "disabled");
+            $("#wait-dialog").modalDialog();
             $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
                 if (data.status == 'STUDY_SESSION_COMPLETE') {
                     BootstrapDialog.show({
@@ -171,7 +183,6 @@ $(document).ready(function () {
                     });
                     console.log("Study session completed.");
                 } else {
-                    // update database and reload task page
                     window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                     console.log(`${location.hostname}:10411/${data.task_session_id}`);
                 }
