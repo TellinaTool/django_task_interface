@@ -64,16 +64,25 @@ task interface server is done through HTTP AJAX calls.
                                  <div class="accordion-section-heading" data-reactid="73">
                                     {% if task_order_number %}
                                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                                       Description
+                                       Task Description
                                     </div>
                                     {% endif %}
                                  </div>
                                  <div class="accordion-section-body" data-reactid="77">
-                                    {% if task_description %}
                                     <div class="jfdpfOzslotw2euWgxJNN _1PzvoBkjTI2SFvb5o9YAHW" data-reactid="78">
-                                       <p>{{task_description}}</p>
+                                       {% if task_description %}
+                                          <p>{{task_description}}</p>
+                                       {% endif %}
+                                       <!-- {% if task_examples %}
+                                          <pre><code>
+                                             <span wrap="true" class="_18cGopAuUQVCOplu8pL9b5 _12mn8XNbByNCYxyzndA6if _3xp4c3Gvny8Oap6jE2-Q_ _2RE0-ZG6UYzWFn9_EER397 undefined" data-reactroot="" data-reactid="1" data-react-checksum="802587360">
+                                                <div class="CodeMirror" data-reactid="2">
+                                                   {{task_examples}}
+                                                </div>
+                                             </span>
+                                          </code></pre>
+                                       {% endif %} -->
                                     </div>
-                                    {% endif %}
                                  </div>
                               </div>
                            </div>
@@ -106,7 +115,7 @@ task interface server is done through HTTP AJAX calls.
                               <div class="accordion-section">
                                  <div class="accordion-section-heading">
                                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                                       File System
+                                       File System Diff
                                     </div>
                                  </div>
                                  <div class="accordion-section-body tree-vis-panel" id="current-tree-vis">
@@ -117,22 +126,22 @@ task interface server is done through HTTP AJAX calls.
                      </div>
 
                      <!-- Goal Directory -->
-                     <!-- <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor"
-                          style="position:absolute;top:0%;right:0%;bottom:0%;left:50%;">
+                     <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor hidden"
+                          style="position:absolute;top:50%;right:0%;bottom:0%;left:0%;" id="stdout-diff-vis-container">
                         <div class="fcn-component">
                            <div class="accordion">
                               <div class="accordion-section">
                                  <div class="accordion-section-heading">
                                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                                       Goal Directory
+                                       Stdout Diff
                                     </div>
                                  </div>
-                                 <div class="accordion-section-body tree-vis-panel" id="goal-tree-vis">
+                                 <div class="accordion-section-body tree-vis-panel" id="stdout-diff-vis">
                                  </div>
                               </div>
                            </div>
                         </div>
-                     </div> -->
+                     </div>
                   </div>
                </div>
 

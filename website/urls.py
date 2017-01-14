@@ -14,9 +14,6 @@ urlpatterns = [
     url(r'^register_user$', views.register_user),
     url(r'^retrieve_access_code$', views.retrieve_access_code),
 
-    # study session
-    url(r'^get_container_port$', views.get_container_port),
-
     # task session
     url(r'^.*-study_session-.*/task-.*', views.get_current_task),
     url(r'^get_current_task$', views.get_current_task),

@@ -11,7 +11,7 @@ from .models import *
 from .filesystem import *
 from .constants import *
 
-from . import functions, filesystem
+from . import functions
 import subprocess
 import json
 import pathlib
@@ -50,20 +50,42 @@ def task_session_id_required(f):
 
 # --- Task Management --- #
 
-@session_id_required
-def get_container_port(request, study_session):
+@task_session_id_required
+def get_current_task(request, task_session):
     """
-
     Args:
-        study_session
+        task_session
 
-    Returns the session_id and container_port for the given user.
-
+    Returns the information of the currently task in the user's study session.
     """
-    container_port = study_session.container.port
-    return json_response({
-        "container_port": container_port
-    })
+    task = task_session.task
+
+    study_session = task_session.study_session
+    task_part = task_session.study_session.get_part()
+
+    order_number = study_session.num_tasks_completed + 1
+
+    # Initialize filesystem
+    container = study_session.container
+    container_id = container.container_id
+    # TODO: need to check if file system copy is successful
+    filesystem_status = "FILE_SYSTEM_WRITTEN_TO_DISK"
+    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
+        'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
+        '/home/{}'.format(USER_NAME)])
+
+    context = {
+        "status": filesystem_status,
+        "task_part": task_part,
+        "task_description": task.description,
+        "task_order_number": order_number,
+        "total_num_tasks": study_session.total_num_tasks,
+        "first_name": study_session.user.first_name,
+        "last_name": study_session.user.last_name,
+    }
+
+    template = loader.get_template('task.html')
+    return HttpResponse(template.render(context, request))
 
 @task_session_id_required
 def get_additional_task_info(request, task_session):
@@ -78,25 +100,31 @@ def get_additional_task_info(request, task_session):
     task = task_session.task
     study_session = task_session.study_session
     container = study_session.container
-
-    goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
-        else task.goal
+    container_port = study_session.container.port
 
     # with open('fs-1.json', 'w') as o_f:
     #     json.dump(disk_2_dict(
     #         pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
     #         [filesystem._USER]), o_f)
 
-    current_filesystem = disk_2_dict(
-            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
-            json.loads(task.file_attributes))
-    fs_diff = filesystem_diff(current_filesystem, json.loads(goal_filesystem))
+    fs_diff = compute_filesystem_diff(container, task, [],
+                                      save_initial_filesystem=True)
+    if task.type == 'stdout':
+        stdout_diff = compute_stdout_diff('', task)
+        resp = {
+            'filesystem_diff': fs_diff,
+            'stdout_diff': stdout_diff,
+            "task_duration": task.duration.seconds,
+            "container_port": container_port
+        }
+    else:
+        resp = {
+            "filesystem_diff": fs_diff,
+            "task_duration": task.duration.seconds,
+            "container_port": container_port
+        }
 
-    return json_response({
-        "current_filesystem": fs_diff,
-        "goal_filesystem": json.loads(goal_filesystem),
-        "duration": task.duration.seconds
-    })
+    return json_response(resp)
 
 @task_session_id_required
 def go_to_next_task(request, task_session):
@@ -135,12 +163,10 @@ def go_to_next_task(request, task_session):
         resp.set_cookie('session_id', '')
         resp.set_cookie('task_session_id', '')
     else:
-        # wipe out everything in the user's home directory
+        # destroy the old container and create a new one
         container = study_session.container
         container.destroy()
         study_session.create_new_container()
-        # subprocess.run(['docker', 'exec', '-u', 'root', container.container_id,
-        #     'rm', '-r', '/home/{}'.format(USER_NAME)])
 
         next_task_session_id = study_session.update_current_task_session_id()
         create_task_session(study_session)
@@ -150,46 +176,6 @@ def go_to_next_task(request, task_session):
         resp.set_cookie('task_session_id', next_task_session_id)
 
     return resp
-
-@task_session_id_required
-def get_current_task(request, task_session):
-    """
-    Args:
-        task_session
-
-    Returns the information of the currently task in the user's study session.
-    """
-    task = task_session.task
-
-    study_session = task_session.study_session
-    task_part = task_session.study_session.get_part()
-
-    order_number = study_session.num_tasks_completed + 1
-
-    # Initialize filesystem
-    container = study_session.container
-    container_id = container.container_id
-    filesystem_status = dict_2_disk(json.loads(task.initial_filesystem),
-                pathlib.Path('/{}/home'.format(container.filesystem_name)),
-                is_root_dir=True)
-    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
-        'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
-        '/home/{}'.format(USER_NAME)])
-
-    context = {
-        "status": filesystem_status,
-        "task_part": task_part,
-        "task_description": task.description,
-        "task_goal": task.goal,
-        "task_order_number": order_number,
-        "total_num_tasks": study_session.total_num_tasks,
-        "first_name": study_session.user.first_name,
-        "last_name": study_session.user.last_name,
-    }
-
-    template = loader.get_template('task.html')
-    return HttpResponse(template.render(context, request))
-
 
 def create_task_session(study_session):
     """
@@ -229,7 +215,7 @@ def create_task_session(study_session):
         status = 'running'
     )
 
-# --- Terminal I/O Management --- #
+# --- Terminal I/O --- #
 
 @task_session_id_required
 @csrf_exempt
@@ -265,35 +251,31 @@ def on_command_execution(request, task_session):
     # compute distance between current file system and the goal file system
     study_session = task_session.study_session
     container = study_session.container
-    current_file_system = disk_2_dict(
-            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
-            json.loads(task.file_attributes))
-    goal = task.initial_filesystem if task.type == 'stdout' else task.goal
-    fs_diff = filesystem_diff(current_file_system, json.loads(goal))
 
-    # annotate the fs_diff with the stdout_paths
-    annotate_selected_path(fs_diff, task.type, stdout_paths)
+    fs_diff = compute_filesystem_diff(container, task, stdout_paths)
 
     task_completed = False
     if task.type == 'stdout':
+        stdout_diff = compute_stdout_diff(stdout, task)
         # check if stdout signals task completion
         # the files/directories being checked must be presented in full paths
         # the file/directory names cannot contain spaces
-        if task.goal in stdout_lines[-2]:
+        if not stdout_diff['tag']:
             task_completed = True
+        resp = { 'filesystem_diff': fs_diff, 'stdout_diff': stdout_diff }
     elif task.type == 'filesearch' or task.type == 'filesystem':
         # check if the current file system is the same as the goal file system
         if not fs_diff['tag']:
             task_completed = True
+        resp = { 'filesystem_diff': fs_diff }
     else:
         raise AttributeError('Unrecognized task type "{}": must be "stdout" or'
                              '"filesystem"'.format(task.type))
 
     if task_completed:
-        return json_response({ 'filesystem_diff': fs_diff },
-                             status='TASK_COMPLETED')
+        return json_response(resp, status= 'TASK_COMPLETED')
     else:
-        return json_response({ 'filesystem_diff': fs_diff })
+        return json_response(resp)
 
 # --- File System Management --- #
 
@@ -321,18 +303,84 @@ def reset_file_system(request, task_session):
         action_time = timezone.now()
     )
 
-    current_filesystem = disk_2_dict(
-            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
-            json.loads(task_session.task.file_attributes))
-    goal_filesystem = goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
-        else task.goal
-    fs_diff = filesystem_diff(current_filesystem, json.loads(goal_filesystem))
+    if task.type == 'stdout':
+        stdout_diff = compute_stdout_diff('', task)
+    fs_diff = compute_filesystem_diff(container, task, [])
 
     return json_response({
         'container_id': container_id,
         'container_port': study_session.container.port,
-        'current_filesystem': fs_diff
+        'filesystem_diff': fs_diff,
+        'stdout_diff': stdout_diff
     })
+
+def compute_filesystem_diff(container, task, stdout_paths,
+                            save_initial_filesystem=False):
+    current_filesystem = disk_2_dict(
+            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
+            json.loads(task.file_attributes))
+    if save_initial_filesystem:
+        task.initial_filesystem = json.dumps(current_filesystem)
+        task.save()
+
+    goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
+        else task.goal_filesystem
+    fs_diff = filesystem_diff(current_filesystem, json.loads(goal_filesystem))
+
+    # annotate the fs_diff with the stdout_paths
+    annotate_path_selection(fs_diff, task.type, stdout_paths)
+
+    return fs_diff
+
+def compute_stdout_diff(stdout, task):
+    def __equal__(l1, l2, task_id):
+        if task_id == 16:
+            # loose comparison is enough for the task that requires date/time
+            # to be outputed in long-iso format
+            fields = l2.split()
+            file_name = fields[-1]
+            datetime = ' '.join(fields[-3:-1])
+            if file_name in l1 and datetime in l1:
+                return True
+        else:
+            return l1 == l2
+        return False
+
+    stdout1 = [line.strip() for line in stdout.split('\n')]
+    stdout2 = [line.strip() for line in task.stdout.split('\n')]
+
+    stdout_diff = []
+    matched_stdout2 = []
+    tag = 'correct'
+    for l1 in stdout1:
+        matched = False
+        for i in range(len(stdout2)):
+            if not i in matched_stdout2 and __equal__(l1, stdout2[i], task.task_id):
+                matched = True
+                matched_stdout2.append(stdout2[i])
+                break
+        if matched:
+            stdout_diff.append({
+                'line': l1,
+                'tag': 'correct'
+            })
+        else:
+            stdout_diff.append({
+                'line': l1,
+                'tag': 'extra'
+            })
+            tag = 'incorrect'
+
+    for i in range(len(stdout2)):
+        if not i in matched_stdout2:
+            l2 = stdout2[i]
+            stdout_diff.append({
+                'line': l2,
+                'tag': 'missing'
+            })
+            tag = 'incorrect'
+
+    return { 'lines': stdout_diff, 'tag': tag }
 
 # --- User Login --- #
 

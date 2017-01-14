@@ -19,41 +19,34 @@ $(document).ready(function () {
     create_new_terminal();
 
     // connect xterm.js terminal to the study session's container
-    $.get(`/get_container_port`, function(data) {
+    $.get(`/get_additional_task_info`, function(data) {
         var container_port = data.container_port;
-        var task_time_out;
 
+        console.log(data.task_duration);
         set_websocket(container_port);
 
+        refresh_vis(data);
+
         // start timing the task
-        $.get(`/get_additional_task_info`, function(data) {
-            task_time_out = setTimeout(function() {
-                console.log('task time out');
-                clearTimeout(task_time_out);
+        var task_time_out = setTimeout(function() {
+             console.log('task time out');
+             clearTimeout(task_time_out);
 
-                // prompt the user that they have to move on to the next task
-                BootstrapDialog.show({
-                    title: "Time's Up",
-                    message: "The current task session is time out. Please proceed to the next task.",
-                    buttons: [{
-                        label: "Proceed",
-                        cssClass: "btn-primary",
-                        action: function(dialogItself) {
-                            dialogItself.close();
-                            // close the websocket connection to the current container
-                            xtermWebSocket.close();
-                            switch_task('time_out');
-                        }
-                    }],
-                    closable: false,
-                });
-            }, parseInt(data.duration) * 1000);
-
-            // initial directory visualization
-            build_fs_tree_vis(data.current_filesystem, "#current-tree-vis");
-            console.log(data.goal_filesystem);
-            build_fs_tree_vis(data.goal_filesystem, "#goal-tree-vis");
-        });
+             // prompt the user that they have to move on to the next task
+             BootstrapDialog.show({
+                 title: "Time's Up",
+                 message: "The current task session is time out. Please proceed to the next task.",
+                 buttons: [{
+                     label: "Proceed",
+                     cssClass: "btn-primary",
+                     action: function(dialogItself) {
+                         dialogItself.close();
+                         switch_task('time_out');
+                     }
+                 }],
+                 closable: false,
+             });
+        }, data.task_duration * 1000);
 
         $("#reset-button").click(function() {
             // close the websocket connection to the old container
@@ -64,7 +57,7 @@ $(document).ready(function () {
                 console.log(data.container_port);
                 // open websocket connection to the new container
                 set_websocket(data.container_port);
-                build_fs_tree_vis(data.current_filesystem, "#current-tree-vis");
+                refresh_vis(data);
             })
         });
 
@@ -81,8 +74,6 @@ $(document).ready(function () {
                     cssClass: "btn-danger",
                     action: function(dialogItself) {
                         dialogItself.close();
-                        // close the websocket connection to the current container
-                        xtermWebSocket.close();
                         switch_task('quit');
                     }
                 },
@@ -95,6 +86,19 @@ $(document).ready(function () {
                 }],
             });
         })
+
+        function refresh_vis(data) {
+            if (data.hasOwnProperty('stdout_diff')) {
+                console.log('stdout');
+                // reset height of file system diff and stdout diff
+                $("#stdout-diff-vis-container").show();
+                $("#current-tree-vis").height('50%');
+                // build_stdout_vis(data.stdout_diff, "#stdout-diff-vis");
+            }
+            // file system diff visualization
+            build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
+            console.log(data.filesystem_diff);
+        }
 
         function set_websocket(container_port)  {
             xtermWebSocket = new WebSocket(`ws:\/\/${location.hostname}:10412/${container_port}`);
@@ -122,9 +126,7 @@ $(document).ready(function () {
                         if (stdout.split('\n').length > 1) {
                             $.post(`/on_command_execution`, {stdout: stdout},
                                 function(data) {
-                                    current_tree_vis = data.filesystem_diff;
-                                    console.log(current_tree_vis);
-                                    build_fs_tree_vis(current_tree_vis, "#current-tree-vis");
+                                    refresh_vis(data);
                                     if (data.status == 'TASK_COMPLETED') {
                                         clearTimeout(task_time_out);
                                         setTimeout(function() {
@@ -136,8 +138,6 @@ $(document).ready(function () {
                                                     cssClass: "btn-primary",
                                                     action: function(dialogItself) {
                                                         dialogItself.close();
-                                                        // close the websocket connection to the current container
-                                                        xtermWebSocket.close();
                                                         switch_task('passed');
                                                     }
                                                 }],
@@ -165,6 +165,8 @@ $(document).ready(function () {
         function switch_task(reason) {
             $("button").attr("disabled", "disabled");
             $("#wait-dialog").modalDialog();
+            // close the websocket connection to the current container
+            xtermWebSocket.close();
             $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
                 if (data.status == 'STUDY_SESSION_COMPLETE') {
                     BootstrapDialog.show({

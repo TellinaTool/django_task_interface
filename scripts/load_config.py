@@ -50,7 +50,7 @@ def run():
                 group = group
             )
     for file_name in os.listdir('data'):
-        if file_name.startswith('task'):
+        if file_name.startswith('task') and not 'stdout' in file_name:
             print("load task json file {}...".format(file_name))
             file = open(os.path.join('data/', file_name), 'r')
             content = str(file.read())
@@ -59,18 +59,23 @@ def run():
                 continue
             task = json.loads(content)
             if not Task.objects.filter(task_id=task['task_id']).exists():
+                goal = task['goal_filesystem']
                 if task['type'] == 'stdout':
-                    goal = task['goal']
+                    with open(os.path.join('data/', 'task{}.stdout.json'
+                            .format(task['task_id'])), 'r') as f:
+                        stdout = f.read()
                 else:
-                    goal = task['goal']
                     filesystem_sort(goal)
                     goal = json.dumps(goal)
+                    stdout = ''
+
                 Task.objects.create(
                     task_id = task['task_id'],
                     type=task['type'],
                     description=task['description'],
+                    stdout=stdout,
                     file_attributes = json.dumps(task["file_attributes"]),
                     initial_filesystem=json.dumps(task['initial_filesystem']),
-                    goal=goal,
+                    goal_filesystem=goal,
                     duration=datetime.timedelta(seconds=task_duration),
                 )

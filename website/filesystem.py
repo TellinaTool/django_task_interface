@@ -309,6 +309,18 @@ def filesystem_diff(fs1, fs2):
 
     """
 
+    def __equal__(n1, n2):
+        """Determine if two FS nodes are equal."""
+        return (n1['type'] == n2['type'] and n1['name'] == n2['name'])
+
+    def __ahead__(n1, n2):
+        """Determine if node1 comes ahead of node2 in the filesystem."""
+        if n1['type'] == 'file' and n2['type'] == 'directory':
+            return True
+        if n1['type'] == n2['type'] and n1['name'] < n2['name']:
+            return True
+        return False
+
     def mark(node, tag):
         """Mark a node and its descendants with a specific tag."""
         add_tag(node, tag)
@@ -348,52 +360,36 @@ def filesystem_diff(fs1, fs2):
     while (i < len(fs1_children)) and (j < len(fs2_children)):
         child1 = fs1_children[i]
         child2 = fs2_children[j]
-        if child1['name'] == child2['name']:
+        if __equal__(child1, child2):
             if child1['type'] == 'file':
-                if child2['type'] == 'file':
-                    # comparing two files
-                    tag = attribute_diff(child1['attributes'],
-                                         child2['attributes'])
-                    if tag_exists(child2, 'to_select'):
-                        add_tag(child1, 'to_select')
-                    annotated_children.append(markcopy(child1, tag))
-                    if tag:
-                        errors[tag] += 1
-                elif child2['type'] == 'directory':
-                    # the current subtree is a file while the goal subtree
-                    # is a folder
-                    annotated_children.append(markcopy(child1, 'extra'))
-                    annotated_children.append(markcopy(child2, 'missing'))
-                    errors['ch_missing'] += 1
-                    errors['ch_extra'] += 1
-                else:
-                    raise AttributeError('Unrecognized node type {}, must '
-                        'be "file" or "directory".'.format(child2['type']))
+                # comparing two files
+                tag = attribute_diff(child1['attributes'],
+                                     child2['attributes'])
+                if tag_exists(child2, 'to_select'):
+                    add_tag(child1, 'to_select')
+                annotated_children.append(markcopy(child1, tag))
+                if tag:
+                    errors[tag] += 1
             elif child1['type'] == 'directory':
-                if child2['type'] == 'directory':
-                    # comparing two directories
-                    annotated_child = filesystem_diff(child1, child2)
-                    if tag_exists(child2, 'to_select'):
-                        add_tag(annotated_child, 'to_select')
-                    annotated_children.append(annotated_child)
-                    if annotated_child['tag']:
-                        # for key in annotated_child['tag']:
-                        #     if not key.startswith('ch_'):
-                        #         errors['ch_'+key] += 1
-                        errors['ch_incorrect'] += 1
-                else:
-                    # the current subtree is a folder while the goal
-                    # subtree is a file
-                    annotated_children.append(markcopy(child1, 'extra'))
-                    annotated_children.append(markcopy(child2, 'missing'))
-                    errors['ch_missing'] += 1
-                    errors['ch_extra'] += 1
+                # comparing two directories
+                annotated_child = filesystem_diff(child1, child2)
+                if tag_exists(child2, 'to_select'):
+                    add_tag(annotated_child, 'to_select')
+                annotated_children.append(annotated_child)
+                if annotated_child['tag'] and (
+                    'missing' in annotated_child['tag'] or \
+                    'extra' in annotated_child['tag'] or \
+                    'incorrect' in annotated_child['tag'] or \
+                    'ch_missing' in annotated_child['tag'] or \
+                    'ch_extra' in annotated_child['tag'] or \
+                    'ch_incorrect' in annotated_child['tag']):
+                    errors['ch_incorrect'] += 1
             else:
                 raise AttributeError('Unrecognized node type {}, must be '
                     '"file" or "directory".'.format(child1['type']))
             i += 1
             j += 1
-        elif child1['name'] < child2['name']:
+        elif __ahead__(child1, child2):
             annotated_children.append(markcopy(child1, 'extra'))
             errors['ch_extra'] += 1
             i += 1
@@ -442,7 +438,7 @@ def attribute_diff(attr1, attr2):
     return tag
 
 
-def annotate_selected_path(fs, task_type, paths):
+def annotate_path_selection(fs, task_type, paths):
     """Annotate the paths that are selected in the stdout in a file system."""
     for path in paths:
         print(path.as_posix())
@@ -453,8 +449,6 @@ def annotate_selected_path(fs, task_type, paths):
         for i in range(1, len(steps)):
             step = steps[i]
             for child in node['children']:
-                print(child['name'])
-                print(step)
                 if child['name'] == step:
                     print(i)
                     print(len(steps))
@@ -463,7 +457,7 @@ def annotate_selected_path(fs, task_type, paths):
                         stop_search = True
                         break
                     if i == len(steps) - 1:
-                        if task_type == 'filesystem':
+                        if task_type in ['stdout', 'filesystem']:
                             # file search commands does not affect task completion
                             # simply show what is selected
                             add_tag(child, 'selected', 0)
@@ -481,6 +475,7 @@ def annotate_selected_path(fs, task_type, paths):
             if stop_search:
                 break
 
+    # mark unselected files at last
     def mark_unselected(node):
         if not tag_exists(node, 'missing'):
             incorrect = False

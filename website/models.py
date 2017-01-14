@@ -26,8 +26,8 @@ import subprocess
 WEBSITE_DEVELOP = True
 
 # unimplemented tasks: 3, 7, 8, 9, 10
-TASK_BLOCK_I = [1,2,4,5]
-TASK_BLOCK_II = [6,9,11,12]
+TASK_BLOCK_I = [19,17,15,13,1,2,4,5]
+TASK_BLOCK_II = [18,16,14,6,9,11,12]
 
 treatment_A = 'Tellina or Google Search'
 treatment_B = 'Google Search'
@@ -72,20 +72,23 @@ class Task(models.Model):
     :member task_id: The ID that uniquely identifies a task. This makes the
         implementation of task scheduler easier.
     :member type: The type of task. Can be 'stdout' or 'filesystem'.
-    :member description: A human-readable description of the task.
+    :member description: A precise description of the task.
+    :member stdout: The expected standard output for the task. Empty if task
+        type is not 'stdout'.
     :member file_attributes: File attributes used in the tasks.
     :member initial_filesystem: JSON representation of the user's starting home
         directory
-    :member goal: Goal stdout (if type is 'stdout') or JSON representation of
-        the goal directory (if type is 'filesystem')
+    :member goal_filesystem: JSON representation of the goal directory (if type
+        is 'filesystem')
     :member duration: How much time is alotted for the task.
     """
     task_id = models.PositiveIntegerField()
     type = models.TextField()
     description = models.TextField()
+    stdout = models.TextField(default='')
     file_attributes = models.TextField()
     initial_filesystem = models.TextField()
-    goal = models.TextField()
+    goal_filesystem = models.TextField()
     duration = models.DurationField()
 
 # --- Container Management --- #
