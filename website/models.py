@@ -235,7 +235,11 @@ class StudySession(models.Model):
         # compute which
         if not WEBSITE_DEVELOP:
             assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
-        if self.num_tasks_completed < len(TASK_BLOCK_I):
+        if self.user.group in ['group1', 'group4']:
+            part1_tasks = TASK_BLOCK_I
+        else:
+            part1_tasks = TASK_BLOCK_II
+        if self.num_tasks_completed < len(part1_tasks):
             return 'I'
         else:
             return 'II'

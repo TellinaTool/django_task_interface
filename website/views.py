@@ -303,16 +303,23 @@ def reset_file_system(request, task_session):
         action_time = timezone.now()
     )
 
+    fs_diff = compute_filesystem_diff(container, task, [])
     if task.type == 'stdout':
         stdout_diff = compute_stdout_diff('', task)
-    fs_diff = compute_filesystem_diff(container, task, [])
-
-    return json_response({
-        'container_id': container_id,
-        'container_port': study_session.container.port,
-        'filesystem_diff': fs_diff,
-        'stdout_diff': stdout_diff
-    })
+        resp = {
+            'container_id': container_id,
+            'container_port': study_session.container.port,
+            'filesystem_diff': fs_diff,
+            'stdout_diff': stdout_diff
+        }
+    else:
+        resp = {
+            'container_id': container_id,
+            'container_port': study_session.container.port,
+            'filesystem_diff': fs_diff
+        }
+    
+    return json_response(resp);
 
 def compute_filesystem_diff(container, task, stdout_paths,
                             save_initial_filesystem=False):
