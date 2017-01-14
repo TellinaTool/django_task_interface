@@ -2368,7 +2368,8 @@
     background-color: white
 }
 .accordion {
-    background-color: #f1f2f3;
+    /* background-color: #f1f2f3; */
+    background-color: white;
     overflow-y: auto;
     overflow-x: hidden;
     position: absolute;
@@ -2401,7 +2402,7 @@
     pointer-events: none
 }
 .accordion-section {
-    overflow-x: hidden
+    overflow-x: hidden;
 }
 .sticky-top {
     position: absolute;

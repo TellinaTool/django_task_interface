@@ -61,13 +61,13 @@ task interface server is done through HTTP AJAX calls.
                         <div class="accordion-container" data-reactid="70">
                            <div class="accordion">
                               <div class="accordion-section">
-                                 <div class="accordion-section-heading" data-reactid="73">
+                                 <!-- <div class="accordion-section-heading" data-reactid="73">
                                     {% if task_order_number %}
                                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
                                        Task Description
                                     </div>
                                     {% endif %}
-                                 </div>
+                                 </div> -->
                                  <div class="accordion-section-body" data-reactid="77">
                                     <div class="jfdpfOzslotw2euWgxJNN _1PzvoBkjTI2SFvb5o9YAHW" data-reactid="78">
                                        {% if task_description %}
@@ -182,10 +182,10 @@ task interface server is done through HTTP AJAX calls.
    {% endblock %}
 
    {% block other-scripts %}
-      <script src="/static/js/ww.jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/1.0.0/fetch.min.js"></script>
       <script src="/static/lib/xterm.js/xterm.js"></script>
-      <script src="/static/lib/xterm.js/addons/attach.js"></script>
-      <script src="/static/lib/xterm.js/addons/fit.js"></script>
+      <script src="/static/lib/xterm.js/addons/attach/attach.js"></script>
+      <script src="/static/lib/xterm.js/addons/fit/fit.js"></script>
       <script>
       $(document).ready(function () {
          console.log("{{status}}");
@@ -196,6 +196,8 @@ task interface server is done through HTTP AJAX calls.
          {% endifnotequal %}
       })
       </script>
+
+      <script src="/static/js/ww.jquery.min.js"></script>
 
       <script src="https://d3js.org/d3.v3.min.js"></script>
       <script src="/static/lib/fs_tree_vis/treelist.js"></script>
