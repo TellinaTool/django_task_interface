@@ -15,6 +15,7 @@ from . import functions
 import subprocess
 import json
 import pathlib
+import re
 
 def json_response(d={}, status='SUCCESS'):
     d.update({'status': status})
@@ -256,11 +257,11 @@ def on_command_execution(request, task_session):
 
     task_completed = False
     if task.type == 'stdout':
-        stdout_diff = compute_stdout_diff(stdout, task)
+        stdout_diff = compute_stdout_diff('\n'.join(stdout_lines[1:-1]), task)
         # check if stdout signals task completion
         # the files/directories being checked must be presented in full paths
         # the file/directory names cannot contain spaces
-        if not stdout_diff['tag']:
+        if stdout_diff['tag'] == 'correct':
             task_completed = True
         resp = { 'filesystem_diff': fs_diff, 'stdout_diff': stdout_diff }
     elif task.type == 'filesearch' or task.type == 'filesystem':
@@ -342,12 +343,19 @@ def compute_filesystem_diff(container, task, stdout_paths,
 def compute_stdout_diff(stdout, task):
     def __equal__(l1, l2, task_id):
         if task_id == 16:
-            # loose comparison is enough for the task that requires date/time
-            # to be outputed in long-iso format
+            # loose comparison is enough for tasks that requires date/time
+            # to be outputed in a specific format
             fields = l2.split()
             file_name = fields[-1]
             datetime = ' '.join(fields[-3:-1])
             if file_name in l1 and datetime in l1:
+                return True
+        elif task_id == 19:
+            # loose comparison is enough for tasks that requires the number of
+            # lines in a file
+            num_of_lines, file_name = l2.split()
+            num_of_lines_pattern = re.compile(r'{}\s'.format(num_of_lines))
+            if file_name in l1 and (re.search(num_of_lines_pattern, l1)):
                 return True
         else:
             return l1 == l2
@@ -360,11 +368,13 @@ def compute_stdout_diff(stdout, task):
     matched_stdout2 = []
     tag = 'correct'
     for l1 in stdout1:
+        if not l1:
+            continue
         matched = False
         for i in range(len(stdout2)):
             if not i in matched_stdout2 and __equal__(l1, stdout2[i], task.task_id):
                 matched = True
-                matched_stdout2.append(stdout2[i])
+                matched_stdout2.append(i)
                 break
         if matched:
             stdout_diff.append({
@@ -372,11 +382,18 @@ def compute_stdout_diff(stdout, task):
                 'tag': 'correct'
             })
         else:
-            stdout_diff.append({
-                'line': l1,
-                'tag': 'extra'
-            })
-            tag = 'incorrect'
+            total_pattern = re.compile(r'(total\s|\stotal)')
+            if task.task_id == 19 and re.search(total_pattern, l1):
+                stdout_diff.append({
+                    'line': l1,
+                    'tag': 'correct'
+                })
+            else:
+                stdout_diff.append({
+                    'line': l1,
+                    'tag': 'extra'
+                })
+                tag = 'incorrect'
 
     for i in range(len(stdout2)):
         if not i in matched_stdout2:

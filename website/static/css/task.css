@@ -16,6 +16,10 @@ nav {
 	margin-right: 3px;
 }
 
+#stdout-diff-vis-container {
+    display: none;
+}
+
 .tree-vis-panel .fileattributes {
     color: #000000;
     font-size: 14px;
@@ -58,8 +62,26 @@ nav {
 }
 
 .tree-vis-panel {
+    padding-top: 5px;
 	padding-left: 0px;
 	background: #ffffff;
+	white-space: nowrap;
+	overflow-x: auto;
+    overflow-y: auto;
+}
+
+.accordion-section-fixed-heading {
+    position: fixed;
+    width: 100%;
+    padding: 5px;
+    font-size: 16px;
+    height: 30px;
+    min-height: 30px;
+    background: #d4d5d6;
+    border-bottom: 1px solid #e9eaea;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 1;
 }
 
 .terminal-header {
@@ -70,4 +92,5 @@ nav {
 
 .terminal-container {
     height: 100%;
+    background: #000000;
 }

@@ -1,6 +1,70 @@
 // Given a json represented *merged* filesystem status, and a div id to draw the visualization,
 // render the visualization there.
 // The filesystem json should be one created from fs_diff.py
+function build_stdout_vis(data, div_id) {
+    var init_time = true;
+    var id = 0;
+
+    var tree = d3.layout.treelist()
+        .childIndent(15)
+        .nodeHeight(22);
+
+    $(div_id).empty();
+    var ul = d3.select(div_id).append("ul").classed("treelist", "true");
+
+    function render(data) {
+        var items = data.lines,
+            duration = 250;
+
+        var nodeEls = ul.selectAll("li.node").data(items, function (d) {
+            d.id = d.id || ++id;
+            return d.id;
+        })
+
+        //entered items
+        var entered = nodeEls.enter().append("li").classed("node", true)
+            .style("margin-top", 0 + "px")
+            .style("opacity", 0)
+            .style("height", tree.nodeHeight() + "px")
+
+        ul.selectAll("li.node").style("color", function(d) {
+            if (d.hasOwnProperty("tag") && d.tag == "extra")
+                return "red";
+            else if (d.hasOwnProperty("tag") && d.tag == "incorrect")
+                return "orange";
+            else
+                return "black";
+        });
+
+        ul.selectAll("li.node").style("text-decoration", function(d) {
+            if (d.hasOwnProperty('tag') && d.tag == "extra")
+                return "line-through";
+        });
+
+        //add text
+        entered.append("span").attr("class", 'filename')
+            .html(function (d) {
+                return d.line;
+            });
+
+        //update position with transition: if
+        nodeEls//.transition().duration(duration)
+            .style("margin-top", function (d) {
+                return ((d.id-1) * tree.nodeHeight()) + "px";
+                })
+            .style("margin-left", function (d) { return d.x + "px"; })
+            .style("opacity", function (d) {
+                    if (d.hasOwnProperty('tag') && d.tag == "missing")
+                        return 0.3;
+                    else
+                        return 1;
+                }
+            );
+        nodeEls.exit().remove();
+    }
+
+    render(data);
+}
 
 function build_fs_tree_vis(data, div_id) {
 
@@ -136,7 +200,9 @@ function build_fs_tree_vis(data, div_id) {
 
         //update position with transition: if 
         nodeEls//.transition().duration(duration)
-            .style("margin-top", function (d) { return (d.y - tree.nodeHeight()) + "px";})
+            .style("margin-top", function (d) {
+                return (d.y - tree.nodeHeight()) + "px";
+            })
             .style("margin-left", function (d) { return d.x + "px"; })
             .style("opacity", function (d) {
                     if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty("missing"))
