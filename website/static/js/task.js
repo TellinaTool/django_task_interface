@@ -10,6 +10,7 @@ $(document).ready(function () {
         }
     })();
 
+    var task_time_out;
     // create terminal object
     var term, protocol, socketURL, socket, pid, charWidth, charHeight;
     var terminalContainer = document.getElementById('bash-terminal');
@@ -25,7 +26,7 @@ $(document).ready(function () {
         refresh_vis(data);
 
         // start timing the task
-        var task_time_out = setTimeout(function() {
+        task_time_out = setTimeout(function() {
              console.log('task time out');
              clearTimeout(task_time_out);
 
@@ -87,10 +88,11 @@ $(document).ready(function () {
 
     function refresh_vis(data) {
         if (data.hasOwnProperty('stdout_diff')) {
+            console.log(data);
             // reset height of file system diff and stdout diff
             $("#stdout-diff-vis-container").show();
-            $("#current-tree-vis").height('50%');
-            // build_stdout_vis(data.stdout_diff, "#stdout-diff-vis");
+            $("#current-tree-vis-container").css('bottom', '50%');
+            build_stdout_vis(data.stdout_diff, "#stdout-diff-vis");
         }
         // file system diff visualization
         build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
@@ -169,50 +171,13 @@ $(document).ready(function () {
         };
     }
 
+    /* $(".accordion").scroll(function(event) {
+        $(".accordion-section-heading").css("position", "fixed");
+    }); */
+
     function runRealTerminal() {
         term.attach(socket);
         term._initialized = true;
-    }
-
-    function runFakeTerminal() {
-      if (term._initialized) {
-        return;
-      }
-
-      term._initialized = true;
-
-      var shellprompt = '$ ';
-
-      term.prompt = function () {
-        term.write('\r\n' + shellprompt);
-      };
-
-      term.writeln('Welcome to xterm.js');
-      term.writeln('This is a local terminal emulation, without a real terminal in the back-end. This is a local terminal emulation, without a real terminal in the back-end. This is a local terminal emulation, without a real terminal in the back-end. This is a local terminal emulation, without a real terminal in the back-end.');
-      term.writeln('Type some keys and commands to play around.');
-      term.writeln('');
-      term.prompt();
-
-      term.on('key', function (key, ev) {
-        var printable = (
-          !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
-        );
-
-        if (ev.keyCode == 13) {
-          term.prompt();
-        } else if (ev.keyCode == 8) {
-         // Do not delete the prompt
-          if (term.x > 2) {
-            term.write('\b \b');
-          }
-        } else if (printable) {
-          term.write(key);
-        }
-      });
-
-      term.on('paste', function (data, ev) {
-        term.write(data);
-      });
     }
 
     function switch_task(reason) {

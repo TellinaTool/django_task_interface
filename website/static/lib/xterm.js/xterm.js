@@ -2141,7 +2141,6 @@ Terminal.prototype.innerWrite = function () {
         var l = data.length, i = 0, j, cs, ch, code, low, ch_width, row;
         data = data.replace(/\s\r/g, "");
         // NEWLINE BUG FIX
-        console.log(l);
         // console.log(JSON.stringify(data));
         // If XOFF was sent in order to catch up with the pty process, resume it if
         // the writeBuffer is empty to allow more data to come in.
