@@ -2368,9 +2368,10 @@
     background-color: white
 }
 .accordion {
-    background-color: #f1f2f3;
+    /* background-color: #f1f2f3; */
+    background-color: white;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
     position: absolute;
     top: 0;
     left: 0;
@@ -2380,7 +2381,8 @@
 }
 .accordion-container {
     position: absolute;
-    overflow-y: auto;
+    overflow-x: hidden;
+    overflow-y: hidden;
     top: 0;
     bottom: 0;
     left: 0;
@@ -2394,14 +2396,15 @@
     background: #d4d5d6;
     border-bottom: 1px solid #e9eaea;
     cursor: pointer;
-    pointer-events: auto
+    pointer-events: auto;
 }
 .accordion-section-heading.invisible {
     visibility: hidden;
     pointer-events: none
 }
 .accordion-section {
-    overflow-x: hidden
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 .sticky-top {
     position: absolute;
@@ -2420,8 +2423,8 @@
     pointer-events: none
 }
 .accordion-section-body {
-    overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-x: auto;
+    overflow-y: auto;
     -webkit-transition: all 0.4s ease-out;
     transition: all 0.4s ease-out;
     background-color: white;
