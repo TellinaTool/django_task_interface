@@ -194,7 +194,7 @@ def create_task_session(study_session):
             task_id = TASK_BLOCK_I[study_session.num_tasks_completed]
         else:
             task_id = TASK_BLOCK_I[study_session.num_tasks_completed - 
-                               len(TASK_BLOCK_I)]
+                               len(TASK_BLOCK_II)]
     if (user.group == 'group1' and study_session_part == 'II') or \
         (user.group == 'group2' and study_session_part == 'I') or \
         (user.group == 'group3' and study_session_part == 'I') or \
@@ -203,7 +203,7 @@ def create_task_session(study_session):
             task_id = TASK_BLOCK_II[study_session.num_tasks_completed]
         else:
             task_id = TASK_BLOCK_II[study_session.num_tasks_completed -
-                                len(TASK_BLOCK_II)]
+                                len(TASK_BLOCK_I)]
 
     TaskSession.objects.create(
         study_session = study_session,
