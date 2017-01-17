@@ -186,8 +186,6 @@ def create_task_session(study_session):
     user = study_session.user
     study_session_part = study_session.get_part()
     task_session_id = study_session.current_task_session_id
-    print(study_session_part)
-    print(user.group)
     if (user.group == 'group1' and study_session_part == 'I') or \
         (user.group == 'group2' and study_session_part == 'II') or \
         (user.group == 'group3' and study_session_part == 'II') or \
@@ -242,12 +240,9 @@ def on_command_execution(request, task_session):
     current_dir = stdout_lines[-1][16:-2]
     stdout_paths = []
     for stdout_line in stdout_lines[1:-1]:
-        path = extract_path(stdout_line)
-        if path and not path in ['.', './']:
-            if path.startswith('./'):
-                path = path[2:]
-            stdout_paths.append(pathlib.Path(
-                os.path.join(current_dir, path)))
+        path = extract_path(stdout_line, current_dir)
+        if path:
+            stdout_paths.append(path)
 
     # compute distance between current file system and the goal file system
     study_session = task_session.study_session
@@ -257,7 +252,8 @@ def on_command_execution(request, task_session):
 
     task_completed = False
     if task.type == 'stdout':
-        stdout_diff = compute_stdout_diff('\n'.join(stdout_lines[1:-1]), task)
+        stdout_diff = compute_stdout_diff('\n'.join(stdout_lines[1:-1]), task,
+                                          current_dir)
         # check if stdout signals task completion
         # the files/directories being checked must be presented in full paths
         # the file/directory names cannot contain spaces
@@ -340,22 +336,26 @@ def compute_filesystem_diff(container, task, stdout_paths,
 
     return fs_diff
 
-def compute_stdout_diff(stdout, task):
+def compute_stdout_diff(stdout, task, current_dir=None):
     def __equal__(l1, l2, task_id):
         if task_id == 16:
             # loose comparison is enough for tasks that requires date/time
             # to be outputed in a specific format
-            fields = l2.split()
-            file_name = fields[-1]
-            datetime = ' '.join(fields[-3:-1])
-            if file_name in l1 and datetime in l1:
-                return True
+            path1 = extract_path(l1, current_dir)
+            path2 = extract_path(l2, '~/website')
+            if path1 == path2:
+                time_long_iso_re = re.compile(r'\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}'
+                                             r'(:\d{2}(\.\d+)?)?')
+                if re.search(time_long_iso_re, l1):
+                    return True
         elif task_id == 19:
             # loose comparison is enough for tasks that requires the number of
             # lines in a file
-            num_of_lines, file_name = l2.split()
+            num_of_lines, _ = l2.split()
             num_of_lines_pattern = re.compile(r'{}\s'.format(num_of_lines))
-            if file_name in l1 and (re.search(num_of_lines_pattern, l1)):
+            path1 = extract_path(l1, current_dir)
+            path2 = extract_path(l2, '~/website')
+            if path1 == path2 and (re.search(num_of_lines_pattern, l1)):
                 return True
         else:
             return l1 == l2
