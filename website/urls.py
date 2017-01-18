@@ -15,7 +15,7 @@ urlpatterns = [
     url(r'^retrieve_access_code$', views.retrieve_access_code),
 
     # task session
-    url(r'^.*-study_session-.*/task-.*', views.get_current_task),
+    url(r'^.*-study_session-.*-task-.*', views.get_current_task),
     url(r'^get_current_task$', views.get_current_task),
     url(r'^get_additional_task_info$', views.get_additional_task_info),
     url(r'^go_to_next_task$', views.go_to_next_task),

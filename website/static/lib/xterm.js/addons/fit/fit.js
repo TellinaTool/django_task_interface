@@ -40,14 +40,14 @@
         characterHeight = parseInt(subjectRow.offsetHeight);
         subjectRow.innerHTML = contentBuffer;
         rows = parseInt(availableHeight / characterHeight);
-        cols = parseInt(availableWidth / characterWidth);
+        // cols = parseInt(availableWidth / characterWidth);
+        cols = 80;
         geometry = { cols: cols, rows: rows };
         return geometry;
     };
     exports.fit = function (term) {
         var geometry = exports.proposeGeometry(term);
         term.resize(geometry.cols, geometry.rows);
-
     };
     Xterm.prototype.proposeGeometry = function () {
         return exports.proposeGeometry(this);

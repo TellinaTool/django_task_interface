@@ -66,8 +66,6 @@ nav {
 	padding-left: 0px;
 	background: #ffffff;
 	white-space: nowrap;
-	overflow-x: auto;
-    overflow-y: auto;
 }
 
 .accordion-section-fixed-heading {

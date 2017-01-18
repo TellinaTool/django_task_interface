@@ -13,21 +13,14 @@ from django.utils import timezone
 from .constants import *
 
 import docker
-# import os
 import time
 import subprocess
-# import uuid
-# import fcntl
-# import datetime
-# import pathlib
-# import json
-# from typing import Optional
 
 WEBSITE_DEVELOP = True
 
 # unimplemented tasks: 3, 7, 8, 9, 10
-TASK_BLOCK_I = [19,17,15,13,1,2,4,5]
-TASK_BLOCK_II = [18,16,14,6,9,11,12]
+TASK_BLOCK_I = [2,19,17,15,13,1,4,5]
+TASK_BLOCK_II = [3,18,16,14,6,9,11,12]
 
 treatment_A = 'Tellina or Google Search'
 treatment_B = 'Google Search'
@@ -64,6 +57,7 @@ class User(models.Model):
     first_name = models.TextField()
     last_name = models.TextField()
     group = models.TextField(default='group1')
+
 
 class Task(models.Model):
     """
@@ -114,11 +108,12 @@ class Container(models.Model):
         # Destroy Docker container
         subprocess.run(['docker', 'rm', '-f', self.container_id])
         # Destroy filesystem
-        subprocess.run(['/bin/bash', 'delete_filesystem.bash', self.filesystem_name])
+        subprocess.run(['/bin/bash', 'delete_filesystem.bash',
+                        self.filesystem_name])
         # Delete table entry
         # self.delete()
 
-def create_container(filesystem_name):
+def create_container(filesystem_name, task):
     """
     Creates a container whose filesystem is located at /{filesystem_name}/home
     on the host. The contents of filesystem are written to
@@ -166,6 +161,14 @@ def create_container(filesystem_name):
     subprocess.call(['docker', 'exec', '-u', 'root', container_id,
         'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
         '/home/{}'.format(USER_NAME)])
+    if task.task_id == 3:
+        # give current user root access & create another non-root user
+        subprocess.call(['docker', 'exec', '-u', 'root', container_id,
+                         'adduser', USER_NAME, 'sudo'])
+        # subprocess.call(['docker', 'exec', '-u', 'root', container_id,
+        #                  'bash', '-c', '\'echo "me ALL = (ALL) NOPASSWD: ALL" > /etc/sudoers\''])
+        subprocess.call(['docker', 'exec', '-u', 'root', container_id,
+                         'useradd', '-m', USER2_NAME])
 
     # Find what port the container was mapped to
     info = client.inspect_container(container_id)
@@ -187,8 +190,6 @@ class StudySession(models.Model):
 
     :member user: The participant of the session.
     :member session_id: an application-wide unique study session ID.
-    :member container: The Container model associated with the session. None if
-        no container is associated.
     :member total_num_tasks: Total number of tasks in the study session.
     :member creation_time: Time the study session is created.
     :member close_time: Time the study session is closed.
@@ -206,7 +207,6 @@ class StudySession(models.Model):
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     session_id = models.TextField(primary_key=True)
-    container = models.ForeignKey(Container, default=None)
     total_num_tasks = models.PositiveIntegerField(default=
         len(TASK_BLOCK_I) + len(TASK_BLOCK_II))
     creation_time = models.DateTimeField(default='')
@@ -216,10 +216,6 @@ class StudySession(models.Model):
     num_tasks_completed = models.PositiveIntegerField(default=0)
     status = models.TextField()
 
-    def create_new_container(self):
-        self.container = create_container(self.session_id)
-        self.save()
-
     def close(self, reason_for_close):
         # ignore already closed study sessions
         if self.status == 'running' or self.status == 'paused':
@@ -227,9 +223,6 @@ class StudySession(models.Model):
             self.close_time = timezone.now()
             self.status = reason_for_close
             self.save()
-
-            # destroy the container associated with the study session
-            self.container.destroy()
 
     def get_part(self):
         # compute which
@@ -250,7 +243,7 @@ class StudySession(models.Model):
 
     def update_current_task_session_id(self):
         new_task_session_id = self.session_id + \
-               '/task-{}'.format(self.num_tasks_completed + 1)
+               '-task-{}'.format(self.num_tasks_completed + 1)
         self.current_task_session_id = new_task_session_id
         self.save()
         return new_task_session_id
@@ -264,6 +257,8 @@ class TaskSession(models.Model):
     :member study_session_part: The part of the study session the task session
         is in.
     :member session_id: an application-wide unique task session ID.
+    :member container: The Container model associated with the task session.
+        None if no container is associated.
     :member task: The task being performed in the task session.
     :member start_time: The start time of a task session.
     :member end_time: The end time of a task session. None if the task session
@@ -279,6 +274,7 @@ class TaskSession(models.Model):
     study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
     study_session_part = models.TextField()
     session_id = models.TextField(primary_key=True)
+    container = models.ForeignKey(Container, default=None)
     task = models.ForeignKey(Task)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(default='1111-11-11 00:00:00')
@@ -286,9 +282,20 @@ class TaskSession(models.Model):
 
     def close(self, reason_for_close):
         self.end_time = timezone.now()
-        self.study_session.container.destroy()
+        self.container.destroy()
         self.status = reason_for_close
         self.save()
+
+    def create_new_container(self):
+        if self.container:
+            # make sure any existing container is destroyed
+            self.destroy_container()
+        self.container = create_container(self.session_id, self.task)
+        self.save()
+
+    def destroy_container(self):
+        self.container.destroy()
+        self.container = None
 
     def get_treatment(self):
         user = self.study_session.user

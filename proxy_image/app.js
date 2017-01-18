@@ -14,11 +14,11 @@ child_process.exec("route -n | awk '/UG[ \t]/{print $2}'", {'shell': '/bin/bash'
   var wss = new WebSocketServer({ port: 10412 });
 
   // Register socket on connect handler
-  wss.on('connection', function connection(xtermWebSocket) {
-    console.log(`Connection from ${xtermWebSocket.upgradeReq.url}`);
+  wss.on('connection', function connection(ws) {
+    console.log(`Connection from ${ws.upgradeReq.url}`);
 
     // Get port of container to connect to
-    var port = parseInt(url.parse(xtermWebSocket.upgradeReq.url).pathname.split('/')[1]);
+    var port = parseInt(url.parse(ws.upgradeReq.url).pathname.split('/')[1]);
 
     // Open WebSocket to container
     var containerURL = `ws://${dockerHostIP}:${port}`;
@@ -30,13 +30,16 @@ child_process.exec("route -n | awk '/UG[ \t]/{print $2}'", {'shell': '/bin/bash'
       console.log(`Websocket ${containerURL} opened`);
 
       // Forward xterm -> container
-      xtermWebSocket.on('message', function(message) {
+      ws.on('message', function(message) {
+        console.log('xterm -> container: ' + message);
         containerWebSocket.send(message);
       });
 
       // Forward container -> xterm
       containerWebSocket.on('message', function(message) {
-        xtermWebSocket.send(message);
+        console.log('container -> xterm: ' + message);
+        // message = message.replace(/\s\r/g, "");
+        ws.send(message);
       });
     });
   });

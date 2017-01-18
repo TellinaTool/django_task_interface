@@ -55,7 +55,7 @@ task interface server is done through HTTP AJAX calls.
             <div class="fcn-grid" style="cursor:auto;">
                <!-- Task info -->
                <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor"
-               style="position:absolute;top:0%;right:30%;bottom:80%;left:0%;">
+               style="position:absolute;top:0%;right:36%;bottom:80%;left:0%;">
                   <div class="fcn-component">
                      <div class="accordion-container">
                         <div class="accordion">
@@ -91,7 +91,7 @@ task interface server is done through HTTP AJAX calls.
 
                <!-- xterms.js -->
                <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor"
-               style="position:absolute;top:20%;right:30%;bottom:0%;left:0%;">
+               style="position:absolute;top:20%;right:36%;bottom:0%;left:0%;">
                   <div class="fcn-component">
                      <div class="accordion-section-heading terminal-header">
                         <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
@@ -105,7 +105,7 @@ task interface server is done through HTTP AJAX calls.
 
                <!-- Direcotry Visualization -->
                <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor"
-                    style="position:absolute;top:0%;right:0%;bottom:0%;left:70%;">
+                    style="position:absolute;top:0%;right:0%;bottom:0%;left:64%;">
                   <!-- Current Directory -->
                   <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor fcn-slot--no-right-neighbor vis-container"
                        style="position:absolute;top:0%;right:0%;bottom:0%;left:0%;" id="current-tree-vis-container">
@@ -188,16 +188,6 @@ task interface server is done through HTTP AJAX calls.
       <script src="/static/lib/xterm.js/xterm.js"></script>
       <script src="/static/lib/xterm.js/addons/attach/attach.js"></script>
       <script src="/static/lib/xterm.js/addons/fit/fit.js"></script>
-      <script>
-      $(document).ready(function () {
-         console.log("{{status}}");
-         {% ifnotequal status "FILE_SYSTEM_WRITTEN_TO_DISK" %}
-            {% ifnotequal status "FILE_SYSTEM_IS_EMPTY" %}
-               alert("{{status}}");
-            {% endifnotequal %}
-         {% endifnotequal %}
-      })
-      </script>
 
       <script src="/static/js/ww.jquery.min.js"></script>
 

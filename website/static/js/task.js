@@ -15,10 +15,16 @@ $(document).ready(function () {
     var term, protocol, socketURL, socket, pid, charWidth, charHeight;
     var terminalContainer = document.getElementById('bash-terminal');
 
+    var filesystem_error_msg = "We've caught a file system error in the backend. Please try a few seconds later."
+
     create_new_terminal();
 
     // connect xterm.js terminal to the study session's container
     $.get(`/get_additional_task_info`, function(data) {
+        status = data.filesystem_status;
+        if (status != "FILE_SYSTEM_WRITTEN_TO_DISK")
+            alert(filesystem_error_msg);
+
         var container_port = data.container_port;
 
         set_websocket(container_port);
@@ -52,6 +58,9 @@ $(document).ready(function () {
             create_new_terminal();
             // reset file system
             $.get(`/reset_file_system`, function(data){
+                status = data.filesystem_status;
+                if (status == 'FILE_SYSTEM_ERROR')
+                    alert(filesystem_error_msg);
                 console.log(data.container_port);
                 // open websocket connection to the new container
                 set_websocket(data.container_port);
@@ -220,7 +229,7 @@ $(document).ready(function () {
         // associate JS term object with HTML div
         term.open(terminalContainer);
         term.fit();
-        console.log(term.cols);
-        console.log(term.rows);
+        // console.log(term.cols);
+        // console.log(term.rows);
     }
 });

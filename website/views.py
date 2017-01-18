@@ -16,6 +16,7 @@ import subprocess
 import json
 import pathlib
 import re
+import tarfile
 
 def json_response(d={}, status='SUCCESS'):
     d.update({'status': status})
@@ -66,17 +67,7 @@ def get_current_task(request, task_session):
 
     order_number = study_session.num_tasks_completed + 1
 
-    # Initialize filesystem
-    container = study_session.container
-    container_id = container.container_id
-    # TODO: need to check if file system copy is successful
-    filesystem_status = "FILE_SYSTEM_WRITTEN_TO_DISK"
-    subprocess.call(['docker', 'exec', '-u', 'root', container_id,
-        'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
-        '/home/{}'.format(USER_NAME)])
-
     context = {
-        "status": filesystem_status,
         "task_part": task_part,
         "task_description": task.description,
         "task_order_number": order_number,
@@ -99,9 +90,8 @@ def get_additional_task_info(request, task_session):
 
     """
     task = task_session.task
-    study_session = task_session.study_session
-    container = study_session.container
-    container_port = study_session.container.port
+    container = task_session.container
+    container_port = container.port
 
     # with open('fs-1.json', 'w') as o_f:
     #     json.dump(disk_2_dict(
@@ -110,9 +100,15 @@ def get_additional_task_info(request, task_session):
 
     fs_diff = compute_filesystem_diff(container, task, [],
                                       save_initial_filesystem=True)
+    if fs_diff:
+        filesystem_status = "FILE_SYSTEM_WRITTEN_TO_DISK"
+    else:
+        filesystem_status = "FILE_SYSTEM_ERROR"
+
     if task.type == 'stdout':
         stdout_diff = compute_stdout_diff('', task)
         resp = {
+            'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
             'stdout_diff': stdout_diff,
             "task_duration": task.duration.seconds,
@@ -120,6 +116,7 @@ def get_additional_task_info(request, task_session):
         }
     else:
         resp = {
+            'filesystem_status': filesystem_status,
             "filesystem_diff": fs_diff,
             "task_duration": task.duration.seconds,
             "container_port": container_port
@@ -144,7 +141,6 @@ def go_to_next_task(request, task_session):
     if current_task_session.status == 'running':
         # close current_task_session
         current_task_session.close(request.GET['reason_for_close'])
-        study_session.create_new_container()
         study_session.inc_num_tasks_completed()
 
     # check for user study completion
@@ -164,11 +160,6 @@ def go_to_next_task(request, task_session):
         resp.set_cookie('session_id', '')
         resp.set_cookie('task_session_id', '')
     else:
-        # destroy the old container and create a new one
-        container = study_session.container
-        container.destroy()
-        study_session.create_new_container()
-
         next_task_session_id = study_session.update_current_task_session_id()
         create_task_session(study_session)
 
@@ -186,6 +177,7 @@ def create_task_session(study_session):
     user = study_session.user
     study_session_part = study_session.get_part()
     task_session_id = study_session.current_task_session_id
+
     if (user.group == 'group1' and study_session_part == 'I') or \
         (user.group == 'group2' and study_session_part == 'II') or \
         (user.group == 'group3' and study_session_part == 'II') or \
@@ -205,11 +197,16 @@ def create_task_session(study_session):
             task_id = TASK_BLOCK_II[study_session.num_tasks_completed -
                                 len(TASK_BLOCK_I)]
 
+    # create the container of the task session
+    task = Task.objects.get(task_id=task_id)
+    container = create_container(task_session_id, task)
+
     TaskSession.objects.create(
         study_session = study_session,
         study_session_part = study_session.get_part(),
         session_id = task_session_id,
-        task = Task.objects.get(task_id=task_id),
+        container = container,
+        task = task,
         start_time = timezone.now(),
         status = 'running'
     )
@@ -245,10 +242,11 @@ def on_command_execution(request, task_session):
             stdout_paths.append(path)
 
     # compute distance between current file system and the goal file system
-    study_session = task_session.study_session
-    container = study_session.container
+    container = task_session.container
 
     fs_diff = compute_filesystem_diff(container, task, stdout_paths)
+    if fs_diff is None:
+        return json_response(status='FILE_SYSTEM_ERROR')
 
     task_completed = False
     if task.type == 'stdout':
@@ -286,13 +284,10 @@ def reset_file_system(request, task_session):
     """
     task = task_session.task
 
-    study_session = task_session.study_session
-    container = study_session.container
-
     # destroy the current container and create a new one
-    container.destroy()
-    study_session.create_new_container()
-    container_id = study_session.container.container_id
+    task_session.create_new_container()
+    container = task_session.container
+    container_id = container.container_id
 
     ActionHistory.objects.create(
         task_session=task_session,
@@ -301,39 +296,74 @@ def reset_file_system(request, task_session):
     )
 
     fs_diff = compute_filesystem_diff(container, task, [])
+    if fs_diff is None:
+        filesystem_status = 'FILE_SYSTEM_ERROR'
+    else:
+        filesystem_status = 'FILE_SYSTEM_WRITTEN_TO_DISK'
+
     if task.type == 'stdout':
         stdout_diff = compute_stdout_diff('', task)
         resp = {
             'container_id': container_id,
-            'container_port': study_session.container.port,
+            'container_port': container.port,
             'filesystem_diff': fs_diff,
+            'filesystem_status': filesystem_status,
             'stdout_diff': stdout_diff
         }
     else:
         resp = {
             'container_id': container_id,
-            'container_port': study_session.container.port,
-            'filesystem_diff': fs_diff
+            'container_port': container.port,
+            'filesystem_diff': fs_diff,
+            'filesystem_status': filesystem_status
         }
     
-    return json_response(resp);
+    return json_response(resp)
 
 def compute_filesystem_diff(container, task, stdout_paths,
                             save_initial_filesystem=False):
-    current_filesystem = disk_2_dict(
-            pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
+    """
+    Compute the difference between the current file system on disk and the goal
+    file system. Return None if the current file system does not exist.
+
+    Args:
+        container: the container object on which the file system is mounted
+        task: the task object which contains the definition of the file system
+        stdout_paths: the paths detected from the user's terminal standard
+            output which shall be annotated on the diff object
+        save_initial_filesystem: set to True if the current file system on disk
+            should be saved to the Task object
+
+    """
+    physical_dir = '/{}/home/website'.format(container.filesystem_name)
+    current_filesystem = disk_2_dict( pathlib.Path(physical_dir),
             json.loads(task.file_attributes))
     if save_initial_filesystem:
         task.initial_filesystem = json.dumps(current_filesystem)
         task.save()
 
+    if current_filesystem is None:
+        return None
+
     goal_filesystem = task.initial_filesystem if task.type == 'stdout' \
         else task.goal_filesystem
     fs_diff = filesystem_diff(current_filesystem, json.loads(goal_filesystem))
-
     # annotate the fs_diff with the stdout_paths
     annotate_path_selection(fs_diff, task.type, stdout_paths)
 
+    if not contains_error_in_child(fs_diff) and task.task_id == 2:
+        files_in_tar = set()
+        try:
+            tar = tarfile.open(os.path.join(physical_dir, 'html.tar'))
+            for member in tar.getmembers():
+                files_in_tar.add(os.path.basename(member.name))
+        except tarfile.ReadError:
+            # valid tar file does not exist on the target path
+            pass
+        if files_in_tar != {'index.html', 'home.html', 'labs.html',
+                            'lesson.html', 'menu.html', 'navigation.html'}:
+            annotate_node(fs_diff, pathlib.Path('website/html.tar'),
+                          'incorrect')
     return fs_diff
 
 def compute_stdout_diff(stdout, task, current_dir=None):
@@ -367,6 +397,9 @@ def compute_stdout_diff(stdout, task, current_dir=None):
     stdout_diff = []
     matched_stdout2 = []
     tag = 'correct'
+    # boolean variable which is used decide if the "total line" should be shown
+    # as correct or as an error
+    unmatch_detected = False
     for l1 in stdout1:
         if not l1:
             continue
@@ -383,7 +416,8 @@ def compute_stdout_diff(stdout, task, current_dir=None):
             })
         else:
             total_pattern = re.compile(r'(total\s|\stotal)')
-            if task.task_id == 19 and re.search(total_pattern, l1):
+            if not unmatch_detected and (task.task_id == 19
+                                         and re.search(total_pattern, l1)):
                 stdout_diff.append({
                     'line': l1,
                     'tag': 'correct'
@@ -394,6 +428,7 @@ def compute_stdout_diff(stdout, task, current_dir=None):
                     'tag': 'extra'
                 })
                 tag = 'incorrect'
+                unmatch_detected = True
 
     for i in range(len(stdout2)):
         if not i in matched_stdout2:
@@ -490,13 +525,9 @@ def user_login(request):
             session_id = '-'.join([access_code, "study_session",
                 str(StudySession.objects.filter(user=user).count() + 1)])
 
-            # create the container of the study session
-            container = create_container(session_id)
-
             session = StudySession.objects.create(
                 user = user,
                 session_id = session_id,
-                container = container,
                 creation_time = timezone.now(),
                 
 		        status = 'running'

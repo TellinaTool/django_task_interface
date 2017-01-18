@@ -1,6 +1,7 @@
-// Given a json represented *merged* filesystem status, and a div id to draw the visualization,
-// render the visualization there.
-// The filesystem json should be one created from fs_diff.py
+// Given a json represented *merged* filesystem status, and a div id to draw
+// the visualization, render the visualization there. The filesystem json
+// should be of the format created by filesystem.py
+
 function build_stdout_vis(data, div_id) {
     var init_time = true;
     var id = 0;
@@ -129,8 +130,8 @@ function build_fs_tree_vis(data, div_id) {
         ul.selectAll("li.node").style("color", function(d) {
             if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty("extra"))
                 return "red";
-            else if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty('incorrect'))
-                return "orange";
+            // else if (d.hasOwnProperty('tag') && d.tag.hasOwnProperty('incorrect'))
+            //     return "orange";
             else
                 return "black";
         });
@@ -146,7 +147,8 @@ function build_fs_tree_vis(data, div_id) {
         entered.append("span").attr("class", 'sup')
             .html(function (d) {
                 if (d.hasOwnProperty('tag') && (d.tag.hasOwnProperty('ch_missing')
-                     || d.tag.hasOwnProperty('ch_extra') || d.tag.hasOwnProperty('ch_incorrect'))) {
+                     || d.tag.hasOwnProperty('ch_extra')
+                     || d.tag.hasOwnProperty('ch_incorrect'))) {
                     return '*';
                 } else {
                     return '';
@@ -157,9 +159,13 @@ function build_fs_tree_vis(data, div_id) {
                 if (d.hasOwnProperty('attributes')) {
                     str = '';
                     for (var key in d.attributes) {
-                        if (d.attributes.hasOwnProperty(key)) {
-                            str += (key + ': ' + d.attributes[key]);
+                        if (d.attributes[key].includes(':::')) {
+                            values = d.attributes[key].split(':::');
+                            d_attribute = values[0] + ' ⇢ ' + values[1];
+                        } else {
+                            d_attribute = d.attributes[key];
                         }
+                        str += (key + ': ' + d_attribute);
                     }
                     if (str == '')
                         return '';
@@ -182,7 +188,9 @@ function build_fs_tree_vis(data, div_id) {
 
         nodeEls.classed('correct_select', function(d) {
             return d.hasOwnProperty('tag') && !d.tag.hasOwnProperty('missing')
-            && ((!d.tag.hasOwnProperty('selected') && d.tag.hasOwnProperty('to_select')) || d.tag.selected === 0);
+            && ((!d.tag.hasOwnProperty('selected')
+                 && d.tag.hasOwnProperty('to_select'))
+            || d.tag.selected === 0);
         })
 
         nodeEls.classed('extra_select', function(d) {
@@ -192,10 +200,12 @@ function build_fs_tree_vis(data, div_id) {
 
         // there are two different missed selections:
         // 1. a file to be selected is not selected by the issued command
-        // 2. a file to be selected is missing from the current directory (likely caused by accidental deletion)
+        // 2. a file to be selected is missing from the current directory \
+        // (likely caused by accidental deletion)
         nodeEls.classed('miss_select', function(d) {
             return d.hasOwnProperty('tag') && d.tag.hasOwnProperty('to_select')
-            && (d.tag.hasOwnProperty('missing') || (d.tag.hasOwnProperty('selected') && d.tag.selected === -1));
+            && (d.tag.hasOwnProperty('missing')
+            || (d.tag.hasOwnProperty('selected') && d.tag.selected === -1));
         })
 
         //update position with transition: if 
@@ -220,7 +230,9 @@ function build_fs_tree_vis(data, div_id) {
     if (init_time) {
         ul.selectAll("li.node").each(function(d, i) {
             // decide which folders to hide
-            if (!(d.hasOwnProperty('tag') && (d.tag.hasOwnProperty('ch_missing') || d.tag.hasOwnProperty('ch_extra') || d.tag.hasOwnProperty('ch_incorrect')))) {
+            if (!(d.hasOwnProperty('tag') && (d.tag.hasOwnProperty('ch_missing')
+                || d.tag.hasOwnProperty('ch_extra')
+                || d.tag.hasOwnProperty('ch_incorrect')))) {
                 if (d.name != 'website') {
                     var onClickFunc = d3.select(this).on("click");
                     onClickFunc.apply(this, [d, i]);

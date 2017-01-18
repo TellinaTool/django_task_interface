@@ -169,6 +169,9 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
     Returns:
         JSON representation of the directory named by path
     """
+    if not path.exists():
+        return None
+    
     def create_filesystem(path: pathlib.Path, attrs=[_NAME]) -> Node:
         if path.is_dir():
             node = Directory(path.name)
@@ -298,6 +301,15 @@ def is_file(node):
     return node['type'] == 'file'
 
 
+def attribute_diff(attr1, attr2):
+    tag = 'correct'
+    for key in attr1:
+        if attr1[key] != attr2[key]:
+            attr1[key] += ':::{}'.format(attr2[key])
+            tag = 'incorrect'
+    return tag
+
+
 def filesystem_diff(fs1, fs2):
     """
     Args:
@@ -368,21 +380,16 @@ def filesystem_diff(fs1, fs2):
                 if tag_exists(child2, 'to_select'):
                     add_tag(child1, 'to_select')
                 annotated_children.append(markcopy(child1, tag))
-                if tag:
-                    errors[tag] += 1
+                if tag != 'correct':
+                    errors['ch_incorrect'] += 1
             elif child1['type'] == 'directory':
                 # comparing two directories
                 annotated_child = filesystem_diff(child1, child2)
                 if tag_exists(child2, 'to_select'):
                     add_tag(annotated_child, 'to_select')
                 annotated_children.append(annotated_child)
-                if annotated_child['tag'] and (
-                    'missing' in annotated_child['tag'] or \
-                    'extra' in annotated_child['tag'] or \
-                    'incorrect' in annotated_child['tag'] or \
-                    'ch_missing' in annotated_child['tag'] or \
-                    'ch_extra' in annotated_child['tag'] or \
-                    'ch_incorrect' in annotated_child['tag']):
+                if contains_error(annotated_child) or \
+                        contains_error_in_child(annotated_child):
                     errors['ch_incorrect'] += 1
             else:
                 raise AttributeError('Unrecognized node type {}, must be '
@@ -414,34 +421,39 @@ def filesystem_diff(fs1, fs2):
     return annotated_fs1
 
 
-def filesystem_sort(fs):
-    if not fs or fs['type'] == 'file':
-        return
-    else:
-        for child in fs['children']:
-            filesystem_sort(child)
-        fs['children'] = sorted([c for c in fs['children'] if c['type'] == 'file'],
-                                key=lambda x:x['name']) + \
-                         sorted([c for c in fs['children'] if c['type'] != 'file'],
-                                key=lambda x:x['name'])
-
-
-def attribute_diff(attr1, attr2):
-    tag = ''
-    annotated_attr = copy.deepcopy(attr1)
-    for key in attr1:
-        if attr1[key] != attr2[key]:
-            print(attr1[key])
-            print(attr2[key])
-            annotated_attr[key] += ':::{}'.format(attr2[key])
-            tag = 'incorrect'
-    return tag
+def annotate_node(fs, path, tag):
+    """Annotate a node in the filesystem with a specific tag."""
+    steps = path.as_posix().split('/')
+    stack = [fs]
+    node = fs
+    stop_search = False
+    for i in range(1, len(steps)):
+        step = steps[i]
+        for child in node['children']:
+            if child['name'] == step:
+                if tag_exists(child, 'missing'):
+                    # missing fs nodes cannot be tagged
+                    stop_search = True
+                    break
+                if i == len(steps) - 1:
+                    add_tag(child, tag)
+                    if tag != 'correct':
+                        # tag the ancestors accordingly if an error tag is
+                        # given to a node
+                        for ancestor in stack:
+                            inc_tag(ancestor, 'ch_incorrect')
+                else:
+                    node = child
+                    stack.append(node)
+                break
+        if stop_search:
+            break
 
 
 def annotate_path_selection(fs, task_type, paths):
     """Annotate the paths that are selected in the stdout in a file system."""
     for path in paths:
-        print(path.as_posix())
+        # print(path.as_posix())
         steps = path.as_posix().split('/')
         stack = [fs]
         node = fs
@@ -450,10 +462,8 @@ def annotate_path_selection(fs, task_type, paths):
             step = steps[i]
             for child in node['children']:
                 if child['name'] == step:
-                    print(i)
-                    print(len(steps))
                     if tag_exists(child, 'missing'):
-                        # file selection is not denoted in extra or missing nodes
+                        # missing fs nodes cannot be selected
                         stop_search = True
                         break
                     if i == len(steps) - 1:
@@ -494,6 +504,30 @@ def annotate_path_selection(fs, task_type, paths):
     mark_unselected(fs)
 
 
+def filesystem_sort(fs):
+    if not fs or fs['type'] == 'file':
+        return
+    else:
+        for child in fs['children']:
+            filesystem_sort(child)
+        fs['children'] = sorted([c for c in fs['children'] if c['type'] == 'file'],
+                                key=lambda x:x['name']) + \
+                         sorted([c for c in fs['children'] if c['type'] != 'file'],
+                                key=lambda x:x['name'])
+
+
+def contains_error(node):
+    return node['tag'] and ('missing' in node['tag'] or
+                            'extra' in node['tag'] or
+                            'incorrect' in node['tag'])
+
+
+def contains_error_in_child(node):
+    return node['tag'] and ('ch_missing' in node['tag'] or
+                            'ch_extra' in node['tag'] or
+                            'ch_incorrect' in node['tag'])
+
+
 def tag_exists(node, tag):
     if 'tag' in node:
        if tag in node['tag']:
@@ -515,14 +549,30 @@ def inc_tag(node, tag):
         node['tag'][tag] += 1
 
 
-def extract_path(input):
-    """Extract absolute file paths from an input string."""
+def extract_path(input, current_dir=None):
+    """
+    Extract file paths from a line of terminal stdout, considering the current
+    directory of the user. This function assumes that there is only one file
+    path in the input line.
+
+    :param input: a stdout line from which the file path is to be extracted
+    :param current_dir: the directory where the user is currenly at, '.' by
+        default.
+    :return path: None if there is no path mention in the input line, otherwise
+        the path object.
+    """
     path_pattern = re.compile("([^ ]*\/)+[^ ]*$")
     match = re.search(path_pattern, input)
-    if match:
-        return match.group(0).strip()
-    else:
+    if not match:
         return None
+    path = match.group(0).strip()
+    if path == '.':
+        path = './'
+    if path.startswith('./'):
+        path = path[2:]
+    path = pathlib.Path(os.path.join(current_dir, path)) if current_dir \
+        else pathlib.Path(path)
+    return path
 
 
 if __name__=="__main__":
