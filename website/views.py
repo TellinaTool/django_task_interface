@@ -9,10 +9,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
 from .filesystem import *
-from .constants import *
 
-from . import functions
-import subprocess
+from . import functions, filesystem
 import json
 import pathlib
 import re
@@ -93,10 +91,10 @@ def get_additional_task_info(request, task_session):
     container = task_session.container
     container_port = container.port
 
-    # with open('fs-1.json', 'w') as o_f:
-    #     json.dump(disk_2_dict(
-    #         pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
-    #         [filesystem._USER]), o_f)
+    with open('fs-7-8.json', 'w') as o_f:
+        json.dump(disk_2_dict(
+          pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
+            [filesystem._MTIME]), o_f)
 
     fs_diff = compute_filesystem_diff(container, task, [],
                                       save_initial_filesystem=True)
@@ -367,6 +365,15 @@ def compute_filesystem_diff(container, task, stdout_paths,
     return fs_diff
 
 def compute_stdout_diff(stdout, task, current_dir=None):
+    """
+
+    Args:
+        stdout:
+        task:
+        current_dir:
+        unordered:
+
+    """
     def __equal__(l1, l2, task_id):
         if task_id == 16:
             # loose comparison is enough for tasks that requires date/time
@@ -395,48 +402,94 @@ def compute_stdout_diff(stdout, task, current_dir=None):
     stdout2 = [line.strip() for line in task.stdout.split('\n')]
 
     stdout_diff = []
-    matched_stdout2 = []
     tag = 'correct'
-    # boolean variable which is used decide if the "total line" should be shown
-    # as correct or as an error
-    unmatch_detected = False
-    for l1 in stdout1:
-        if not l1:
-            continue
-        matched = False
-        for i in range(len(stdout2)):
-            if not i in matched_stdout2 and __equal__(l1, stdout2[i], task.task_id):
-                matched = True
-                matched_stdout2.append(i)
-                break
-        if matched:
-            stdout_diff.append({
-                'line': l1,
-                'tag': 'correct'
-            })
-        else:
-            total_pattern = re.compile(r'(total\s|\stotal)')
-            if not unmatch_detected and (task.task_id == 19
-                                         and re.search(total_pattern, l1)):
+
+    if task.task_id != 10:
+        # boolean variable which is used decide if the "total line" should be
+        # shown as correct or as an error
+        unmatch_detected = False
+        matched_stdout2 = []
+        for l1 in stdout1:
+            if not l1:
+                continue
+            matched = False
+            for i in range(len(stdout2)):
+                if not i in matched_stdout2 and \
+                        __equal__(l1, stdout2[i], task.task_id):
+                    matched = True
+                    matched_stdout2.append(i)
+                    break
+            if matched:
                 stdout_diff.append({
                     'line': l1,
                     'tag': 'correct'
                 })
             else:
+                total_pattern = re.compile(r'(total\s|\stotal)')
+                if not unmatch_detected and \
+                        (task.task_id == 19 and re.search(total_pattern, l1)):
+                    stdout_diff.append({
+                        'line': l1,
+                        'tag': 'correct'
+                    })
+                else:
+                    stdout_diff.append({
+                        'line': l1,
+                        'tag': 'extra'
+                    })
+                    tag = 'incorrect'
+        for i in range(len(stdout2)):
+            if not i in matched_stdout2:
+                l2 = stdout2[i]
+                stdout_diff.append({
+                    'line': l2,
+                    'tag': 'missing'
+                })
+                tag = 'incorrect'
+    else:
+        i = 0
+        j = 0
+        while i < len(stdout1) and j < len(stdout2):
+            l1 = stdout1[i]
+            l2 = stdout2[j]
+            path1 = extract_path(l1, current_dir)
+            path2 = extract_path(l2, current_dir)
+
+            if path1 and path1 == path2:
+                stdout_diff.append({
+                    'line': l1,
+                    'tag': 'correct'
+                })
+                i += 1
+                j += 1
+            else:
+                if path1 is None or path1.name < path2.name:
+                    stdout_diff.append({
+                        'line': l1,
+                        'tag': 'extra'
+                    })
+                    tag = 'incorrect'
+                    i += 1
+                else:
+                    stdout_diff.append({
+                        'line': l2,
+                        'tag': 'missing'
+                    })
+                    tag = 'incorrect'
+                    j += 1
+        if i < len(stdout1):
+            for l1 in stdout1[i:]:
                 stdout_diff.append({
                     'line': l1,
                     'tag': 'extra'
                 })
-                tag = 'incorrect'
-                unmatch_detected = True
-
-    for i in range(len(stdout2)):
-        if not i in matched_stdout2:
-            l2 = stdout2[i]
-            stdout_diff.append({
-                'line': l2,
-                'tag': 'missing'
-            })
+            tag = 'incorrect'
+        if j < len(stdout2):
+            for l2 in stdout2[j:]:
+                stdout_diff.append({
+                    'line': l2,
+                    'tag': 'missing'
+                })
             tag = 'incorrect'
 
     return { 'lines': stdout_diff, 'tag': tag }

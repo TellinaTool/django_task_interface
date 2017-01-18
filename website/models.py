@@ -13,14 +13,15 @@ from django.utils import timezone
 from .constants import *
 
 import docker
+import pathlib
+import os, subprocess
 import time
-import subprocess
 
 WEBSITE_DEVELOP = True
 
-# unimplemented tasks: 3, 7, 8, 9, 10
-TASK_BLOCK_I = [2,19,17,15,13,1,4,5]
-TASK_BLOCK_II = [3,18,16,14,6,9,11,12]
+# unimplemented tasks: 3, 20
+TASK_BLOCK_I = [7,2,19,17,15,13,1,4,5]
+TASK_BLOCK_II = [8,9,10,18,16,14,6,11,12]
 
 treatment_A = 'Tellina or Google Search'
 treatment_B = 'Google Search'
@@ -169,6 +170,17 @@ def create_container(filesystem_name, task):
         #                  'bash', '-c', '\'echo "me ALL = (ALL) NOPASSWD: ALL" > /etc/sudoers\''])
         subprocess.call(['docker', 'exec', '-u', 'root', container_id,
                          'useradd', '-m', USER2_NAME])
+    elif task.task_id == 7:
+        physical_dir = '/{}/home/website/'.format(filesystem_name)
+        os.utime(physical_dir + 'css/bootstrap3/bootstrap-glyphicons.css', (1454065722, 1454065722))
+        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.eot', (1454065722, 1454065722))
+        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.otf', (1454065722, 1454065722))
+        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.svg', (1454065722, 1454065722))
+        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.ttf', (1454065722, 1454065722))
+    elif task.task_id == 8:
+        physical_dir = '/{}/home/website/'.format(filesystem_name)
+        os.utime(physical_dir + 'content/labs/2013/10.md', (1454065722, 1454065722))
+        os.utime(physical_dir + 'content/labs/2013/12.md', (1454065722, 1454065722))
 
     # Find what port the container was mapped to
     info = client.inspect_container(container_id)

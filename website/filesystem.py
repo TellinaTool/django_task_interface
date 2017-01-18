@@ -72,6 +72,7 @@ and four are incorrect.
 """
 
 import collections
+import datetime
 import json
 import pathlib
 import re
@@ -171,7 +172,7 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
     """
     if not path.exists():
         return None
-    
+
     def create_filesystem(path: pathlib.Path, attrs=[_NAME]) -> Node:
         if path.is_dir():
             node = Directory(path.name)
@@ -193,11 +194,14 @@ def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
                 if attr == _MODE:
                     node.attributes.mode = file_stat.st_mode
                 if attr == _ATIME:
-                    node.attributes.atime = file_stat.st_atime
+                    node.attributes.atime = datetime.date.\
+                        fromtimestamp(file_stat.st_atime)
                 if attr == _MTIME:
-                    node.attributes.mtime = file_stat.st_mtime
+                    node.attributes.mtime = datetime.date.\
+                        fromtimestamp(file_stat.st_mtime)
                 if attr == _CTIME:
-                    node.attributes.ctime = file_stat.st_ctime
+                    node.attributes.ctime = datetime.date.\
+                        fromtimestamp(file_stat.st_ctime)
                 if attr == _CONTENT:
                     with open(path.as_posix(), encoding='utf-8',
                               errors='ignore') as f:
@@ -304,9 +308,11 @@ def is_file(node):
 def attribute_diff(attr1, attr2):
     tag = 'correct'
     for key in attr1:
-        if attr1[key] != attr2[key]:
-            attr1[key] += ':::{}'.format(attr2[key])
-            tag = 'incorrect'
+        # no question demands user to change timestamp
+        if not key in ['atime', 'ctime', 'mtime']:
+            if attr1[key] != attr2[key]:
+                attr1[key] += ':::{}'.format(attr2[key])
+                tag = 'incorrect'
     return tag
 
 
@@ -558,14 +564,18 @@ def extract_path(input, current_dir=None):
     :param input: a stdout line from which the file path is to be extracted
     :param current_dir: the directory where the user is currenly at, '.' by
         default.
-    :return path: None if there is no path mention in the input line, otherwise
-        the path object.
+
+    Return None if there is no path mention in the input line, otherwise the
+    path object.
     """
-    path_pattern = re.compile("([^ ]*\/)+[^ ]*$")
+    path_pattern = re.compile("([^ ]*\/)+[^ ]*(\:|$)")
     match = re.search(path_pattern, input)
     if not match:
         return None
     path = match.group(0).strip()
+    # special path format for "grep"
+    if path.endswith(':'):
+        path = path[:-1]
     if path == '.':
         path = './'
     if path.startswith('./'):
