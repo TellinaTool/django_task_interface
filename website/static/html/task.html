@@ -12,12 +12,14 @@ task interface server is done through HTTP AJAX calls.
       <link href="/static/lib/codecademy.themes/platform.css" media="screen" rel="stylesheet" type="text/css" />
       <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet" />
       <link href="/static/css/task.css" rel="stylesheet" media="screen" />
+
+      <link href="/static/lib/hopscotch/hopscotch.min.css" rel="stylesheet", media="screen">
    {% endblock %}
 
    {% block body %}
       <section class="_255U1OEW5iAFH7qz_pHXM8" data-reactroot="" data-reactid="1" data-react-checksum="-96644366">
          <div id="workspace" class="francine" data-reactid="2">
-            <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" data-reactid="4">
+            <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" id="task-platform-header">
                <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj" data-reactid="5">
                   <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
                      {% if task_part %}
@@ -67,8 +69,8 @@ task interface server is done through HTTP AJAX calls.
                                  </div>
                                  {% endif %}
                               </div> -->
-                              <div class="accordion-section-body" data-reactid="77">
-                                 <div class="jfdpfOzslotw2euWgxJNN _1PzvoBkjTI2SFvb5o9YAHW" data-reactid="78">
+                              <div class="accordion-section-body">
+                                 <div class="jfdpfOzslotw2euWgxJNN _1PzvoBkjTI2SFvb5o9YAHW" id="task-description">
                                     {% if task_description %}
                                        <p>{{task_description}}</p>
                                     {% endif %}
@@ -115,7 +117,7 @@ task interface server is done through HTTP AJAX calls.
                               <div class="accordion-section">
                                  <div class="accordion-section-heading">
                                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                                       File System Diff
+                                       File System Check
                                     </div>
                                  </div>
                                  <div class="accordion-section-body tree-vis-panel" id="current-tree-vis">
@@ -135,7 +137,7 @@ task interface server is done through HTTP AJAX calls.
                               <div class="accordion-section">
                                  <div class="accordion-section-heading">
                                     <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                                       Stdout Diff
+                                       Standard Output Check
                                     </div>
                                  </div>
                                  <div class="accordion-section-body tree-vis-panel" id="stdout-diff-vis">
@@ -184,7 +186,8 @@ task interface server is done through HTTP AJAX calls.
    {% endblock %}
 
    {% block other-scripts %}
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/1.0.0/fetch.min.js"></script>
+      <script src="/static/lib/hopscotch/hopscotch.min.js"></script>
+      <script src="/static/js/training.js"></script>
       <script src="/static/lib/xterm.js/xterm.js"></script>
       <script src="/static/lib/xterm.js/addons/attach/attach.js"></script>
       <script src="/static/lib/xterm.js/addons/fit/fit.js"></script>

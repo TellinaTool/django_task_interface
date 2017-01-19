@@ -65,14 +65,14 @@ class FilesystemTestCase(TestCase):
 class TaskTestCase(TestCase):
     def test_to_dict_stdout(self):
         task = Task(
-            type='stdout',
+            type="stdout",
             description='description here',
             initial_filesystem='{"a": null}',
             answer='answer here',
             duration=datetime.timedelta(seconds=1),
         )
         expected = {
-            'type': 'stdout',
+            'type': "stdout",
             'description': 'description here',
             'initial_filesystem': {
                 'a': None
@@ -84,14 +84,14 @@ class TaskTestCase(TestCase):
 
     def test_to_dict_filesystem(self):
         task = Task(
-            type='filesystem',
+            type='filesystem_change',
             description='description here',
             initial_filesystem='{"a": null}',
             answer='{"b": null}',
             duration=datetime.timedelta(seconds=1),
         )
         expected = {
-            'type': 'filesystem',
+            'type': 'filesystem_change',
             'description': 'description here',
             'initial_filesystem': {
                 'a': None

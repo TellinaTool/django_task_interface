@@ -473,7 +473,7 @@ def annotate_path_selection(fs, task_type, paths):
                         stop_search = True
                         break
                     if i == len(steps) - 1:
-                        if task_type in ['stdout', 'filesystem']:
+                        if task_type in ["stdout", 'filesystem_change']:
                             # file search commands does not affect task completion
                             # simply show what is selected
                             add_tag(child, 'selected', 0)

@@ -13,15 +13,15 @@ from django.utils import timezone
 from .constants import *
 
 import docker
-import pathlib
-import os, subprocess
+import os
+import subprocess
 import time
 
 WEBSITE_DEVELOP = True
 
 # unimplemented tasks: 3, 20
-TASK_BLOCK_I = [7,2,19,17,15,13,1,4,5]
-TASK_BLOCK_II = [8,9,10,18,16,14,6,11,12]
+TASK_BLOCK_I = [5, 10, 6, 9, 19, 1, 18, 17, 16]
+TASK_BLOCK_II = [8, 7, 2, 14, 12, 4, 13, 15, 11]
 
 treatment_A = 'Tellina or Google Search'
 treatment_B = 'Google Search'
@@ -66,7 +66,8 @@ class Task(models.Model):
 
     :member task_id: The ID that uniquely identifies a task. This makes the
         implementation of task scheduler easier.
-    :member type: The type of task. Can be 'stdout' or 'filesystem'.
+    :member type: The type of task. Can be 'stdout', 'file_search' or
+        'filesystem_change'.
     :member description: A precise description of the task.
     :member stdout: The expected standard output for the task. Empty if task
         type is not 'stdout'.
@@ -74,7 +75,7 @@ class Task(models.Model):
     :member initial_filesystem: JSON representation of the user's starting home
         directory
     :member goal_filesystem: JSON representation of the goal directory (if type
-        is 'filesystem')
+        is 'filesystem_change')
     :member duration: How much time is alotted for the task.
     """
     task_id = models.PositiveIntegerField()
@@ -172,15 +173,22 @@ def create_container(filesystem_name, task):
                          'useradd', '-m', USER2_NAME])
     elif task.task_id == 7:
         physical_dir = '/{}/home/website/'.format(filesystem_name)
-        os.utime(physical_dir + 'css/bootstrap3/bootstrap-glyphicons.css', (1454065722, 1454065722))
-        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.eot', (1454065722, 1454065722))
-        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.otf', (1454065722, 1454065722))
-        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.svg', (1454065722, 1454065722))
-        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.ttf', (1454065722, 1454065722))
+        os.utime(physical_dir + 'css/bootstrap3/bootstrap-glyphicons.css',
+                 (1454065722, 1454065722))
+        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.eot',
+                 (1454065722, 1454065722))
+        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.otf',
+                 (1454065722, 1454065722))
+        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.svg',
+                 (1454065722, 1454065722))
+        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.ttf',
+                 (1454065722, 1454065722))
     elif task.task_id == 8:
         physical_dir = '/{}/home/website/'.format(filesystem_name)
-        os.utime(physical_dir + 'content/labs/2013/10.md', (1454065722, 1454065722))
-        os.utime(physical_dir + 'content/labs/2013/12.md', (1454065722, 1454065722))
+        os.utime(physical_dir + 'content/labs/2013/10.md',
+                 (1454065722, 1454065722))
+        os.utime(physical_dir + 'content/labs/2013/12.md',
+                 (1454065722, 1454065722))
 
     # Find what port the container was mapped to
     info = client.inspect_container(container_id)
@@ -210,6 +218,12 @@ class StudySession(models.Model):
         is undertaking. '' if no task session is running.
     :member num_tasks_completed: The number of tasks that has been completed in
         the study session.
+    :member filesystem_change_seen: Set to true if a user has seen a file
+        system change task in the study session.
+    :member file_search_seen: Set to true if a user has seen a file search task
+        in the study session.
+    :member standard_output_seen: Set to true if a user has seen a standard
+        output task in the study session.
     :member status: The state of the study session.
         - 'finished': The user has completed the study session.
         - 'closed_with_error': The session is closed due to exceptions.
@@ -226,6 +240,9 @@ class StudySession(models.Model):
 
     current_task_session_id = models.TextField()
     num_tasks_completed = models.PositiveIntegerField(default=0)
+    filesystem_change_seen = models.BooleanField(default=False)
+    file_search_seen = models.BooleanField(default=False)
+    standard_output_seen = models.BooleanField(default=False)
     status = models.TextField()
 
     def close(self, reason_for_close):
@@ -237,7 +254,7 @@ class StudySession(models.Model):
             self.save()
 
     def get_part(self):
-        # compute which
+        # compute which part of the study the user is currently at
         if not WEBSITE_DEVELOP:
             assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
         if self.user.group in ['group1', 'group4']:
@@ -260,6 +277,17 @@ class StudySession(models.Model):
         self.save()
         return new_task_session_id
 
+    def update_filesystem_change_seen(self):
+        self.filesystem_change_seen = True
+        self.save()
+
+    def update_file_search_seen(self):
+        self.file_search_seen = True
+        self.save()
+
+    def update_standard_output_seen(self):
+        self.standard_output_seen = True
+        self.save()
 
 class TaskSession(models.Model):
     """
@@ -271,6 +299,8 @@ class TaskSession(models.Model):
     :member session_id: an application-wide unique task session ID.
     :member container: The Container model associated with the task session.
         None if no container is associated.
+    :member is_training: Set to true if the task session is for training
+        purpose.
     :member task: The task being performed in the task session.
     :member start_time: The start time of a task session.
     :member end_time: The end time of a task session. None if the task session
@@ -287,6 +317,7 @@ class TaskSession(models.Model):
     study_session_part = models.TextField()
     session_id = models.TextField(primary_key=True)
     container = models.ForeignKey(Container, default=None)
+    is_training = models.BooleanField(default=False)
     task = models.ForeignKey(Task)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(default='1111-11-11 00:00:00')
@@ -308,6 +339,33 @@ class TaskSession(models.Model):
     def destroy_container(self):
         self.container.destroy()
         self.container = None
+
+    def get_page_tour(self):
+        # check if page tour needs to be displayed for a task session
+        page_tour = None
+        if self.task.type == 'stdout':
+            if not self.study_session.standard_output_seen:
+                if self.study_session.num_tasks_completed == 0:
+                    page_tour = 'init_standard_output'
+                else:
+                    page_tour = 'first_standard_output'
+                self.study_session.update_standard_output_seen()
+        if self.task.type == 'file_search':
+            if not self.study_session.file_search_seen:
+                if self.study_session.num_tasks_completed == 0:
+                    page_tour = 'init_file_search'
+                else:
+                    page_tour = 'first_file_search'
+                self.study_session.update_file_search_seen()
+        if self.task.type == 'filesystem_change':
+            if not self.study_session.filesystem_change_seen:
+                if self.study_session.num_tasks_completed == 0:
+                    page_tour = 'init_filesystem_change'
+                else:
+                    page_tour = 'first_filesystem_change'
+                self.study_session.update_filesystem_change_seen()
+
+        return page_tour
 
     def get_treatment(self):
         user = self.study_session.user

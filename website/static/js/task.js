@@ -31,7 +31,23 @@ $(document).ready(function () {
 
         refresh_vis(data);
 
+        // Check if page tour needs to be displayed
+        console.log(data.page_tour);
+        if (data.page_tour == 'init_filesystem_change')
+            hopscotch.startTour(init_fs_modification_training);
+        else if (data.page_tour == 'first_filesystem_change')
+            hopscotch.startTour(fs_modification_training);
+        else if (data.page_tour == 'first_file_search')
+            hopscotch.startTour(file_search_training);
+        else if (data.page_tour == 'first_standard_output')
+            hopscotch.startTour(standard_output_training);
+        else if (data.page_tour == 'init_file_search')
+            hopscotch.startTour(init_file_search_training);
+        else if (data.page_tour == 'init_standard_output')
+            hopscotch.startTour(init_standard_output);
+
         // start timing the task
+        console.log('timer starts');
         task_time_out = setTimeout(function() {
              console.log('task time out');
              clearTimeout(task_time_out);

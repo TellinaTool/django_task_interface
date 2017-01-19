@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import *
 from .filesystem import *
 
-from . import functions, filesystem
+from . import functions
 import json
 import pathlib
 import re
@@ -66,6 +66,7 @@ def get_current_task(request, task_session):
     order_number = study_session.num_tasks_completed + 1
 
     context = {
+        "is_training": task_session.is_training,
         "task_part": task_part,
         "task_description": task.description,
         "task_order_number": order_number,
@@ -84,17 +85,18 @@ def get_additional_task_info(request, task_session):
     Args:
         task_session:
 
-    Returns additional the maximum time length the user is allowed to spend on the task.
+    Returns additional the maximum time length the user is allowed to spend on
+    the task.
 
     """
     task = task_session.task
     container = task_session.container
     container_port = container.port
 
-    with open('fs-7-8.json', 'w') as o_f:
-        json.dump(disk_2_dict(
-          pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
-            [filesystem._MTIME]), o_f)
+    # with open('fs-7-8.json', 'w') as o_f:
+    #     json.dump(disk_2_dict(
+    #       pathlib.Path('/{}/home/website'.format(container.filesystem_name)),
+    #         [filesystem._MTIME]), o_f)
 
     fs_diff = compute_filesystem_diff(container, task, [],
                                       save_initial_filesystem=True)
@@ -103,21 +105,23 @@ def get_additional_task_info(request, task_session):
     else:
         filesystem_status = "FILE_SYSTEM_ERROR"
 
-    if task.type == 'stdout':
+    if task.type == "stdout":
         stdout_diff = compute_stdout_diff('', task)
         resp = {
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
             'stdout_diff': stdout_diff,
-            "task_duration": task.duration.seconds,
-            "container_port": container_port
+            'task_duration': task.duration.seconds,
+            'page_tour': task_session.get_page_tour(),
+            'container_port': container_port
         }
     else:
         resp = {
             'filesystem_status': filesystem_status,
-            "filesystem_diff": fs_diff,
-            "task_duration": task.duration.seconds,
-            "container_port": container_port
+            'filesystem_diff': fs_diff,
+            'task_duration': task.duration.seconds,
+            'page_tour': task_session.get_page_tour(),
+            'container_port': container_port
         }
 
     return json_response(resp)
@@ -176,24 +180,23 @@ def create_task_session(study_session):
     study_session_part = study_session.get_part()
     task_session_id = study_session.current_task_session_id
 
-    if (user.group == 'group1' and study_session_part == 'I') or \
-        (user.group == 'group2' and study_session_part == 'II') or \
-        (user.group == 'group3' and study_session_part == 'II') or \
-        (user.group == 'group4' and study_session_part == 'I'):
-        if study_session_part == 'I':
-            task_id = TASK_BLOCK_I[study_session.num_tasks_completed]
-        else:
-            task_id = TASK_BLOCK_I[study_session.num_tasks_completed - 
-                               len(TASK_BLOCK_II)]
-    if (user.group == 'group1' and study_session_part == 'II') or \
-        (user.group == 'group2' and study_session_part == 'I') or \
-        (user.group == 'group3' and study_session_part == 'I') or \
-        (user.group == 'group4' and study_session_part == 'II'):
-        if study_session_part == 'I':
-            task_id = TASK_BLOCK_II[study_session.num_tasks_completed]
-        else:
-            task_id = TASK_BLOCK_II[study_session.num_tasks_completed -
-                                len(TASK_BLOCK_I)]
+    if user.group in ['group1', 'group4']:
+        part1_tasks = TASK_BLOCK_I
+        part2_tasks = TASK_BLOCK_II
+    else:
+        part1_tasks = TASK_BLOCK_II
+        part2_tasks = TASK_BLOCK_I
+
+    is_training = False
+    if study_session_part == 'I':
+        task_id = part1_tasks[study_session.num_tasks_completed]
+        if study_session.num_tasks_completed == 0:
+            is_training = True
+    else:
+        task_id = part2_tasks[study_session.num_tasks_completed
+                              - len(part1_tasks)]
+        if study_session.num_tasks_completed - len(part1_tasks) == 0:
+            is_training = True
 
     # create the container of the task session
     task = Task.objects.get(task_id=task_id)
@@ -204,6 +207,7 @@ def create_task_session(study_session):
         study_session_part = study_session.get_part(),
         session_id = task_session_id,
         container = container,
+        is_training = is_training,
         task = task,
         start_time = timezone.now(),
         status = 'running'
@@ -256,14 +260,14 @@ def on_command_execution(request, task_session):
         if stdout_diff['tag'] == 'correct':
             task_completed = True
         resp = { 'filesystem_diff': fs_diff, 'stdout_diff': stdout_diff }
-    elif task.type == 'filesearch' or task.type == 'filesystem':
+    elif task.type == 'file_search' or task.type == 'filesystem_change':
         # check if the current file system is the same as the goal file system
         if not fs_diff['tag']:
             task_completed = True
         resp = { 'filesystem_diff': fs_diff }
     else:
-        raise AttributeError('Unrecognized task type "{}": must be "stdout" or'
-                             '"filesystem"'.format(task.type))
+        raise AttributeError('Unrecognized task type "{}": must be "stdout",'
+            '"file_search" or "filesystem_change"'.format(task.type))
 
     if task_completed:
         return json_response(resp, status= 'TASK_COMPLETED')
@@ -398,7 +402,7 @@ def compute_stdout_diff(stdout, task, current_dir=None):
             return l1 == l2
         return False
 
-    stdout1 = [line.strip() for line in stdout.split('\n')]
+    stdout1 = [line.strip() for line in stdout.split('\n') if line]
     stdout2 = [line.strip() for line in task.stdout.split('\n')]
 
     stdout_diff = []
@@ -563,7 +567,8 @@ def user_login(request):
                 for session in existing_sessions[:-1]:
                     session.close('closed_with_error')
                 session = existing_sessions[-1]
-                # remember the study session id and the task session id with cookies
+                # remember the study session id and the task session id with
+                # cookies
                 resp = JsonResponse({
                     "status": "RUNNING_STUDY_SESSION_FOUND",
                     "task_session_id": session.current_task_session_id,
@@ -592,7 +597,8 @@ def user_login(request):
 
             try:
                 create_task_session(session)
-                # remember the study session id and the task session id with cookies
+                # remember the study session id and the task session id with
+                # cookies
                 resp = json_response({"task_session_id": init_task_session_id},
                                      status="SESSION_CREATED")
                 resp.set_cookie('session_id', session_id)
