@@ -568,8 +568,8 @@ def extract_path(input, current_dir=None):
     Return None if there is no path mention in the input line, otherwise the
     path object.
     """
-    path_pattern = re.compile("([^ ]*\/)+[^ ]*(\:|$)")
-    match = re.search(path_pattern, input)
+    path_pattern = re.compile(r'((([^ ]*\/)+[^ ]*)|([a-zA-Z]+\.[a-zA-Z]+))(\:|$)')
+    match = re.search(path_pattern, input.strip())
     if not match:
         return None
     path = match.group(0).strip()

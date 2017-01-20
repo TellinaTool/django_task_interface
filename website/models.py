@@ -20,6 +20,7 @@ import time
 WEBSITE_DEVELOP = True
 
 # unimplemented tasks: 3, 20
+TASK_TRAINING = [0]
 TASK_BLOCK_I = [5, 10, 6, 9, 19, 1, 18, 17, 16]
 TASK_BLOCK_II = [8, 7, 2, 14, 12, 4, 13, 15, 11]
 
@@ -229,6 +230,7 @@ class StudySession(models.Model):
         - 'closed_with_error': The session is closed due to exceptions.
         - 'paused': The user left the study session in the middle. Paused
             study sessions can be resumed.
+        - 'training': The user is at the training state of the study session.
         - 'running': The user is currently taking the study session.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -271,8 +273,14 @@ class StudySession(models.Model):
         self.save()
 
     def update_current_task_session_id(self):
-        new_task_session_id = self.session_id + \
-               '-task-{}'.format(self.num_tasks_completed + 1)
+        if self.status == 'training':
+            new_task_session_id = self.session_id + '-training-task-0'
+        elif self.status == 'running':
+            new_task_session_id = self.session_id + \
+                   '-task-{}'.format(self.num_tasks_completed + 1)
+        else:
+            raise AttributeError('Wrong study session status: {} (should be '
+                                 '"running" or "training" only.)'.format(self.status))
         self.current_task_session_id = new_task_session_id
         self.save()
         return new_task_session_id
@@ -324,6 +332,15 @@ class TaskSession(models.Model):
     status = models.TextField()
 
     def close(self, reason_for_close):
+        if self.task.type == 'stdout' and \
+          not self.study_session.standard_output_seen:
+            self.study_session.update_standard_output_seen()
+        if self.task.type == 'file_search' and \
+          not self.study_session.file_search_seen:
+            self.study_session.update_file_search_seen()
+        if self.task.type == 'filesystem_change' and \
+          not self.study_session.filesystem_change_seen:
+            self.study_session.update_filesystem_change_seen()
         self.end_time = timezone.now()
         self.container.destroy()
         self.status = reason_for_close
@@ -349,21 +366,18 @@ class TaskSession(models.Model):
                     page_tour = 'init_standard_output'
                 else:
                     page_tour = 'first_standard_output'
-                self.study_session.update_standard_output_seen()
         if self.task.type == 'file_search':
             if not self.study_session.file_search_seen:
                 if self.study_session.num_tasks_completed == 0:
                     page_tour = 'init_file_search'
                 else:
                     page_tour = 'first_file_search'
-                self.study_session.update_file_search_seen()
         if self.task.type == 'filesystem_change':
             if not self.study_session.filesystem_change_seen:
                 if self.study_session.num_tasks_completed == 0:
                     page_tour = 'init_filesystem_change'
                 else:
                     page_tour = 'first_filesystem_change'
-                self.study_session.update_filesystem_change_seen()
 
         return page_tour
 

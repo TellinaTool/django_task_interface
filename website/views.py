@@ -2,9 +2,10 @@
 This file defines functions to handle requests at URLs defined in urls.py.
 """
 
-from django.template import loader
-from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
+from django.http import HttpResponse, JsonResponse
+from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
@@ -65,15 +66,27 @@ def get_current_task(request, task_session):
 
     order_number = study_session.num_tasks_completed + 1
 
-    context = {
-        "is_training": task_session.is_training,
-        "task_part": task_part,
-        "task_description": task.description,
-        "task_order_number": order_number,
-        "total_num_tasks": study_session.total_num_tasks,
-        "first_name": study_session.user.first_name,
-        "last_name": study_session.user.last_name,
-    }
+    is_training = study_session.status == 'training'
+    if is_training:
+        context = {
+            "is_training": is_training,
+            "task_part": 'Training',
+            "task_description": task.description,
+            "task_order_number": 1,
+            "total_num_tasks": 1,
+            "first_name": study_session.user.first_name,
+            "last_name": study_session.user.last_name,
+        }
+    else:
+        context = {
+            "is_training": is_training,
+            "task_part": 'Part {}'.format(task_part),
+            "task_description": task.description,
+            "task_order_number": order_number,
+            "total_num_tasks": study_session.total_num_tasks,
+            "first_name": study_session.user.first_name,
+            "last_name": study_session.user.last_name,
+        }
 
     template = loader.get_template('task.html')
     return HttpResponse(template.render(context, request))
@@ -136,14 +149,16 @@ def go_to_next_task(request, task_session):
     Create a new task session.
     """
 
-    current_task_session = task_session
-    study_session = current_task_session.study_session
+    study_session = task_session.study_session
 
     # if a task session has ended, ignore requests for updating task attributes
-    if current_task_session.status == 'running':
+    if task_session.status == 'running':
         # close current_task_session
-        current_task_session.close(request.GET['reason_for_close'])
-        study_session.inc_num_tasks_completed()
+        task_session.close(request.GET['reason_for_close'])
+        if study_session.status == 'training':
+            study_session.status = 'running'
+        else:
+            study_session.inc_num_tasks_completed()
 
     # check for user study completion
     num_tasks_completed = study_session.num_tasks_completed
@@ -179,39 +194,40 @@ def create_task_session(study_session):
     user = study_session.user
     study_session_part = study_session.get_part()
     task_session_id = study_session.current_task_session_id
+    is_training = (study_session.status == 'training')
 
-    if user.group in ['group1', 'group4']:
-        part1_tasks = TASK_BLOCK_I
-        part2_tasks = TASK_BLOCK_II
-    else:
-        part1_tasks = TASK_BLOCK_II
-        part2_tasks = TASK_BLOCK_I
+    if not TaskSession.objects.filter(session_id=task_session_id).exists():
+        if is_training:
+            task_id = TASK_TRAINING[0]
+        else:
+            if user.group in ['group1', 'group4']:
+                part1_tasks = TASK_BLOCK_I
+                part2_tasks = TASK_BLOCK_II
+            else:
+                part1_tasks = TASK_BLOCK_II
+                part2_tasks = TASK_BLOCK_I
 
-    is_training = False
-    if study_session_part == 'I':
-        task_id = part1_tasks[study_session.num_tasks_completed]
-        if study_session.num_tasks_completed == 0:
-            is_training = True
-    else:
-        task_id = part2_tasks[study_session.num_tasks_completed
-                              - len(part1_tasks)]
-        if study_session.num_tasks_completed - len(part1_tasks) == 0:
-            is_training = True
+            if study_session_part == 'I':
+                task_id = part1_tasks[study_session.num_tasks_completed]
+            else:
+                task_id = part2_tasks[study_session.num_tasks_completed
+                                      - len(part1_tasks)]
 
-    # create the container of the task session
-    task = Task.objects.get(task_id=task_id)
-    container = create_container(task_session_id, task)
+        # create the container of the task session
+        task = Task.objects.get(task_id=task_id)
+        container = create_container(task_session_id, task)
 
-    TaskSession.objects.create(
-        study_session = study_session,
-        study_session_part = study_session.get_part(),
-        session_id = task_session_id,
-        container = container,
-        is_training = is_training,
-        task = task,
-        start_time = timezone.now(),
-        status = 'running'
-    )
+        TaskSession.objects.create(
+            study_session = study_session,
+            study_session_part = study_session.get_part(),
+            session_id = task_session_id,
+            container = container,
+            is_training = is_training,
+            task = task,
+            start_time = timezone.now(),
+            status = 'running'
+        )
+        print('Log: {} created'.format(task_session_id))
 
 # --- Terminal I/O --- #
 
@@ -520,7 +536,7 @@ def register_user(request):
     else:
         # make access code for user
         access_code = first_name.lower() + '-' + last_name.lower()
-        user = User.objects.create(
+        User.objects.create(
             first_name = first_name,
             last_name = last_name,
             access_code = access_code
@@ -549,12 +565,13 @@ def user_login(request):
             no_existing_session = False
             healthy_sessions = []
             for session in StudySession.objects\
-                    .filter(user=user, status='running').order_by('creation_time'):
+                    .filter(user=user).filter(Q(status='running') | Q(status='training'))\
+                    .order_by('creation_time'):
                 try:
                     task_session = TaskSession.objects.get(
                         session_id=session.current_task_session_id)
-                    if task_session.status == 'running' or task_session.status \
-                        == 'paused':
+                    if task_session.status == 'running' or \
+                                    task_session.status == 'paused':
                         healthy_sessions.append(session)
                     else:
                         session.close('closed_with_error')
@@ -567,6 +584,9 @@ def user_login(request):
                 for session in existing_sessions[:-1]:
                     session.close('closed_with_error')
                 session = existing_sessions[-1]
+                # recreate a new container in case the original session is off
+                # due to container issue
+                task_session.create_new_container()
                 # remember the study session id and the task session id with
                 # cookies
                 resp = JsonResponse({
@@ -588,7 +608,7 @@ def user_login(request):
                 session_id = session_id,
                 creation_time = timezone.now(),
                 
-		        status = 'running'
+		        status = 'training'
             )
 
             # initialize the first task session

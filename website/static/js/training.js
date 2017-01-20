@@ -5,6 +5,7 @@
 var init_fs_modification_training = {
     // The very first task the user encountered in the study is file system operation.
     id: "init-fs-modification-training",
+    showCloseButton: false,
     steps: [
         {
             title: "Task platform tutorial",
@@ -63,14 +64,14 @@ var init_fs_modification_training = {
             showPrevButton: true
         },
         {
-            title: "Realtime Result Check",
+            title: "Realtime Result Check (1)",
             content: "The visualization is updated whenever a command being executed results in a change in your file system. Type \"rm index.html\" in the terminal and observe the effect.",
             target: "current-tree-vis",
             placement: "left",
             showPrevButton: true
         },
         {
-            title: "Realtime Result Check",
+            title: "Realtime Result Check (2)",
             content: "In addition, if you issued a command which lists some files on the terminal, the listed files will also be highlighted in the visualization. Type \"find content/\" in the terminal and observe the effect.",
             target: "current-tree-vis",
             placement: "left",
@@ -100,8 +101,8 @@ var init_fs_modification_training = {
             showPrevButton: true
         },
         {
-            title: "End of Tutorial",
-            content: "Thanks. You have finished this tutorial. Please go on to complete the training task. Raise your hand and let us know if you have any question.",
+            title: "End of Instructions",
+            content: "Now that you have learnt about every component on the platform, please go on to complete the training task. Raise your hand and let us know if you have any question.",
             target: "task-platform-header",
             placement: "bottom",
             xOffset: 400,
@@ -112,6 +113,7 @@ var init_fs_modification_training = {
 
 var init_file_search_training = {
     id: "init-file-search-training",
+    showCloseButton: false,
     steps: [
         {
             title: "Task platform tutorial",
@@ -170,14 +172,14 @@ var init_file_search_training = {
             showPrevButton: true
         },
         {
-            title: "Realtime Result Check",
-            content: "The visualization is updated whenever you execute a command in the terminal. Type \"find content/\" in the terminal and observe the effect.",
+            title: "Realtime Result Check (1)",
+            content: "The visualization is updated whenever you execute a command in the terminal. Type \"find content\" in the terminal and observe the effect.",
             target: "current-tree-vis",
             placement: "left",
             showPrevButton: true
         },
         {
-            title: "Realtime Result Check",
+            title: "Realtime Result Check (2)",
             content: "In addition, any change to your file system will also be shown in the visualization. Type \"rm index.html\" in the terminal and observe the effect.",
             target: "current-tree-vis",
             placement: "left",
@@ -207,8 +209,8 @@ var init_file_search_training = {
             showPrevButton: true
         },
         {
-            title: "End of Tutorial",
-            content: "Thanks. You have reached the end of this tutorial. Please go on to complete the training task. If you met any problem, please raise your hand and let us know.",
+            title: "End of Instructions",
+            content: "Now that you have learnt about every component on the platform, please go on to complete the training task. If you met any problem, please raise your hand and let us know.",
             target: "task-platform-header",
             placement: "bottom",
             xOffset: 400,
@@ -316,109 +318,3 @@ var init_file_search_training = {
         }
     ]
 }; */
-
-var fs_modification_training = {
-    id: "filesystem-change-training",
-    steps: [
-        {
-            title: "Task",
-            content: "Hey there! You have come to a new type of tasks. This task asks you to perform file system modifications, such as to create/delete/modify specific files.",
-            target: "task-description",
-            placement: "right",
-            showPrevButton: true
-        },
-        {
-            title: "Realtime Result Check",
-            content: "To help you focusing on the right track, we marked up the files output by your last command execution and whether they match the expected output in the file system visualization.",
-            target: "current-tree-vis",
-            placement: "left",
-            showPrevButton: true
-        },
-        {
-            title: "Legend Explanation",
-            content: "As a reminder of the relevant visual narkups: a light grey node indicates a file exists in the goal directory that is missing from your current directory; a red node indicates a file exists in your current directory but is not contained in the goal directory.",
-            target: "current-tree-vis",
-            placement: "left",
-            showPrevButton: true
-        },
-        {
-            title: "The Rest Are the Same",
-            content: "The rest of the platform remains unchanged. Please go on to complete the task.",
-            target: "task-platform-header",
-            placement: "bottom",
-            xOffset: 400,
-            showPrevButton: true
-        }
-    ]
-};
-
-var file_search_training = {
-    id: "file-search-training",
-    steps: [
-        {
-            title: "Task",
-            content: "Hey there! You have come to a new type of tasks. This task asks you to list files that have certain properties on the terminal.",
-            target: "task-description",
-            placement: "right",
-            showPrevButton: true
-        },
-        {
-            title: "Realtime Result Check",
-            content: "To help you focusing on the right track, we marked up the files output by your last command execution and whether they match the expected output in the file system visualization.",
-            target: "current-tree-vis",
-            placement: "left",
-            showPrevButton: true
-        },
-        {
-            title: "Legend Explanation",
-            content: "As a reminder of the relevant visual markups: a node with light grey background indicates a file that should exists in the expected output but is not selected by the command you issued; a node with red background indicates a file that is in your output list but is not in the expected output; a node with bright yellow background indicates a correct output.",
-            target: "current-tree-vis",
-            placement: "left",
-            showPrevButton: true
-        },
-        {
-            title: "The Rest Are the Same",
-            content: "The rest of the platform remains unchanged. Please go on to complete the task.",
-            target: "task-platform-header",
-            placement: "bottom",
-            xOffset: 400,
-            showPrevButton: true
-        }
-    ]
-};
-
-var standard_output_training = {
-    id: "standard-output-training",
-    steps: [
-        {
-            title: "Task",
-            content: "Hey there! You have come to a new type of tasks. This task asks you to list files that have certain properties on the terminal, with specific attributes or in a specific format.",
-            target: "task-description",
-            placement: "right",
-            showPrevButton: true
-        },
-        {
-            title: "Realtime Result Check",
-            content: "To help you focusing on the right track, an additional panel is used to show the difference between your current terminal output and the required one. This panel is updated whenever your terminal output has changed. Type \"ls -l\" and observe the effect.",
-            target: "stdout-diff-vis",
-            placement: "left",
-            showPrevButton: true
-        },
-        {
-            title: "Legend Explanation",
-            content: "As a reminder of the relevant visual markups: a line in light grey color exists in the expected output but is missing from your current output; a line in red color is not in the expected output but is in your current output; a black line is correct output.",
-            target: "stdout-diff-vis",
-            placement: "left",
-            showPrevButton: true
-        },
-        {
-            title: "The Rest Are the Same",
-            content: "The rest of the platform remains unchanged. Please go on to complete the task.",
-            target: "task-platform-header",
-            placement: "bottom",
-            xOffset: 400,
-            showPrevButton: true
-        }
-    ]
-};
-

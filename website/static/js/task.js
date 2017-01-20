@@ -10,6 +10,8 @@ $(document).ready(function () {
         }
     })();
 
+    var is_training = false;
+    var showing_tips = false;
     var task_time_out;
     // create terminal object
     var term, protocol, socketURL, socket, pid, charWidth, charHeight;
@@ -33,40 +35,144 @@ $(document).ready(function () {
 
         // Check if page tour needs to be displayed
         console.log(data.page_tour);
-        if (data.page_tour == 'init_filesystem_change')
+        if (data.page_tour == 'init_filesystem_change') {
             hopscotch.startTour(init_fs_modification_training);
-        else if (data.page_tour == 'first_filesystem_change')
+            is_training = true;
+        } else if (data.page_tour == 'first_filesystem_change') {
+            var fs_modification_training = {
+                id: "filesystem-change-training",
+                showCloseButton: false,
+                steps: [
+                    {
+                        title: "Task",
+                        content: "Hey there! You have come to a new type of task. This task asks you to perform file system modifications, such as to create/delete/modify specific files.",
+                        target: "task-description",
+                        placement: "right",
+                        showPrevButton: true
+                    },
+                    {
+                        title: "Realtime Result Check",
+                        content: "To help you focusing on the right track, we marked up the files output by your last command execution and whether they match the expected output in the file system visualization.",
+                        target: "current-tree-vis",
+                        placement: "left",
+                        showPrevButton: true
+                    },
+                    {
+                        title: "Legend Explanation",
+                        content: "As a reminder of the relevant visual narkups: a light grey node indicates a file exists in the goal directory that is missing from your current directory; a red node indicates a file exists in your current directory but is not contained in the goal directory.",
+                        target: "current-tree-vis",
+                        placement: "left",
+                        showPrevButton: true
+                    },
+                    {
+                        title: "The Rest Are the Same",
+                        content: "The rest of the platform remains unchanged. Please go on to complete the task.",
+                        target: "task-platform-header",
+                        placement: "bottom",
+                        xOffset: 400,
+                        showPrevButton: true
+                    }
+                ],
+                onEnd: function () {
+                    start_timer(data.task_duration);
+                }
+            };
             hopscotch.startTour(fs_modification_training);
-        else if (data.page_tour == 'first_file_search')
+            showing_tips = true;
+        } else if (data.page_tour == 'first_file_search') {
+            var file_search_training = {
+                id: "file-search-training",
+                showCloseButton: false,
+                steps: [
+                    {
+                        title: "Task",
+                        content: "Hey there! You have come to a new type of task. This task asks you to list files that have certain properties on the terminal.",
+                        target: "task-description",
+                        placement: "right",
+                        showPrevButton: true
+                    },
+                    {
+                        title: "Realtime Result Check",
+                        content: "To help you focusing on the right track, we marked up the files output by your last command execution and whether they match the expected output in the file system visualization.",
+                        target: "current-tree-vis",
+                        placement: "left",
+                        showPrevButton: true
+                    },
+                    {
+                        title: "Legend Explanation",
+                        content: "As a reminder of the relevant visual markups: a node with light grey background indicates a file that should exists in the expected output but is not selected by the command you issued; a node with red background indicates a file that is in your output list but is not in the expected output; a node with bright yellow background indicates a correct output.",
+                        target: "current-tree-vis",
+                        placement: "left",
+                        showPrevButton: true
+                    },
+                    {
+                        title: "The Rest Are the Same",
+                        content: "The rest of the platform remains unchanged. Please go on to complete the task.",
+                        target: "task-platform-header",
+                        placement: "bottom",
+                        xOffset: 400,
+                        showPrevButton: true
+                    }
+                ],
+                onEnd: function () {
+                    start_timer(data.task_duration);
+                }
+            };
             hopscotch.startTour(file_search_training);
-        else if (data.page_tour == 'first_standard_output')
+            showing_tips = true;
+        } else if (data.page_tour == 'first_standard_output') {
+            var standard_output_training = {
+                id: "standard-output-training",
+                showCloseButton: false,
+                steps: [
+                    {
+                        title: "Task",
+                        content: "Hey there! You have come to a new type of task. This task asks you to list files that have certain properties on the terminal, with specific attributes or in a specific format.",
+                        target: "task-description",
+                        placement: "right",
+                        showPrevButton: true
+                    },
+                    {
+                        title: "Realtime Result Check",
+                        content: "To help you focusing on the right track, an additional panel is used to show the difference between your current terminal output and the required one. This panel is updated whenever your terminal output has changed. Type \"ls -l\" and observe the effect.",
+                        target: "stdout-diff-vis",
+                        placement: "left",
+                        showPrevButton: true
+                    },
+                    {
+                        title: "Legend Explanation",
+                        content: "As a reminder of the relevant visual markups: a line in light grey color exists in the expected output but is missing from your current output; a line in red color is not in the expected output but is in your current output; a black line is correct output.",
+                        target: "stdout-diff-vis",
+                        placement: "left",
+                        showPrevButton: true
+                    },
+                    {
+                        title: "The Rest Are the Same",
+                        content: "The rest of the platform remains unchanged. Please go on to complete the task.",
+                        target: "task-platform-header",
+                        placement: "bottom",
+                        xOffset: 400,
+                        showPrevButton: true
+                    }
+                ],
+                onEnd: function () {
+                    start_timer(data.task_duration);
+                }
+            };
             hopscotch.startTour(standard_output_training);
-        else if (data.page_tour == 'init_file_search')
+            showing_tips = true;
+        } else if (data.page_tour == 'init_file_search') {
             hopscotch.startTour(init_file_search_training);
-        else if (data.page_tour == 'init_standard_output')
+            is_training = true;
+        } else if (data.page_tour == 'init_standard_output') {
             hopscotch.startTour(init_standard_output);
+            is_training = true;
+        }
 
         // start timing the task
-        console.log('timer starts');
-        task_time_out = setTimeout(function() {
-             console.log('task time out');
-             clearTimeout(task_time_out);
-
-             // prompt the user that they have to move on to the next task
-             BootstrapDialog.show({
-                 title: "Time's Up",
-                 message: "The current task session is time out. Please proceed to the next task.",
-                 buttons: [{
-                     label: "Proceed",
-                     cssClass: "btn-primary",
-                     action: function(dialogItself) {
-                         dialogItself.close();
-                         switch_task('time_out');
-                     }
-                 }],
-                 closable: false,
-             });
-        }, data.task_duration * 1000);
+        if (!is_training && !showing_tips) {
+            start_timer(data.task_duration);
+        }
 
         $("#reset-button").click(function() {
             // close the websocket connection to the old container
@@ -85,31 +191,71 @@ $(document).ready(function () {
         });
 
         $("#quit-button").click(function() {
-            // discourage a user from quiting a task
-            BootstrapDialog.show({
-                title: "We hope everyone try harder before giving up a task!",
-                message: "If you give up a task, the information we get from the study wil be less accurate. Would you like to proceed anyway?",
-                type: BootstrapDialog.TYPE_WARNING,
-                buttons: [
-                {
-                    icon: 'glyphicon glyphicon-warning-sign',
-                    label: " Yes, give up.",
-                    cssClass: "btn-danger",
-                    action: function(dialogItself) {
-                        dialogItself.close();
-                        switch_task('quit');
-                    }
-                },
-                {
-                    label: "No, I'll keep trying",
-                    cssClass: "btn-primary",
-                    action: function(dialogItself) {
-                        dialogItself.close();
-                    }
-                }],
-            });
+            if (is_training) {
+                // reveal the answer to the user if he/she decides to quit the
+                // training tasks
+                BootstrapDialog.show({
+                    title: "Solution",
+                    message: "The solution to this task is \"find js\". Input this command in the terminal and observe the effect.",
+                    buttons: [
+                    {
+                        label: "Got it.",
+                        cssClass: "btn-danger",
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+                });
+            } else {
+                // discourage a user from quiting a task
+                BootstrapDialog.show({
+                    title: "Warning",
+                    message: "If you give up a task, the information we get from the study wil be less accurate. Would you like to proceed anyway?",
+                    type: BootstrapDialog.TYPE_WARNING,
+                    buttons: [
+                    {
+                        icon: 'glyphicon glyphicon-warning-sign',
+                        label: " Yes, give up.",
+                        cssClass: "btn-danger",
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                            switch_task('quit');
+                        }
+                    },
+                    {
+                        label: "No, I'll keep trying",
+                        cssClass: "btn-primary",
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }],
+                });
+            }
         })
     });
+
+    function start_timer(num_secs) {
+        console.log('timer starts');
+            task_time_out = setTimeout(function() {
+                 console.log('task time out');
+                 clearTimeout(task_time_out);
+
+                 // prompt the user that they have to move on to the next task
+                 BootstrapDialog.show({
+                     title: "Time's Up",
+                     message: "The current task session is time out. Please proceed to the next task.",
+                     buttons: [{
+                         label: "Proceed",
+                         cssClass: "btn-primary",
+                         action: function(dialogItself) {
+                             dialogItself.close();
+                             switch_task('time_out');
+                         }
+                     }],
+                     closable: false,
+                 });
+        }, num_secs * 1000);
+    }
 
     function refresh_vis(data) {
         if (data.hasOwnProperty('stdout_diff')) {
@@ -164,21 +310,49 @@ $(document).ready(function () {
                                 refresh_vis(data);
                                 if (data.status == 'TASK_COMPLETED') {
                                     clearTimeout(task_time_out);
-                                    setTimeout(function() {
-                                        BootstrapDialog.show({
-                                            title: "Great Job!",
-                                            message: "You passed the task! Please proceed to the next task.",
-                                            buttons: [{
-                                                label: "Proceed",
-                                                cssClass: "btn-primary",
-                                                action: function(dialogItself) {
-                                                    dialogItself.close();
-                                                    switch_task('passed');
-                                                }
-                                            }],
-                                            closable: false
+                                    if (is_training) {
+                                        var calloutMgr = hopscotch.getCalloutManager();
+                                        calloutMgr.createCallout({
+                                          id: 'attach-icon',
+                                          target: 'current-tree-vis',
+                                          placement: 'left',
+                                          title: 'Task Completed',
+                                          content: 'When you print the correct files on the terminal, there will be no difference mark ups on the visualization.',
+                                          onClose: function() {
+                                            setTimeout(function() {
+                                                BootstrapDialog.show({
+                                                    title: "Training Completed",
+                                                    message: "Awesome! You've completed the task platform training. Please proceed to the user study now.",
+                                                    buttons: [{
+                                                        label: "Proceed",
+                                                        cssClass: "btn-primary",
+                                                        action: function(dialogItself) {
+                                                            dialogItself.close();
+                                                            switch_task('passed');
+                                                        }
+                                                    }],
+                                                    closable: false
+                                                });
+                                            }, 300)
+                                          }
                                         });
-                                    }, 300);
+                                     } else {
+                                        setTimeout(function() {
+                                            BootstrapDialog.show({
+                                                title: "Good Job",
+                                                message: "You passed the task! Please proceed to the next task.",
+                                                buttons: [{
+                                                    label: "Proceed",
+                                                    cssClass: "btn-primary",
+                                                    action: function(dialogItself) {
+                                                        dialogItself.close();
+                                                        switch_task('passed');
+                                                    }
+                                                }],
+                                                closable: false
+                                            });
+                                        }, 300);
+                                    }
                                 }
                             }
                         );
@@ -214,7 +388,8 @@ $(document).ready(function () {
             if (data.status == 'STUDY_SESSION_COMPLETE') {
                 BootstrapDialog.show({
                     title: "Congratulations, you have completed the study!",
-                    message: "Report: passed " + data.num_passed + "/" + data.num_total + " tasks; given up " + data.num_given_up + "/" + data.num_total + " tasks.\n\n" +
+                    message: "Report: passed " + data.num_passed + "/" + data.num_total +
+                             " tasks; given up " + data.num_given_up + "/" + data.num_total + " tasks.\n\n" +
                              "Please go on to fill in the post-study questionnaire.",
                     buttons: [{
                         label: "Go to questionnaire",
