@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+  {% block head %}
+    <link href="/static/css/progress.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=PT+Sans+Caption:400,700' rel='stylesheet' type='text/css'>
+  {% endblock %}
+
+  {% block body %}
+    {% if step == 'III' %}
+      <h1>Congratulations! You have completed all tasks in the study.</h1>
+      <h2>Please fill in the post-study <a href="https://docs.google.com/a/cs.washington.edu/forms/d/e/1FAIpQLSdX1qM91hIG7mEy-6cTIbZ3b5iiUyMkytLHG3Mh03WFsACtvA/viewform">questionnaire</a> before you go.</h2>
+    {% else %}
+      <h1>Entering <span id="step-name"></span> in <span id="count-down"></span> secs...</h1>
+      {% if step == 'I' or step == 'II' %}
+        <h2>For this part of tasks, you may use <span id="treatment"></span> as asssistant tool(s).</h2>
+      {% endif %}
+    {% endif %}
+
+    <div class="checkout-wrap">
+      <ul class="checkout-bar">
+        <li class="" id="login-and-consent">Login & Consent</li>
+        <li class="" id="platform-training">Platform Training</li>
+        <li class="" id="part-i-tasks">Part I Tasks</li>
+        <li class="" id="part-ii-tasks">Part II Tasks</li>
+        <li class="" id="complete-and-questionnarie">Complete & Questionnaire</li>
+      </ul>
+    </div>
+  {% endblock %}
+
+  {% block other-scripts %}
+    <script src="/static/js/progress.js"></script>
+    <script>
+      var count = 3;
+      if ("{{step}}" == "O") {
+          $('#step-name').text("platform training");
+          $('#login-and-consent').addClass('active');
+          $('#platform-training').addClass('next');
+          // $('#part-i-tasks').addClass('next');
+      } else if ("{{step}}" == 'I' || "{{step}}" == 'II') {
+          count = 5;
+          $('#login-and-consent').addClass('previous visited');
+          $('#platform-training').addClass('previous visited');
+          if ("{{treatment}}" == 'A') {
+              $("#treatment").text('both Tellina and the Internet');
+          } else {
+              $("#treatment").text('only the Internet');
+          }
+          if ("{{step}}" == 'I') {
+              $('#step-name').text("part I tasks");
+              $('#part-i-tasks').addClass('active');
+              $('#part-ii-tasks').addClass('next');
+          } else if ("{{step}}" == 'II') {
+            $('#step-name').text("part II tasks");
+            $('#part-i-tasks').addClass('previous visited');
+            $('#part-ii-tasks').addClass('active');
+            $('#complete-and-questionnaire').addClass('next');
+          }
+      } else if ("{{step}}" == 'III') {
+          $('#login-and-consent').addClass('previous visited');
+          $('#platform-training').addClass('previous visited');
+          $('#part-i-tasks').addClass('previous visited');
+          $('#part-ii-tasks').addClass('previous visited');
+          $('#complete-and-questionnaire').addClass('active').addClass('done');
+      }
+
+      if ("{{step}}" != 'III') {
+        $('#count-down').text(count);
+        setInterval(function () {
+            count --;
+            if (count == 0) {
+                window.location.replace("{{task_session_id}}");
+            } else {
+                $('#count-down').text(count);
+            }
+        }, 1000);
+      }
+    </script>
+  {% endblock %}

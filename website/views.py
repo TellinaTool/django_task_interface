@@ -155,6 +155,7 @@ def go_to_next_task(request, task_session):
     if task_session.status == 'running':
         # close current_task_session
         task_session.close(request.GET['reason_for_close'])
+        # update relevant study session attributes
         if study_session.status == 'training':
             study_session.status = 'running'
         else:
@@ -179,9 +180,12 @@ def go_to_next_task(request, task_session):
     else:
         next_task_session_id = study_session.update_current_task_session_id()
         create_task_session(study_session)
-
+        if study_session.switch_part():
+            status = 'SWITCH_PART'
+        else:
+            status = 'RUNNING'
         resp = json_response({"task_session_id": next_task_session_id},
-                             status='RUNNING')
+                             status=status)
         resp.set_cookie('task_session_id', next_task_session_id)
 
     return resp
@@ -513,6 +517,17 @@ def compute_stdout_diff(stdout, task, current_dir=None):
             tag = 'incorrect'
 
     return { 'lines': stdout_diff, 'tag': tag }
+
+# --- Progress Indicator --- #
+@session_id_required
+def progress(request, study_session):
+    template = loader.get_template('progress.html')
+    context = {
+        'step': study_session.get_part(),
+        'treatment': study_session.get_treatment(),
+        'task_session_id': study_session.current_task_session_id
+    }
+    return HttpResponse(template.render(context, request))
 
 # --- User Login --- #
 

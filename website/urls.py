@@ -14,6 +14,9 @@ urlpatterns = [
     url(r'^register_user$', views.register_user),
     url(r'^retrieve_access_code$', views.retrieve_access_code),
 
+    # progress page
+    url(r'^progress$', views.progress),
+
     # task session
     url(r'^.*-study_session-.*-task-.*', views.get_current_task),
     url(r'^get_current_task$', views.get_current_task),

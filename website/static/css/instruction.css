@@ -3,7 +3,7 @@
     height: 96%;
     width: 100%;
     background: #f6f6f6;
-    overflow-y: scroll;
+    overflow-y: hidden;
 }
 
 .instruction-heading {

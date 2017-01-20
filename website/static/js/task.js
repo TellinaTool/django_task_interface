@@ -127,7 +127,7 @@ $(document).ready(function () {
                 steps: [
                     {
                         title: "Task",
-                        content: "Hey there! You have come to a new type of task. This task asks you to list files that have certain properties on the terminal, with specific attributes or in a specific format.",
+                        content: "Hey there! You have come to a new type of task. This task asks you to list files that have certain properties on the terminal, with specific attributes (and possibly in a specific format).",
                         target: "task-description",
                         placement: "right",
                         showPrevButton: true
@@ -322,7 +322,7 @@ $(document).ready(function () {
                                             setTimeout(function() {
                                                 BootstrapDialog.show({
                                                     title: "Training Completed",
-                                                    message: "Awesome! You've completed the task platform training. Please proceed to the user study now.",
+                                                    message: "Awesome! You've completed the task platform training. You are ready to start the user study session.",
                                                     buttons: [{
                                                         label: "Proceed",
                                                         cssClass: "btn-primary",
@@ -402,9 +402,14 @@ $(document).ready(function () {
                     closable: false,
                 });
                 console.log("Study session completed.");
+                // window.location.replace('progress');
             } else {
-                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
-                console.log(`${location.hostname}:10411/${data.task_session_id}`);
+                if (data.status == 'SWITCH_PART') {
+                    window.location.replace('progress');
+                } else {
+                    window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
+                    console.log(`${location.hostname}:10411/${data.task_session_id}`);
+                }
             }
         });
     }

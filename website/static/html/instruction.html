@@ -55,13 +55,16 @@
                                     </div>
 
                                     <div class="instruction-body">
-                                        <p>Welcome to the bash commands user study! Please read the instructions below carefully.</p>
+                                        <p>Welcome to the bash commands user study. Please read the instructions below carefully.</p>
                                         <br>
                                         <h4>1. Bash tasks</h4>
                                         <p>You will be given <b>18 tasks related to file system operations</b>.
-                                            The desired outcome of each task is either a list of files or a change in the
-                                            file system to delete, add, or modify files. Your goal is to <b>write a
-                                            bash one-liner</b> that performs the desired operation without causing extra
+                                            The desired outcome of each task may be
+                                        </p>
+                                        <li>a list of files</li>
+                                        <li>a list of files with specific file attributes (possibly in a specific format)</li>
+                                        <li>a change in the file system to delete, add, or modify files.</li>
+                                        <p>Your goal is to <b>write a bash one-liner</b> that performs the desired operation without causing extra
                                             file system changes.
                                         </p>
                                         <p>For each task, you can <b>write and execute bash commands in a bash shell</b> in your web browser.
@@ -69,8 +72,7 @@
 					  If the command is incorrect, you will be shown the difference between
 					  the command's output and the goal output.
                                         </p>
-                                        <p>You may attempt the task <b>multiple times</b>. You can
-                                            <b>reset the file system</b> at any time.
+                                        <p>You may attempt the task <b>multiple times</b>. You can also <b>reset the file system</b> at any time.
                                         </p>
                                         <p>Each task has a <b>time limit of 5 minutes</b>, after which you will
 					proceed to the next task even if you have not yet completed the
@@ -96,7 +98,7 @@
                                     </div>
 
                                     <div class="instruction-ack">
-                                        <button id="instructions-read" class="btn btn-primary" type="submit">I have read the instructions carefully.</button>
+                                        <button id="instruction-read" class="btn btn-primary" type="submit">I have read the instructions carefully.</button>
                                     </div>
                                 </div>
                            </div>
@@ -108,6 +110,7 @@
     {% endblock %}
 
     {% block other-scripts %}
+        <script src="/static/js/instruction.js"></script>
     {% endblock %}
 
 <!--  LocalWords:  html endblock endif

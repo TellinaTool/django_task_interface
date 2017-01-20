@@ -263,14 +263,40 @@ class StudySession(models.Model):
             part1_tasks = TASK_BLOCK_I
         else:
             part1_tasks = TASK_BLOCK_II
-        if self.num_tasks_completed < len(part1_tasks):
-            return 'I'
+        if self.status == 'training':
+            return 'O'
+        elif self.status == 'running':
+            if self.num_tasks_completed < len(part1_tasks):
+                return 'I'
+            elif self.num_tasks_completed < self.total_num_tasks:
+                return 'II'
+            else:
+                return 'III'
         else:
-            return 'II'
+            raise ValueError('Wrong study session status: {} (should be '
+                    '"running" or "training" only.)'.format(self.status))
+
+    def get_treatment(self):
+        if self.get_part() in ['I', 'II']:
+            return treatment_assignments[self.user.group + self.get_part()]
+        else:
+            return ''
 
     def inc_num_tasks_completed(self):
         self.num_tasks_completed += 1
         self.save()
+
+    def switch_part(self):
+        if self.status == 'running':
+            if self.user.group in ['group1', 'group4']:
+                part1_tasks = TASK_BLOCK_I
+            else:
+                part1_tasks = TASK_BLOCK_II
+            if self.num_tasks_completed == 0 or \
+                    self.num_tasks_completed == len(part1_tasks) or \
+                    self.num_tasks_completed == self.total_num_tasks:
+                return True
+        return False
 
     def update_current_task_session_id(self):
         if self.status == 'training':
@@ -279,8 +305,8 @@ class StudySession(models.Model):
             new_task_session_id = self.session_id + \
                    '-task-{}'.format(self.num_tasks_completed + 1)
         else:
-            raise AttributeError('Wrong study session status: {} (should be '
-                                 '"running" or "training" only.)'.format(self.status))
+            raise ValueError('Wrong study session status: {} (should be '
+                    '"running" or "training" only.)'.format(self.status))
         self.current_task_session_id = new_task_session_id
         self.save()
         return new_task_session_id
@@ -362,34 +388,33 @@ class TaskSession(models.Model):
         page_tour = None
         if self.task.type == 'stdout':
             if not self.study_session.standard_output_seen:
-                if self.study_session.num_tasks_completed == 0:
+                if self.study_session.status == 'training' and \
+                                self.study_session.num_tasks_completed == 0:
                     page_tour = 'init_standard_output'
                 else:
                     page_tour = 'first_standard_output'
         if self.task.type == 'file_search':
             if not self.study_session.file_search_seen:
-                if self.study_session.num_tasks_completed == 0:
+                if self.study_session.status == 'training' and \
+                                self.study_session.num_tasks_completed == 0:
                     page_tour = 'init_file_search'
                 else:
                     page_tour = 'first_file_search'
         if self.task.type == 'filesystem_change':
             if not self.study_session.filesystem_change_seen:
-                if self.study_session.num_tasks_completed == 0:
+                if self.study_session.status == 'training' and \
+                                self.study_session.num_tasks_completed == 0:
                     page_tour = 'init_filesystem_change'
                 else:
                     page_tour = 'first_filesystem_change'
 
         return page_tour
 
-    def get_treatment(self):
-        user = self.study_session.user
-        return treatment_assignments[user.group + self.study_session_part]
-
 
 class ActionHistory(models.Model):
     """
     An action history includes the operations done by the user at a specific
-    time in a task session.
+    time in a task session.get
 
     :member task_session: The task session during which the action is taken.
     :member action: The action performed by the user, including
