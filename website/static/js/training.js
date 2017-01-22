@@ -3,7 +3,7 @@
  */
 
 var init_fs_modification_training = {
-    // The very first task the user encountered in the study is file system operation.
+    // The very first task the user encountered in the study is file system change.
     id: "init-fs-modification-training",
     showCloseButton: false,
     steps: [
