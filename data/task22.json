@@ -1,0 +1,7 @@
+{
+   "task_id": "22",
+   "type": "filesystem_change",
+   "description": "List all the files (and subdirectories if any) under the \"js\" directory.",
+   "file_attributes": [],
+   "difficulty": 0
+}

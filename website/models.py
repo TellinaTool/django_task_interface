@@ -20,7 +20,7 @@ import time
 WEBSITE_DEVELOP = True
 
 # unimplemented tasks: 3, 20
-TASK_TRAINING = [0]
+TASK_TRAINING = [21, 22]
 TASK_BLOCK_I = [5, 10, 6, 9, 19, 1, 18, 17, 16]
 TASK_BLOCK_II = [8, 7, 2, 14, 12, 4, 13, 15, 11]
 
@@ -70,22 +70,22 @@ class Task(models.Model):
     :member type: The type of task. Can be 'stdout', 'file_search' or
         'filesystem_change'.
     :member description: A precise description of the task.
-    :member stdout: The expected standard output for the task. Empty if task
-        type is not 'stdout'.
     :member file_attributes: File attributes used in the tasks.
     :member initial_filesystem: JSON representation of the user's starting home
         directory
     :member goal_filesystem: JSON representation of the goal directory (if type
         is 'filesystem_change')
+    :member stdout: The expected standard output for the task. Empty if task
+        type is not 'stdout'.
     :member duration: How much time is alotted for the task.
     """
     task_id = models.PositiveIntegerField()
     type = models.TextField()
     description = models.TextField()
-    stdout = models.TextField(default='')
     file_attributes = models.TextField()
-    initial_filesystem = models.TextField()
-    goal_filesystem = models.TextField()
+    initial_filesystem = models.TextField(default='')
+    goal_filesystem = models.TextField(default='')
+    stdout = models.TextField(default='')
     duration = models.DurationField()
 
 # --- Container Management --- #
@@ -165,30 +165,32 @@ def create_container(filesystem_name, task):
         'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
         '/home/{}'.format(USER_NAME)])
     if task.task_id == 3:
-        # give current user root access & create another non-root user
+        # TODO: to read the owner of a file correctly, the disk_2_dict function
+        # needs to read from the docker container instead of the virtual file
+        # system
         subprocess.call(['docker', 'exec', '-u', 'root', container_id,
                          'adduser', USER_NAME, 'sudo'])
-        # subprocess.call(['docker', 'exec', '-u', 'root', container_id,
-        #                  'bash', '-c', '\'echo "me ALL = (ALL) NOPASSWD: ALL" > /etc/sudoers\''])
+        # subprocess.call(['docker', 'exec', '-u', 'root', container_id, 'bash',
+        # '-c', '\'echo "me ALL = (ALL) NOPASSWD: ALL" > /etc/sudoers\''])
         subprocess.call(['docker', 'exec', '-u', 'root', container_id,
                          'useradd', '-m', USER2_NAME])
     elif task.task_id == 7:
-        physical_dir = '/{}/home/website/'.format(filesystem_name)
-        os.utime(physical_dir + 'css/bootstrap3/bootstrap-glyphicons.css',
+        filesystem_vfs_path = '/{}/home/website/'.format(filesystem_name)
+        os.utime(filesystem_vfs_path + 'css/bootstrap3/bootstrap-glyphicons.css',
                  (1454065722, 1454065722))
-        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.eot',
+        os.utime(filesystem_vfs_path + 'css/fonts/glyphiconshalflings-regular.eot',
                  (1454065722, 1454065722))
-        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.otf',
+        os.utime(filesystem_vfs_path + 'css/fonts/glyphiconshalflings-regular.otf',
                  (1454065722, 1454065722))
-        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.svg',
+        os.utime(filesystem_vfs_path + 'css/fonts/glyphiconshalflings-regular.svg',
                  (1454065722, 1454065722))
-        os.utime(physical_dir + 'css/fonts/glyphiconshalflings-regular.ttf',
+        os.utime(filesystem_vfs_path + 'css/fonts/glyphiconshalflings-regular.ttf',
                  (1454065722, 1454065722))
     elif task.task_id == 8:
-        physical_dir = '/{}/home/website/'.format(filesystem_name)
-        os.utime(physical_dir + 'content/labs/2013/10.md',
+        filesystem_vfs_path = '/{}/home/website/'.format(filesystem_name)
+        os.utime(filesystem_vfs_path + 'content/labs/2013/10.md',
                  (1454065722, 1454065722))
-        os.utime(physical_dir + 'content/labs/2013/12.md',
+        os.utime(filesystem_vfs_path + 'content/labs/2013/12.md',
                  (1454065722, 1454065722))
 
     # Find what port the container was mapped to

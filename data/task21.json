@@ -1,0 +1,616 @@
+{
+   "task_id": "21",
+   "type": "file_search",
+   "description": "List all the files (and subdirectories if any) under the \"js\" directory.",
+   "file_attributes": [],
+   "target_dir": "website/js",
+   "difficulty": 0,
+   "goal_filesystem":
+   {
+      "type": "directory",
+      "name": "website",
+      "children": [
+         {
+            "attributes": {
+               "size": "320"
+            },
+            "type": "file",
+            "name": "README.md"
+         },
+         {
+            "type": "directory",
+            "name": "backup",
+            "children": [
+            ]
+         },
+         {
+            "type": "directory",
+            "name": "content",
+            "children": [
+               {
+                  "type": "directory",
+                  "name": "assignments",
+                  "children": [
+                     {
+                        "attributes": {
+
+                        },
+                        "type": "file",
+                        "name": "2013_hw1.md"
+                     }
+                  ]
+               },
+               {
+                  "type": "directory",
+                  "name": "labs",
+                  "children": [
+                    {
+                        "attributes": {
+                           "size": "4071"
+                        },
+                        "type": "file",
+                        "name": "1.md"
+                     },
+                     {
+                        "attributes": {
+                           "size": "7621"
+                        },
+                        "type": "file",
+                        "name": "2.md"
+                     },
+                     {
+                        "type": "directory",
+                        "name": "2013",
+                        "children": [
+                           {
+                              "attributes": {
+                                 "size": "4373"
+                              },
+                              "type": "file",
+                              "name": "1.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "3845"
+                              },
+                              "type": "file",
+                              "name": "10.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "1274"
+                              },
+                              "type": "file",
+                              "name": "11.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "11310"
+                              },
+                              "type": "file",
+                              "name": "12.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "7756"
+                              },
+                              "type": "file",
+                              "name": "2.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "4192"
+                              },
+                              "type": "file",
+                              "name": "3.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "695"
+                              },
+                              "type": "file",
+                              "name": "4.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "15816"
+                              },
+                              "type": "file",
+                              "name": "5.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "6788"
+                              },
+                              "type": "file",
+                              "name": "6.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "2620"
+                              },
+                              "type": "file",
+                              "name": "7.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "781"
+                              },
+                              "type": "file",
+                              "name": "8.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "3245"
+                              },
+                              "type": "file",
+                              "name": "9.md"
+                           }
+                        ]
+                     },
+                     {
+                        "type": "directory",
+                        "name": "2014",
+                        "children": [
+                        ]
+                     },
+                     {
+                        "type": "directory",
+                        "name": "2015",
+                        "children": [
+                        ]
+                     },
+                     {
+                        "type": "directory",
+                        "name": "2016",
+                        "children": [
+                           {
+                              "type": "directory",
+                              "name": "1",
+                              "children": [
+                              ]
+                           }
+                        ]
+                     }
+                  ]
+               },
+               {
+                  "type": "directory",
+                  "name": "lessons",
+                  "children": [
+                     {
+                        "type": "directory",
+                        "name": "2013",
+                        "children": [
+                           {
+                              "attributes": {
+                                 "size": "4245"
+                              },
+                              "type": "file",
+                              "name": "1.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "2310"
+                              },
+                              "type": "file",
+                              "name": "2.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "2441"
+                              },
+                              "type": "file",
+                              "name": "3.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "943"
+                              },
+                              "type": "file",
+                              "name": "4.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "4385"
+                              },
+                              "type": "file",
+                              "name": "5.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "267"
+                              },
+                              "type": "file",
+                              "name": "6.md"
+                           }
+                        ]
+                     },
+                     {
+                        "type": "directory",
+                        "name": "2014",
+                        "children": [
+                        ]
+                     },
+                     {
+                        "type": "directory",
+                        "name": "2015",
+                        "children": [
+                        ]
+                     },
+                     {
+                        "type": "directory",
+                        "name": "2016-1",
+                        "children": [
+                        ]
+                     },
+                     {
+                        "type": "directory",
+                        "name": "2016-2",
+                        "children": [
+                        ]
+                     }
+                  ]
+               },
+               {
+                  "attributes": {
+                     "size": "770"
+                  },
+                  "type": "file",
+                  "name": "resources.md"
+               },
+               {
+                  "type": "directory",
+                  "name": "review",
+                  "children": [
+                     {
+                        "type": "directory",
+                        "name": "2013",
+                        "children": [
+                           {
+                              "attributes": {
+                                 "size": "4704"
+                              },
+                              "type": "file",
+                              "name": "review.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "2481"
+                              },
+                              "type": "file",
+                              "name": "review2.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "0"
+                              },
+                              "type": "file",
+                              "name": "review4.md"
+                           },
+                           {
+                              "attributes": {
+                                 "size": "0"
+                              },
+                              "type": "file",
+                              "name": "review6.md"
+                           }
+                        ]
+                     },
+                     {
+                        "attributes": {
+                           "size": "0"
+                        },
+                        "type": "file",
+                        "name": "review1.md"
+                     },
+                     {
+                        "attributes": {
+                           "size": "0"
+                        },
+                        "type": "file",
+                        "name": "review2.md"
+                     },
+                     {
+                        "attributes": {
+                           "size": "0"
+                        },
+                        "type": "file",
+                        "name": "review3.md"
+                     },
+                     {
+                        "attributes": {
+                           "size": "0"
+                        },
+                        "type": "file",
+                        "name": "review4.md"
+                     },
+                     {
+                        "attributes": {
+                           "size": "0"
+                        },
+                        "type": "file",
+                        "name": "review5.md"
+                     },
+                     {
+                        "attributes": {
+                           "size": "0"
+                        },
+                        "type": "file",
+                        "name": "review6.md"
+                     }
+                  ]
+               },
+               {
+                  "attributes": {
+                     "size": "648"
+                  },
+                  "type": "file",
+                  "name": "schedule.md"
+               },
+               {
+                  "attributes": {
+                     "size": "5351"
+                  },
+                  "type": "file",
+                  "name": "syllabus.md"
+               },
+               {
+                  "attributes": {
+                     "size": "454"
+                  },
+                  "type": "file",
+                  "name": "tips.md"
+               }
+            ]
+         },
+         {
+            "type": "directory",
+            "name": "css",
+            "children": [
+               {
+                  "attributes": {
+                     "size": "2182"
+                  },
+                  "type": "file",
+                  "name": "app.css"
+               },
+               {
+                  "type": "directory",
+                  "name": "bootstrap3",
+                  "children": [
+                     {
+                        "attributes": {
+                           "size": "7587"
+                        },
+                        "type": "file",
+                        "name": "bootstrap-glyphicons.css"
+                     },
+                     {
+                        "attributes": {
+                           "size": "82480"
+                        },
+                        "type": "file",
+                        "name": "bootstrap.css"
+                     },
+                     {
+                        "attributes": {
+                           "size": "66966"
+                        },
+                        "type": "file",
+                        "name": "bootstrap.min.css"
+                     }
+                  ]
+               },
+               {
+                  "type": "directory",
+                  "name": "fonts",
+                  "children": [
+                     {
+                        "attributes": {
+                           "size": "33358"
+                        },
+                        "type": "file",
+                        "name": "glyphiconshalflings-regular.eot"
+                     },
+                     {
+                        "attributes": {
+                           "size": "18116"
+                        },
+                        "type": "file",
+                        "name": "glyphiconshalflings-regular.otf"
+                     },
+                     {
+                        "attributes": {
+                           "size": "51353"
+                        },
+                        "type": "file",
+                        "name": "glyphiconshalflings-regular.svg"
+                     },
+                     {
+                        "attributes": {
+                           "size": "32896"
+                        },
+                        "type": "file",
+                        "name": "glyphiconshalflings-regular.ttf"
+                     },
+                     {
+                        "attributes": {
+                           "size": "18944"
+                        },
+                        "type": "file",
+                        "name": "glyphiconshalflings-regular.woff"
+                     }
+                  ]
+               }
+            ]
+         },
+         {
+            "attributes": {
+               "size": "1047"
+            },
+            "type": "file",
+            "name": "index.html"
+         },
+         {
+            "type": "directory",
+            "name": "js",
+            "children": [
+               {
+                  "attributes": {
+                     "size": "763"
+                  },
+                  "type": "file",
+                  "name": "app.js",
+                  "tag": {
+                    "to_select": 1
+                  }
+               },
+               {
+                  "attributes": {
+                     "size": "1393"
+                  },
+                  "type": "file",
+                  "name": "controllers.js",
+                  "tag": {
+                    "to_select": 1
+                  }
+               }
+            ]
+         },
+         {
+            "type": "directory",
+            "name": "lib",
+            "children": [
+               {
+                  "type": "directory",
+                  "name": "angular",
+                  "children": [
+                     {
+                        "attributes": {
+                           "size": "2572"
+                        },
+                        "type": "file",
+                        "name": "angular-resource.min.js"
+                     },
+                     {
+                        "attributes": {
+                           "size": "80836"
+                        },
+                        "type": "file",
+                        "name": "angular.min.js"
+                     }
+                  ]
+               },
+               {
+                  "type": "directory",
+                  "name": "bootstrap3",
+                  "children": [
+                     {
+                        "attributes": {
+                           "size": "57234"
+                        },
+                        "type": "file",
+                        "name": "bootstrap.js"
+                     },
+                     {
+                        "attributes": {
+                           "size": "27221"
+                        },
+                        "type": "file",
+                        "name": "bootstrap.min.js"
+                     }
+                  ]
+               },
+               {
+                  "type": "directory",
+                  "name": "jquery",
+                  "children": [
+                     {
+                        "attributes": {
+                           "size": "83612"
+                        },
+                        "type": "file",
+                        "name": "jquery-2.0.3.min.js"
+                     }
+                  ]
+               },
+               {
+                  "type": "directory",
+                  "name": "showdown",
+                  "children": [
+                     {
+                        "attributes": {
+                           "size": "11304"
+                        },
+                        "type": "file",
+                        "name": "showdown.min.js"
+                     }
+                  ]
+               },
+               {
+                  "type": "directory",
+                  "name": "underscore",
+                  "children": [
+                     {
+                        "attributes": {
+                           "size": "14139"
+                        },
+                        "type": "file",
+                        "name": "underscore.min.js"
+                     }
+                  ]
+               }
+            ]
+         },
+         {
+            "attributes": {
+               "size": "2401"
+            },
+            "type": "file",
+            "name": "navigation.json"
+         },
+         {
+            "type": "directory",
+            "name": "partials",
+            "children": [
+               {
+                  "attributes": {
+                     "size": "75"
+                  },
+                  "type": "file",
+                  "name": "home.html"
+               },
+               {
+                  "attributes": {
+                     "size": "75"
+                  },
+                  "type": "file",
+                  "name": "labs.html"
+               },
+               {
+                  "attributes": {
+                     "size": "77"
+                  },
+                  "type": "file",
+                  "name": "lesson.html"
+               },
+               {
+                  "attributes": {
+                     "size": "430"
+                  },
+                  "type": "file",
+                  "name": "menu.html"
+               },
+               {
+                  "attributes": {
+                     "size": "618"
+                  },
+                  "type": "file",
+                  "name": "navigation.html"
+               }
+            ]
+         }
+      ]
+   }
+}

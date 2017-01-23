@@ -1,0 +1,645 @@
+{
+   "task_id": "12",
+   "type": "filesystem_change",
+   "description": "Get every .css file in the \"css\" directory (and its subdirectories) and copy them into the \"backup\" directory.",
+   "file_attributes": [],
+   "target_dir": "website/css",
+   "difficulty": 3,
+   "goal_filesystem":
+      {
+         "name":"website",
+         "type":"directory",
+         "children":[
+            {
+               "name":"README.md",
+               "attributes":{
+
+               },
+               "type":"file"
+            },
+            {
+               "name":"backup",
+               "type":"directory",
+               "children":[
+                  {
+                     "name":"app.css",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"bootstrap-glyphicons.css",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"bootstrap.css",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"bootstrap.min.css",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  }
+               ]
+            },
+            {
+               "name":"content",
+               "type":"directory",
+               "children":[
+                  {
+                     "name":"assignments",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "attributes": {
+
+                           },
+                           "type": "file",
+                           "name": "2013_hw1.md"
+                       }
+                     ]
+                  },
+                  {
+                     "name":"labs",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"1.md",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"2.md",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"2013",
+                           "type":"directory",
+                           "children":[
+                              {
+                                 "name":"1.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"10.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"11.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"12.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"2.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"3.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"4.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"5.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"6.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"7.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"8.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"9.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              }
+                           ]
+                        },
+                        {
+                           "name":"2014",
+                           "type":"directory",
+                           "children":[
+
+                           ]
+                        },
+                        {
+                           "name":"2015",
+                           "type":"directory",
+                           "children":[
+
+                           ]
+                        },
+                        {
+                           "name":"2016",
+                           "type":"directory",
+                           "children":[
+                              {
+                                 "name":"1",
+                                 "type":"directory",
+                                 "children":[
+
+                                 ]
+                              }
+                           ]
+                        }
+                     ]
+                  },
+                  {
+                     "name":"lessons",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"2013",
+                           "type":"directory",
+                           "children":[
+                              {
+                                 "name":"1.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"2.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"3.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"4.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"5.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"6.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              }
+                           ]
+                        },
+                        {
+                           "name":"2014",
+                           "type":"directory",
+                           "children":[
+
+                           ]
+                        },
+                        {
+                           "name":"2015",
+                           "type":"directory",
+                           "children":[
+
+                           ]
+                        },
+                        {
+                           "name":"2016-1",
+                           "type":"directory",
+                           "children":[
+
+                           ]
+                        },
+                        {
+                           "name":"2016-2",
+                           "type":"directory",
+                           "children":[
+
+                           ]
+                        }
+                     ]
+                  },
+                  {
+                     "name":"resources.md",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"review",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"2013",
+                           "type":"directory",
+                           "children":[
+                              {
+                                 "name":"review.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"review2.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"review4.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              },
+                              {
+                                 "name":"review6.md",
+                                 "attributes":{
+
+                                 },
+                                 "type":"file"
+                              }
+                           ]
+                        },
+                        {
+                           "name":"review1.md",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"review2.md",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"review3.md",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"review4.md",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"review5.md",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"review6.md",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        }
+                     ]
+                  },
+                  {
+                     "name":"schedule.md",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"syllabus.md",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"tips.md",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  }
+               ]
+            },
+            {
+               "name":"css",
+               "type":"directory",
+               "children":[
+                  {
+                     "name":"app.css",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"bootstrap3",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"bootstrap-glyphicons.css",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"bootstrap.css",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"bootstrap.min.css",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        }
+                     ]
+                  },
+                  {
+                     "name":"fonts",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"glyphiconshalflings-regular.eot",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"glyphiconshalflings-regular.otf",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"glyphiconshalflings-regular.svg",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"glyphiconshalflings-regular.ttf",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"glyphiconshalflings-regular.woff",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        }
+                     ]
+                  }
+               ]
+            },
+            {
+               "name":"index.html",
+               "attributes":{
+
+               },
+               "type":"file"
+            },
+            {
+               "name":"js",
+               "type":"directory",
+               "children":[
+                  {
+                     "name":"app.js",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"controllers.js",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  }
+               ]
+            },
+            {
+               "name":"lib",
+               "type":"directory",
+               "children":[
+                  {
+                     "name":"angular",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"angular-resource.min.js",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"angular.min.js",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        }
+                     ]
+                  },
+                  {
+                     "name":"bootstrap3",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"bootstrap.js",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        },
+                        {
+                           "name":"bootstrap.min.js",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        }
+                     ]
+                  },
+                  {
+                     "name":"jquery",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"jquery-2.0.3.min.js",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        }
+                     ]
+                  },
+                  {
+                     "name":"showdown",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"showdown.min.js",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        }
+                     ]
+                  },
+                  {
+                     "name":"underscore",
+                     "type":"directory",
+                     "children":[
+                        {
+                           "name":"underscore.min.js",
+                           "attributes":{
+
+                           },
+                           "type":"file"
+                        }
+                     ]
+                  }
+               ]
+            },
+            {
+               "name":"navigation.json",
+               "attributes":{
+
+               },
+               "type":"file"
+            },
+            {
+               "name":"partials",
+               "type":"directory",
+               "children":[
+                  {
+                     "name":"home.html",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"labs.html",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"lesson.html",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"menu.html",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  },
+                  {
+                     "name":"navigation.html",
+                     "attributes":{
+
+                     },
+                     "type":"file"
+                  }
+               ]
+            }
+         ]
+      }
+}

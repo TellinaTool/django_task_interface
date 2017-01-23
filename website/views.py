@@ -357,8 +357,8 @@ def compute_filesystem_diff(container, task, stdout_paths,
             should be saved to the Task object
 
     """
-    physical_dir = '/{}/home/website'.format(container.filesystem_name)
-    current_filesystem = disk_2_dict( pathlib.Path(physical_dir),
+    filesystem_vfs_path = '/{}/home/website'.format(container.filesystem_name)
+    current_filesystem = disk_2_dict( pathlib.Path(filesystem_vfs_path),
             json.loads(task.file_attributes))
     if save_initial_filesystem:
         task.initial_filesystem = json.dumps(current_filesystem)
@@ -376,7 +376,7 @@ def compute_filesystem_diff(container, task, stdout_paths,
     if not contains_error_in_child(fs_diff) and task.task_id == 2:
         files_in_tar = set()
         try:
-            tar = tarfile.open(os.path.join(physical_dir, 'html.tar'))
+            tar = tarfile.open(os.path.join(filesystem_vfs_path, 'html.tar'))
             for member in tar.getmembers():
                 files_in_tar.add(os.path.basename(member.name))
         except tarfile.ReadError:
