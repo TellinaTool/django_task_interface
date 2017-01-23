@@ -575,6 +575,66 @@ def inc_tag(node, tag):
     else:
         node['tag'][tag] += 1
 
+# --- File system modification --- #
+# TODO: implement an API to generate the goal filesystem programmably
+
+def remove_node(fs, path, including_self=True, file_only=False, **kwargs):
+    """
+    Remove node(s) under the node denoted by path.
+
+    Args:
+        fs: dictionary representation of the file system to be edited
+        path: node to edit
+        including_self: remove the node itself
+        file_only: edit only files
+        **kwargs: filtering criteria on which node to edit
+    """
+    def remove(node, including_self=True, file_only=True, **kwargs):
+        for child in node['children']:
+            if child['type'] == 'file':
+                if 'attr' in kwargs:
+                    attr = kwargs['attr']
+                    attr_value = child['attributes'][attr]
+                    attr_lower_bound = kwargs['attr_lower_bound']
+                    attr_higher_bound = kwargs['attr_higher_bound']
+                    if attr_value >= attr_lower_bound \
+                            and attr_value < attr_higher_bound:
+                        remove(child)
+            else:
+                remove(child, including_self=(not file_only),
+                    file_only=file_only, **kwargs)
+
+    steps = path.as_posix().split('/')
+    stack = []
+    node = fs
+
+    if len(steps) <= 1:
+        raise ValueError('Cannot remove root directory')
+    else:
+        # descend to the target node if the path depth is greater than 1
+        stack.append(fs)
+        for step in steps[:-1]:
+            step_matched = False
+            for child in node['children']:
+                if child['name'] == step:
+                    step_matched = True
+                    if tag_exists(child, 'missing'):
+                        break
+                    node = child
+                    stack.append(node)
+            if not step_matched:
+                raise ValueError('Specified path does not exist '
+                                 'in the file system')
+
+        if including_self:
+            # remove the node itself then we are done
+            for child in node['children']:
+                if child['name'] == steps[-1]:
+                    node.remove(child)
+                    break
+        else:
+            remove(node, file_only=file_only, **kwargs)
+
 def extract_path(input, current_dir=None):
     """
     Extract file paths from a line of terminal stdout, considering the current
