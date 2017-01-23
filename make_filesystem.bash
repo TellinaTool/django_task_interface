@@ -20,4 +20,5 @@ mount -o loop,rw ~/$name.ext4 /$name
 mkdir /$name/home
 # Copy file system
 cp -r $fs_path /$name/home/website
+
 chown --recursive vagrant:vagrant /$name/home
