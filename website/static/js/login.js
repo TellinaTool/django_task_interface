@@ -101,7 +101,7 @@ $(document).ready(function () {
                                     console.log(data.task_session_id);
                                     dialogItself.close();
                                     // redirect user to the consent page
-                                    window.location.replace('instruction');
+                                    window.location.replace('consent');
                                 })
                             }
                         }]
@@ -110,7 +110,7 @@ $(document).ready(function () {
                 } else if (data.status == "SESSION_CREATED") {
                     console.log(data.task_session_id);
                     // redirect user into the session
-                    window.location.replace('instruction');
+                    window.location.replace('consent');
                 } else if (data.status == "USER_DOES_NOT_EXIST") {
                     BootstrapDialog.show({
                         message: "User " + username + " does not exist. Please make sure the username is correct.",

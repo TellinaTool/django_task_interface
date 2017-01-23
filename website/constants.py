@@ -1,3 +1,3 @@
 USER_NAME = 'me'
 USER2_NAME = 'me2'
-HOME = 'data/example-website'
+HOME = 'data/example_website'

@@ -660,6 +660,11 @@ def retrieve_access_code(request):
             "access_code": 'USER_DOES_NOT_EXIST'
         })
 
+def consent(request):
+    template = loader.get_template('consent.html')
+    context = {}
+    return HttpResponse(template.render(context, request))
+
 def instruction(request):
     template = loader.get_template('instruction.html')
     context = {}

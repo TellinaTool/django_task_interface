@@ -63,30 +63,32 @@
                                         </p>
                                         <li>change the file system by deleting, adding, or modifying files, or</li>
                                         <li>produce output, such as a list of files</li>
-                                        <p>Your goal is to <b>write a bash one-liner</b> that performs the desired operation without causing extra
-                                          file system changes.
-					  You will work in a bash shell in your browser.  You can also <b>reset the file system</b> to its original state at any time.
+                                        <p>Your goal is to <b>write a bash one-liner</b> that performs the desired
+                                            operation without causing extra file system changes. You will work in a
+                                            bash shell in your browser.
                                         </p>
-                                        <p>You may attempt the task <b>multiple times</b>. 
-                                        Each task has a <b>time limit of 5 minutes</b>, after which you will
-					proceed to the next task even if you have not yet completed the
-					current task.
+                                        <p>You may attempt the task <b>multiple times</b>. Each task has a <b>time
+                                            limit of 10 minutes</b>, after which you will proceed to the next task
+                                            even if you have not yet completed the current task.
                                         </p>
                                         <br>
                                         <h4>2. Tool assistance</h4>
-                                        <p>For all tasks, you may use Internet resources such as Google search.
-					  For some tasks, you will be permitted to use additional tools.
-					</p>
+                                        <p>For all tasks, you may use Internet resources such as Google search. For
+                                            some tasks, you will be permitted to use additional tool(s).
+					                    </p>
                                         <br>
-                                        <h4>3. Questionnaire</h4>
-                                        <p>You will <b>fill in a post-study questionnaire</b> at the end of the study.
+                                        <h4>3. Task Platform</h4>
+                                        <p>You will fill in a post-study questionnaire at the end of the study.
                                         </p>
                                         <br>
-                                        <p>Please click the button below to proceed.</p>
+                                        <p>Before you start working on the real tasks used in the user study, you need
+                                            to complete a short training session which will Please click the button below to proceed.</p>
                                     </div>
 
                                     <div class="instruction-ack">
-                                        <button id="instruction-read" class="btn btn-primary" type="submit">I have read the instructions carefully.</button>
+                                        <button id="instruction-read" class="btn btn-primary" type="submit">
+                                            Start Platform Training.
+                                        </button>
                                     </div>
                                 </div>
                            </div>
@@ -98,7 +100,11 @@
     {% endblock %}
 
     {% block other-scripts %}
-        <script src="/static/js/instruction.js"></script>
+        <script>
+            $('#instruction-read').click(function () {
+                window.location.replace('progress');
+            })
+        </script>
     {% endblock %}
 
 <!--  LocalWords:  html endblock endif
