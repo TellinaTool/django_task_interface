@@ -60,7 +60,7 @@ and four are incorrect.
                     exists in the target FS, but the attribute value in incorrect
                     in this case the correct attribute value is added as a suffix
                     to the current value
-               # (6) is_target (filesearch tasks only): a node should be selected in the
+               # (6) to_select (filesearch tasks only): a node should be selected in the
                     target
                # (7) selected (filesearch tasks only): correctness of a node selection
                     operation, which takes the following three values:
@@ -380,16 +380,16 @@ def filesystem_diff(fs1, fs2):
                 # comparing two files
                 tag = attribute_diff(child1['attributes'],
                                      child2['attributes'])
-                if tag_exists(child2, 'is_target'):
-                    add_tag(child1, 'is_target')
+                if tag_exists(child2, 'to_select'):
+                    add_tag(child1, 'to_select')
                 annotated_children.append(markcopy(child1, tag))
                 if tag != 'correct':
                     errors['ch_incorrect'] += 1
             elif child1['type'] == 'directory':
                 # comparing two directories
                 annotated_child = filesystem_diff(child1, child2)
-                if tag_exists(child2, 'is_target'):
-                    add_tag(annotated_child, 'is_target')
+                if tag_exists(child2, 'to_select'):
+                    add_tag(annotated_child, 'to_select')
                 annotated_children.append(annotated_child)
                 if contains_error(annotated_child) or \
                         contains_error_in_child(annotated_child):
@@ -418,8 +418,8 @@ def filesystem_diff(fs1, fs2):
 
     annotated_fs1['children'] = annotated_children
     annotated_fs1['tag'] = errors
-    if tag_exists(fs2, 'is_target'):
-        add_tag(annotated_fs1, 'is_target')
+    if tag_exists(fs2, 'to_select'):
+        add_tag(annotated_fs1, 'to_select')
 
     return annotated_fs1
 
@@ -449,7 +449,7 @@ def annotate_path_selection(fs, task_type, paths):
                             # completion simply show what is selected
                             add_tag(child, 'selected', 0)
                         else:
-                            if tag_exists(child, 'is_target'):
+                            if tag_exists(child, 'to_select'):
                                 add_tag(child, 'selected', 0)
                             else:
                                 add_tag(child, 'selected', 1)
@@ -466,7 +466,7 @@ def annotate_path_selection(fs, task_type, paths):
     def mark_unselected(node):
         if not tag_exists(node, 'missing'):
             incorrect = False
-            if tag_exists(node, 'is_target') and not tag_exists(node, 'selected'):
+            if tag_exists(node, 'to_select') and not tag_exists(node, 'selected'):
                 add_tag(node, 'selected', -1)
                 incorrect = True
             if node['type'] == 'directory':

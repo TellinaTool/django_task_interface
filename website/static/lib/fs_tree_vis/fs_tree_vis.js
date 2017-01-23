@@ -189,7 +189,7 @@ function build_fs_tree_vis(data, div_id) {
         nodeEls.classed('correct_select', function(d) {
             return d.hasOwnProperty('tag') && !d.tag.hasOwnProperty('missing')
             && ((!d.tag.hasOwnProperty('selected')
-                 && d.tag.hasOwnProperty('is_target'))
+                 && d.tag.hasOwnProperty('to_select'))
             || d.tag.selected === 0);
         })
 
@@ -203,7 +203,7 @@ function build_fs_tree_vis(data, div_id) {
         // 2. a file to be selected is missing from the current directory \
         // (likely caused by accidental deletion)
         nodeEls.classed('miss_select', function(d) {
-            return d.hasOwnProperty('tag') && d.tag.hasOwnProperty('is_target')
+            return d.hasOwnProperty('tag') && d.tag.hasOwnProperty('to_select')
             && (d.tag.hasOwnProperty('missing')
             || (d.tag.hasOwnProperty('selected') && d.tag.selected === -1));
         })
