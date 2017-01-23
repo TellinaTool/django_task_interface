@@ -4,6 +4,7 @@
 .idea
 .vagrant
 website/migrations
-config.json
+data/example_website
+data/config.json
 task_manager_lock_*
 *.log

@@ -40,7 +40,7 @@
     },
     {
       "task_id": "2",
-      "type": "filesearch",
+      "type": "file_search",
       "description": "Find all '*.txt' files in the directory.",
       "initial_filesystem": {
         "name": "~",
@@ -107,7 +107,7 @@
     },
     {
       "task_id": "3",
-      "type": "filesystem",
+      "type": "filesystem_change",
       "description": "Create a file named `hello.txt` in `~/dir1/dir2`.",
       "initial_filesystem": {
         "name": "~",

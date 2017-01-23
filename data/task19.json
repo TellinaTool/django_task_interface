@@ -1,0 +1,9 @@
+{
+    "task_id": "19",
+    "type": "stdout",
+    "description": " List all files in or under the current directory that end in \".html\", and how many lines are in each one. The expected output is shown on the bottom right. (Your output doesn't have to be exactly the same, but should at least contain the file name and the file length in each line.)",
+    "file_attributes": [],
+    "target_dir": "website",
+    "difficulty": 3,
+    "goal_filesystem": {}
+}

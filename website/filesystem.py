@@ -77,7 +77,6 @@ import json
 import pathlib
 import re
 import copy, os, pwd, grp, shutil
-from .constants import *
 
 # file attributes
 _NAME = 0
@@ -89,6 +88,9 @@ _ATIME = 5
 _CTIME = 6
 _MTIME = 7
 _CONTENT = 8
+
+ERROR_TAGS = ['extra', 'missing', 'incorrect', 'ch_extra',
+              'ch_missing', 'ch_incorrect']
 
 
 class Node(object):
@@ -140,7 +142,6 @@ class File(Node):
             'attributes': self.attributes.to_dict()
         }
 
-
 class FileAttributes(object):
     def __init__(self, user=None, group=None, size=None, mode=None,
                  atime=None, ctime=None, mtime=None, content=None):
@@ -161,6 +162,7 @@ class FileAttributes(object):
                 d[attr] = str(self.__dict__[attr])
         return d
 
+# --- Read a filesystem to/from the disk --- #
 
 def disk_2_dict(path: pathlib.Path, attrs=[_NAME]) -> dict:
     """
@@ -256,7 +258,6 @@ def dict_2_disk(tree: dict, root_path: pathlib.Path, is_root_dir=False):
                 newfile.close()
             except Exception as err:
                 return str(err)
-
         if 'user' in attrs:
             shutil.chown(path.as_posix(), user=attrs['user'])
         if 'group' in attrs:
@@ -304,7 +305,6 @@ def create_file_by_size(path, size):
 def is_file(node):
     return node['type'] == 'file'
 
-
 def attribute_diff(attr1, attr2):
     tag = 'correct'
     for key in attr1:
@@ -314,7 +314,6 @@ def attribute_diff(attr1, attr2):
                 attr1[key] += ':::{}'.format(attr2[key])
                 tag = 'incorrect'
     return tag
-
 
 def filesystem_diff(fs1, fs2):
     """
@@ -347,8 +346,8 @@ def filesystem_diff(fs1, fs2):
                     mark(child, tag)
 
     def markcopy(node, tag):
-        """Mark a node and its descendants with a specific tag and make a deep
-            copy."""
+        """ Mark a node and its descendants with a specific tag and make a deep
+         copy. """
         node2 = copy.deepcopy(node)
         add_tag(node2, tag)
         if node2['type'] == 'directory':
@@ -367,8 +366,6 @@ def filesystem_diff(fs1, fs2):
 
     errors = collections.defaultdict(int)
 
-    # fs1_children = sorted(fs1['children'], key=lambda x:x['name'])
-    # fs2_children = sorted(fs2['children'], key=lambda x:x['name'])
     fs1_children = fs1['children']
     fs2_children = fs2['children']
     annotated_children = []
@@ -426,38 +423,12 @@ def filesystem_diff(fs1, fs2):
 
     return annotated_fs1
 
-
-def annotate_node(fs, path, tag):
-    """Annotate a node in the filesystem with a specific tag."""
-    steps = path.as_posix().split('/')
-    stack = [fs]
-    node = fs
-    stop_search = False
-    for i in range(1, len(steps)):
-        step = steps[i]
-        for child in node['children']:
-            if child['name'] == step:
-                if tag_exists(child, 'missing'):
-                    # missing fs nodes cannot be tagged
-                    stop_search = True
-                    break
-                if i == len(steps) - 1:
-                    add_tag(child, tag)
-                    if tag != 'correct':
-                        # tag the ancestors accordingly if an error tag is
-                        # given to a node
-                        for ancestor in stack:
-                            inc_tag(ancestor, 'ch_incorrect')
-                else:
-                    node = child
-                    stack.append(node)
-                break
-        if stop_search:
-            break
-
-
 def annotate_path_selection(fs, task_type, paths):
-    """Annotate the paths that are selected in the stdout in a file system."""
+    """
+    Annotate the files/directories that are printed in the stdout in a file
+    system.
+
+    """
     for path in paths:
         # print(path.as_posix())
         steps = path.as_posix().split('/')
@@ -474,8 +445,8 @@ def annotate_path_selection(fs, task_type, paths):
                         break
                     if i == len(steps) - 1:
                         if task_type in ["stdout", 'filesystem_change']:
-                            # file search commands does not affect task completion
-                            # simply show what is selected
+                            # file search commands does not affect task
+                            # completion simply show what is selected
                             add_tag(child, 'selected', 0)
                         else:
                             if tag_exists(child, 'to_select'):
@@ -509,30 +480,82 @@ def annotate_path_selection(fs, task_type, paths):
 
     mark_unselected(fs)
 
+def annotate_node(fs, path, tag, including_self=True, recursive=False,
+                  file_only=False, **kwargs):
+    """
+    Annotate specific node(s) in the filesystem with a specific tag. The
+    keyword arguments specify the filtering criteria.
 
-def filesystem_sort(fs):
-    if not fs or fs['type'] == 'file':
-        return
+    Args:
+        fs: The file system to be annotated.
+        path: The location of the node to be annotated in the file system.
+        tag: The tag to give to the file system node and its descendants.
+        including_self: The node itself shall be tagged.
+        recursive: Recursively tag the descendants of the node.
+        file_only: Tag only files (excluding sub-directories).
+        **kwargs: Filtering criteria on which node to tag.
+
+    """
+    def mark(node, tag, including_self=True, file_only=False, **kwargs):
+        """Mark a node and its descendants with a specific tag."""
+        if including_self:
+            # tag the node itself before tagging its descendants
+            add_tag(node, tag)
+        if node['type'] == 'directory':
+            for child in node['children']:
+                if child['type'] == 'file':
+                    if 'attr' in kwargs:
+                        attr = kwargs['attr']
+                        attr_value = child['attributes'][attr]
+                        attr_lower_bound = kwargs['attr_lower_bound']
+                        attr_higher_bound = kwargs['attr_higher_bound']
+                        if attr_value >= attr_lower_bound \
+                                and attr_value < attr_higher_bound:
+                            mark(child, tag)
+                else:
+                    mark(child, tag, including_self=(not file_only),
+                        file_only=file_only, **kwargs)
+
+    steps = path.as_posix().split('/')
+    stack = []
+    node = fs
+    # descend to the target node if the path depth is greater than 1
+    if len(steps) > 1:
+        stack.append(fs)
+        for step in steps:
+            step_matched = False
+            for child in node['children']:
+                if child['name'] == step:
+                    # missing file system branches cannot be tagged
+                    step_matched = True
+                    if tag_exists(child, 'missing'):
+                        break
+                    node = child
+                    stack.append(node)
+            if not step_matched:
+                raise ValueError('Specified path does not exist '
+                                 'in the file system')
+
+    if recursive:
+        mark(fs, tag, including_self=including_self,
+             file_only=file_only, **kwargs)
     else:
-        for child in fs['children']:
-            filesystem_sort(child)
-        fs['children'] = sorted([c for c in fs['children'] if c['type'] == 'file'],
-                                key=lambda x:x['name']) + \
-                         sorted([c for c in fs['children'] if c['type'] != 'file'],
-                                key=lambda x:x['name'])
+        add_tag(fs, tag)
 
+    # tag the ancestors accordingly if a node has been given an error tag
+    if tag in ERROR_TAGS:
+        for ancestor in stack:
+            inc_tag(ancestor, 'ch_incorrect')
 
 def contains_error(node):
     return node['tag'] and ('missing' in node['tag'] or
                             'extra' in node['tag'] or
                             'incorrect' in node['tag'])
 
-
 def contains_error_in_child(node):
     return node['tag'] and ('ch_missing' in node['tag'] or
                             'ch_extra' in node['tag'] or
                             'ch_incorrect' in node['tag'])
-
 
 def tag_exists(node, tag):
     if 'tag' in node:
@@ -540,12 +563,10 @@ def tag_exists(node, tag):
            return True
     return False
 
-
 def add_tag(node, tag, value=1):
     if not 'tag' in node:
         node['tag'] = {}
     node['tag'][tag] = value
-
 
 def inc_tag(node, tag):
     if not 'tag' in node:
@@ -553,7 +574,6 @@ def inc_tag(node, tag):
         node['tag'][tag] = 1
     else:
         node['tag'][tag] += 1
-
 
 def extract_path(input, current_dir=None):
     """
@@ -568,7 +588,8 @@ def extract_path(input, current_dir=None):
     Return None if there is no path mention in the input line, otherwise the
     path object.
     """
-    path_pattern = re.compile(r'((([^ ]*\/)+[^ ]*)|([a-zA-Z]+\.[a-zA-Z]+))(\:|$)')
+    path_pattern = re.compile(
+        r'((([^ ]*\/)+[^ ]*)|([a-zA-Z]+\.[a-zA-Z]+))(\:|$)')
     match = re.search(path_pattern, input.strip())
     if not match:
         return None
@@ -584,6 +605,16 @@ def extract_path(input, current_dir=None):
         else pathlib.Path(path)
     return path
 
+def filesystem_sort(fs):
+    if not fs or fs['type'] == 'file':
+        return
+    else:
+        for child in fs['children']:
+            filesystem_sort(child)
+        fs['children'] = sorted([c for c in fs['children'] if c['type'] == 'file'],
+                                key=lambda x:x['name']) + \
+                         sorted([c for c in fs['children'] if c['type'] != 'file'],
+                                key=lambda x:x['name'])
 
 if __name__=="__main__":
     with open('fs1.json') as data_file:    
@@ -592,6 +623,4 @@ if __name__=="__main__":
         fs2 = json.load(data_file)
   
     fs = filesystem_diff(fs1, fs2)
-    #tag_intermediate(diff_fs)
-    #find_highest_non_modified(diff_fs)
     print(json.dumps(fs))
