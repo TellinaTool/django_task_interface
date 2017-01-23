@@ -15,7 +15,7 @@
                    <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" data-reactid="4">
                       <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj" data-reactid="5">
                          <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
-                            Bash User Study - Instructions
+                            Bash User Study - Consent Form
                          </section>
                          <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD" data-reactid="10">
                          </section>
@@ -51,43 +51,51 @@
                            <div class="fcn-component">
                                 <div class="instruction-panel">
                                     <div class="instruction-heading">
-                                        <h2>Instructions</h2>
+                                        <h2>Consent Form</h2>
                                     </div>
 
                                     <div class="instruction-body">
-                                        <p>Welcome to the bash commands user study. Thank you for participating!</p>
+                                        <h4>Research team</h4>
                                         <br>
-                                        <h4>1. Bash tasks</h4>
-                                        <p>You will be given <b>18 tasks related to file system operations</b>.
-                                            The desired outcome of each task may be to
+                                        <h4>PROCEDURES</h4>
+                                        <p> As a participant in this user study, you will be asked to
                                         </p>
-                                        <li>change the file system by deleting, adding, or modifying files, or</li>
-                                        <li>produce output, such as a list of files</li>
-                                        <p>Your goal is to <b>write a bash one-liner</b> that performs the desired
-                                            operation without causing extra file system changes. You will work in a
-                                            bash shell in your browser.  You can also <b>reset the file system</b>
-                                            to its original state at any time.
-                                        </p>
-                                        <p>You may attempt the task <b>multiple times</b>. Each task has a <b>time
-                                            limit of 5 minutes</b>, after which you will proceed to the next task
-                                            even if you have not yet completed the current task.
+                                        <li>perform certain tasks on a computer</li>
+                                        <li>fill out a post-study questionnaire.</li>
+                                        <p>While you are participating in this study, our team members may record
+                                            information about the session.
                                         </p>
                                         <br>
-                                        <h4>2. Tool assistance</h4>
-                                        <p>For all tasks, you may use Internet resources such as Google search. For
-                                            some tasks, you will be permitted to use additional tools.
+                                        <h4>RISK, STRESS OR DISCOMFORT</h4>
+                                        <p>This study will not expose you to risk, stress, or discomfort beyond that
+                                            normally encountered when using a computer or other technology and
+                                            completing a questionnaire.
 					                    </p>
                                         <br>
-                                        <h4>3. Questionnaire</h4>
-                                        <p>You will <b>fill in a post-study questionnaire</b> at the end of the study.
+                                        <h4>OTHER INFORMATION</h4>
+                                        <p>Once the results of the study have been tabulated, your name and any other
+                                            personally identifiable information will be removed from all materials
+                                            associated with the study in order to ensure confidentiality. No one other
+                                            than the research team named above will be viewing the data collected from
+                                            this study. Some of the findings from this study may be shared with project
+                                            sponsors or in an educational setting. You are free to refuse to participate
+                                            and may withdraw at any time.
                                         </p>
-                                        <br>
-                                        <p>Please click the button below to proceed.</p>
+                                        <p>If you have any questions, you may ask now or contact a member of the research
+                                        team at the email addresses provided above.</p>
                                     </div>
 
                                     <div class="instruction-ack">
+                                        <h4>Acknowledgment</h4>
+                                        <p>By clicking on the button below, I acknowledge that the study described above
+                                            has been explained to me, and I voluntarily consent to participate in it.
+                                            I have had an opportunity to ask questions and understand that future
+                                            questions I may have about the research or bout subjects' rights will be
+                                            answered by the research team named above.
+                                        </p>
+                                        <br>
                                         <button id="instruction-read" class="btn btn-primary" type="submit">
-                                            I have read the instructions carefully.
+                                            I have read and understood the information on this form.
                                         </button>
                                     </div>
                                 </div>
@@ -100,7 +108,11 @@
     {% endblock %}
 
     {% block other-scripts %}
-        <script src="/static/js/instruction.js"></script>
+        <script>
+            $('#instruction-read').click(function () {
+                window.location.replace('instruction');
+            })
+        </script>
     {% endblock %}
 
 <!--  LocalWords:  html endblock endif

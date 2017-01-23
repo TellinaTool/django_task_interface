@@ -14,6 +14,10 @@ urlpatterns = [
     url(r'^register_user$', views.register_user),
     url(r'^retrieve_access_code$', views.retrieve_access_code),
 
+    # consent & instruction
+    url(r'^instruction$', views.instruction),
+    url(r'^consent$', views.consent),
+
     # progress page
     url(r'^progress$', views.progress),
 
@@ -22,7 +26,6 @@ urlpatterns = [
     url(r'^get_current_task$', views.get_current_task),
     url(r'^get_additional_task_info$', views.get_additional_task_info),
     url(r'^go_to_next_task$', views.go_to_next_task),
-    url(r'^instruction$', views.instruction),
 
     # terminal I/O
     url(r'^on_command_execution$', views.on_command_execution),
