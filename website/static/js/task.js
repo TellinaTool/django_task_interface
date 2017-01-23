@@ -58,13 +58,6 @@ $(document).ready(function () {
                         showPrevButton: true
                     },
                     {
-                        title: "Legend Explanation",
-                        content: "As a reminder of the relevant visual narkups: a light grey node indicates a file exists in the goal directory that is missing from your current directory; a red node indicates a file exists in your current directory but is not contained in the goal directory.",
-                        target: "current-tree-vis",
-                        placement: "left",
-                        showPrevButton: true
-                    },
-                    {
                         title: "The Rest Are the Same",
                         content: "The rest of the platform remains unchanged. Please go on to complete the task.",
                         target: "task-platform-header",
@@ -140,13 +133,6 @@ $(document).ready(function () {
                         showPrevButton: true
                     },
                     {
-                        title: "Legend Explanation",
-                        content: "As a reminder of the relevant visual markups: a line in light grey color exists in the expected output but is missing from your current output; a line in red color is not in the expected output but is in your current output; a black line is correct output.",
-                        target: "stdout-diff-vis",
-                        placement: "left",
-                        showPrevButton: true
-                    },
-                    {
                         title: "The Rest Are the Same",
                         content: "The rest of the platform remains unchanged. Please go on to complete the task.",
                         target: "task-platform-header",
@@ -210,7 +196,7 @@ $(document).ready(function () {
                 // discourage a user from quiting a task
                 BootstrapDialog.show({
                     title: "Warning",
-                    message: "If you give up a task, the information we get from the study wil be less accurate. Would you like to proceed anyway?",
+                    message: "Do you want to give up on this task?",
                     type: BootstrapDialog.TYPE_WARNING,
                     buttons: [
                     {
