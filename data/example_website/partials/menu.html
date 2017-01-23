@@ -1,0 +1,13 @@
+<div ng-controller="Navigation">
+    <div ng-repeat="group in navigation">
+        <h4>{{group.title}}</h4>
+        <div class="list-group">
+            <a ng-repeat="item in group.list" 
+                class="list-group-item" 
+                href="{{group.directory}}/{{item.url}}" 
+                style="display:{{item.visible}}">
+                <span>{{item.title}}</span>
+            </a>
+        </div>
+    </div>
+</div>
