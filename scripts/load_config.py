@@ -78,3 +78,19 @@ def run():
                     stdout=stdout,
                     duration=datetime.timedelta(seconds=task_duration),
                 )
+
+# TODO: implement an API to generate the goal filesystem programmably
+def get_goal_filesystem(task, filesystem_vm_path, file_attributes):
+    """
+    Read the initial filesystem located at the specified virtual machine path
+    and transform it into the goal state based on the task attributes.
+    """
+    init_filesystem = disk_2_dict(filesystem_vm_path, file_attributes)
+    goal = {}
+    if task['task_id'] == '1':
+        goal = annotate_node(init_filesystem, filesystem_vm_path, 'is_target',
+                             including_self=False, including_descendants=True,
+                             file_only=True, attr='size',
+                             attr_lower_bound='800 bytes',
+                             attr_upper_bound='10000 bytes')
+    return filesystem_sort(goal)
