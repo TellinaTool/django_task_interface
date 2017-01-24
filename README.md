@@ -15,7 +15,8 @@ Command to do so for Ubuntu: `sudo apt-get install -y virtualbox vagrant`
 
 Run: `cp data/config.sample.json data/config.json`
 
-The file config.json sets the task to be performed. To learn the format of the `config.json`, please refer to [the data/ directory](https://github.com/TellinaTool/tellina_task_interface/tree/master/data)
+The file `config.json` sets the task to be performed. 
+To learn the format of the `config.json`, please refer to [the data/ directory](https://github.com/TellinaTool/tellina_task_interface/tree/master/data)
 
 ## Run the server
 
