@@ -48,9 +48,7 @@ Command to do so for Ubuntu: `sudo apt-get install -y virtualbox vagrant`
 
 5. Wait until you see `Quit the server with CONTROL-C.` in the console output.
 
-6. Start the task interface for user `bob` by visiting
-   `http://127.0.0.1:10411/static/html/task.html` in a browser on the host.
-   Enter `bob` in the browser prompt and continue.
+6. Visit the task platform at `http://127.0.0.1:10411/` using your browser.
 
 7. Stop the server with `Ctrl-C` in the guest terminal.
 
