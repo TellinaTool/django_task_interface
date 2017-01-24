@@ -15,6 +15,7 @@ task interface server is done through HTTP AJAX calls.
 
       <link href="/static/lib/intro.js/introjs.css" rel="stylesheet" media="screen" />
       <link href="/static/lib/hopscotch/hopscotch.min.css" rel="stylesheet" media="screen" />
+
       <link href="/static/css/task.css" rel="stylesheet" media="screen" />
    {% endblock %}
 
@@ -133,7 +134,7 @@ task interface server is done through HTTP AJAX calls.
                               Task Progress
                            </div>
                            <div class="accordion-section-body tree-vis-panel" id="task-progress-vis"
-                                style="position: absolute; top: 32px; width:100%; bottom: 0">
+                                style="position: absolute; top: 32px; width:100%; bottom: 0; margin-left:10px;">
                            </div>
                         </div>
                      </div>
@@ -167,13 +168,6 @@ task interface server is done through HTTP AJAX calls.
             </nav>
          </div>
       </section>
-
-      <div id="wait-dialog" class="hidden" style="text-align: center">
-           <img  src="css/images/loading_black.gif" />
-           <div style="margin-top: 10px; color: white">
-               <b>Please wait while we are setting up the next task...</b>
-           </div>
-      </div>
    {% endblock %}
 
    {% block other-scripts %}

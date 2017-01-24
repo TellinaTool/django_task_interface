@@ -65,6 +65,8 @@ function build_stdout_vis(data, div_id) {
     }
 
     render(data);
+    $(div_id).css("height", "10px");
+
 }
 
 function build_fs_tree_vis(data, div_id) {

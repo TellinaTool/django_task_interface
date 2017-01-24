@@ -143,15 +143,38 @@ $(document).ready(function () {
     }
 
     function refresh_vis(data) {
+        // file system diff visualization
+        
+        $("#task-progress-vis").empty();
+        $("#task-progress-vis").append("<div>You still have something more to work on...</div>");
+        $("#task-progress-vis").append("<ol id='task-progress-report'></ol>");
+
+        build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
+        $("#task-progress-report").append("<li>Your current filesystem status does not match the goal file system status \
+                                            (view the visualization above for details).\
+                                                <ul><li>Files/Directories reprentes as XXX are extra files in your FS.</li>\
+                                                <li>Files/Directories reprentes as XXX are missing files in your FS.</li>\
+                                                </ul></li>");
+        $("#task-progress-report").append("<li>Files/directories selected by your command mismatches the desirable result \
+                                            (view the file system visualization for details):\
+                                            <ul><li>Files/Directories highlighted as XXX are files failed to be selected by your command.</li>\
+                                                <li>Files/Directories highlighted as XXX are files wrongly selected by your command.</li>\
+                                                </ul></li>");
+
         if (data.hasOwnProperty('stdout_diff')) {
-            console.log(data);
+            //console.log(data);
             // reset height of file system diff and stdout diff
             //$("#task-progress-container").show();
             //$("#current-tree-vis-container").css('bottom', '50%');
-            build_stdout_vis(data.stdout_diff, "#task-progress-vis");
+            $("#task-progress-report").append("<li>Your terminal output mismatches the solution output, see below: \
+                                                   (lines in <span style='color: grey'>grey</span> are those you failed to print, \
+                                                    lines in <span style='color: red'>red</span> are those you wrongly print.)\
+                                                    <div id='std-out-diff' style='min-height:10px;border-style: dashed; padding-left:10px;'></div>\
+                                              </li>");
+            build_stdout_vis(data.stdout_diff, "#std-out-diff");
+
         }
-        // file system diff visualization
-        build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
+
         console.log(data.filesystem_diff);
     }
 
@@ -266,7 +289,18 @@ $(document).ready(function () {
 
     function switch_task(reason) {
         $("button").attr("disabled", "disabled");
-        $("#wait-dialog").modalDialog();
+        //$("#wait-dialog").css('visibility','visible');
+        //$("#wait-dialog").modalDialog();
+        var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...</div>');
+        $waitmsg.append('<br />');
+        $waitmsg.append('<img src="static/img/hourglass.gif" />');
+
+        BootstrapDialog.show({
+            title: "Please wait...",
+            message: $waitmsg,
+            closable: false
+        });
+
         // close the websocket connection to the current container
         socket.close();
         $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
