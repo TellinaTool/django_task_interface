@@ -97,7 +97,7 @@ $(document).ready(function () {
                         target: "current-tree-vis",
                         placement: "left",
                         showPrevButton: true
-                    },
+                    }/*,
                     {
                         title: "The Rest Are the Same",
                         content: "The rest of the platform remains unchanged. Please go on to complete the task.",
@@ -105,7 +105,7 @@ $(document).ready(function () {
                         placement: "bottom",
                         xOffset: 400,
                         showPrevButton: true
-                    }
+                    }*/
                 ],
                 onEnd: function () {
                     start_timer(data.task_duration);
@@ -128,10 +128,10 @@ $(document).ready(function () {
                     {
                         title: "Realtime Result Check",
                         content: "To help you focusing on the right track, an additional panel is used to show the difference between your current terminal output and the required one. This panel is updated whenever your terminal output has changed. Type \"ls -l\" and observe the effect.",
-                        target: "stdout-diff-vis",
+                        target: "task-progress-vis",
                         placement: "left",
                         showPrevButton: true
-                    },
+                    }/*,
                     {
                         title: "The Rest Are the Same",
                         content: "The rest of the platform remains unchanged. Please go on to complete the task.",
@@ -139,7 +139,7 @@ $(document).ready(function () {
                         placement: "bottom",
                         xOffset: 400,
                         showPrevButton: true
-                    }
+                    }*/
                 ],
                 onEnd: function () {
                     start_timer(data.task_duration);
@@ -196,7 +196,7 @@ $(document).ready(function () {
                 // discourage a user from quiting a task
                 BootstrapDialog.show({
                     title: "Warning",
-                    message: "Do you want to give up on this task?",
+                    message: "Do you really want to give up on this task?",
                     type: BootstrapDialog.TYPE_WARNING,
                     buttons: [
                     {
@@ -247,9 +247,9 @@ $(document).ready(function () {
         if (data.hasOwnProperty('stdout_diff')) {
             console.log(data);
             // reset height of file system diff and stdout diff
-            $("#stdout-diff-vis-container").show();
-            $("#current-tree-vis-container").css('bottom', '50%');
-            build_stdout_vis(data.stdout_diff, "#stdout-diff-vis");
+            //$("#task-progress-container").show();
+            //$("#current-tree-vis-container").css('bottom', '50%');
+            build_stdout_vis(data.stdout_diff, "#task-progress-vis");
         }
         // file system diff visualization
         build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");

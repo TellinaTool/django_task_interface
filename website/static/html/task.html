@@ -109,39 +109,29 @@ task interface server is done through HTTP AJAX calls.
                     style="position:absolute;top:0%;right:0%;bottom:0%;left:64%;">
                   <!-- Current Directory -->
                   <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor fcn-slot--no-right-neighbor vis-container"
-                       style="position:absolute;top:0%;right:0%;bottom:0%;left:0%;" id="current-tree-vis-container">
-                     <div class="fcn-component">
-                        <div class="accordion-container">
-                           <div class="accordion">
-                              <div class="accordion-section">
-                                 <div class="accordion-section-heading">
-                                    <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                                       File system status
-                                    </div>
-                                 </div>
-                                 <div class="accordion-section-body tree-vis-panel" id="current-tree-vis">
-                                 </div>
-                              </div>
+                       style="position:absolute;top:0%;right:0%;bottom:50%;left:0%;" id="current-tree-vis-container">
+                     <div class="accordion-container fcn-component" style="height=100%">
+                        <div class="accordion">
+                           <div class="accordion-section-heading" style="height:32px">
+                              File system status
+                           </div>
+                           <div class="accordion-section-body tree-vis-panel" id="current-tree-vis"
+                                style="position: absolute; top: 32px; width:100%; bottom: 0">
                            </div>
                         </div>
                      </div>
                   </div>
 
-                  <!-- Goal Directory -->
+                  <!-- Progress -->
                   <div class="fcn-slot fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor fcn-slot--no-right-neighbor vis-container"
-                       style="position:absolute;top:50%;right:0%;bottom:0%;left:0%;" id="stdout-diff-vis-container">
-                     <div class="fcn-component">
-                        <div class="accordion-container">
-                           <div class="accordion">
-                              <div class="accordion-section">
-                                 <div class="accordion-section-heading">
-                                    <div class="_1XRkeRcO7hh1axYhmKiQMM _39K0C3ph1hpmLw6tsBfNnG">
-                                       Standard Output Check
-                                    </div>
-                                 </div>
-                                 <div class="accordion-section-body tree-vis-panel" id="stdout-diff-vis">
-                                 </div>
-                              </div>
+                       style="position:absolute;top:50%;right:0%;bottom:0%;left:0%;" id="task-progress-vis-container">
+                     <div class="accordion-container fcn-component" style="height=100%">
+                        <div class="accordion">
+                           <div class="accordion-section-heading" style="height:32px">
+                              Task Progress
+                           </div>
+                           <div class="accordion-section-body tree-vis-panel" id="task-progress-vis"
+                                style="position: absolute; top: 32px; width:100%; bottom: 0">
                            </div>
                         </div>
                      </div>
