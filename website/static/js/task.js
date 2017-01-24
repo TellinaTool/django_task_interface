@@ -35,124 +35,11 @@ $(document).ready(function () {
 
         // Check if page tour needs to be displayed
         console.log(data.page_tour);
-        if (data.page_tour == 'init_filesystem_change') {
-            hopscotch.startTour(init_fs_modification_training);
-            is_training = true;
-        } else if (data.page_tour == 'first_filesystem_change') {
-            var fs_modification_training = {
-                id: "filesystem-change-training",
-                showCloseButton: false,
-                steps: [
-                    {
-                        title: "Task",
-                        content: "Hey there! You have come to a new type of task. This task asks you to perform file system modifications, such as to create/delete/modify specific files.",
-                        target: "task-description",
-                        placement: "right",
-                        showPrevButton: true
-                    },
-                    {
-                        title: "Realtime Result Check",
-                        content: "To help you focusing on the right track, we marked up the files output by your last command execution and whether they match the expected output in the file system visualization.",
-                        target: "current-tree-vis",
-                        placement: "left",
-                        showPrevButton: true
-                    },
-                    {
-                        title: "The Rest Are the Same",
-                        content: "The rest of the platform remains unchanged. Please go on to complete the task.",
-                        target: "task-platform-header",
-                        placement: "bottom",
-                        xOffset: 400,
-                        showPrevButton: true
-                    }
-                ],
-                onEnd: function () {
-                    start_timer(data.task_duration);
-                }
-            };
-            hopscotch.startTour(fs_modification_training);
-            showing_tips = true;
-        } else if (data.page_tour == 'first_file_search') {
-            var file_search_training = {
-                id: "file-search-training",
-                showCloseButton: false,
-                steps: [
-                    {
-                        title: "Task",
-                        content: "Hey there! You have come to a new type of task. This task asks you to list files that have certain properties on the terminal.",
-                        target: "task-description",
-                        placement: "right",
-                        showPrevButton: true
-                    },
-                    {
-                        title: "Realtime Result Check",
-                        content: "To help you focusing on the right track, we marked up the files output by your last command execution and whether they match the expected output in the file system visualization.",
-                        target: "current-tree-vis",
-                        placement: "left",
-                        showPrevButton: true
-                    },
-                    {
-                        title: "Legend Explanation",
-                        content: "As a reminder of the relevant visual markups: a node with light grey background indicates a file that should exists in the expected output but is not selected by the command you issued; a node with red background indicates a file that is in your output list but is not in the expected output; a node with bright yellow background indicates a correct output.",
-                        target: "current-tree-vis",
-                        placement: "left",
-                        showPrevButton: true
-                    },
-                    {
-                        title: "The Rest Are the Same",
-                        content: "The rest of the platform remains unchanged. Please go on to complete the task.",
-                        target: "task-platform-header",
-                        placement: "bottom",
-                        xOffset: 400,
-                        showPrevButton: true
-                    }
-                ],
-                onEnd: function () {
-                    start_timer(data.task_duration);
-                }
-            };
-            hopscotch.startTour(file_search_training);
-            showing_tips = true;
-        } else if (data.page_tour == 'first_standard_output') {
-            var standard_output_training = {
-                id: "standard-output-training",
-                showCloseButton: false,
-                steps: [
-                    {
-                        title: "Task",
-                        content: "Hey there! You have come to a new type of task. This task asks you to list files that have certain properties on the terminal, with specific attributes (and possibly in a specific format).",
-                        target: "task-description",
-                        placement: "right",
-                        showPrevButton: true
-                    },
-                    {
-                        title: "Realtime Result Check",
-                        content: "To help you focusing on the right track, an additional panel is used to show the difference between your current terminal output and the required one. This panel is updated whenever your terminal output has changed. Type \"ls -l\" and observe the effect.",
-                        target: "stdout-diff-vis",
-                        placement: "left",
-                        showPrevButton: true
-                    },
-                    {
-                        title: "The Rest Are the Same",
-                        content: "The rest of the platform remains unchanged. Please go on to complete the task.",
-                        target: "task-platform-header",
-                        placement: "bottom",
-                        xOffset: 400,
-                        showPrevButton: true
-                    }
-                ],
-                onEnd: function () {
-                    start_timer(data.task_duration);
-                }
-            };
-            hopscotch.startTour(standard_output_training);
-            showing_tips = true;
-        } else if (data.page_tour == 'init_file_search') {
-            hopscotch.startTour(init_file_search_training);
-            is_training = true;
-        } else if (data.page_tour == 'init_standard_output') {
-            hopscotch.startTour(init_standard_output);
-            is_training = true;
+        if (data.page_tour == 'init_filesystem_change' ||
+            data.page_tour == 'init_file_search' ||
+            data.page_tour == 'init_standard_output')  {
+            // start training tutorial
+            introJs().start();
         }
 
         // start timing the task
@@ -182,7 +69,7 @@ $(document).ready(function () {
                 // training tasks
                 BootstrapDialog.show({
                     title: "Solution",
-                    message: "The solution to this task is \"find js\". Input this command in the terminal and observe the effect.",
+                    message: "The solution to this task is \"find css -type f\". Input this command in the terminal and observe the effect.",
                     buttons: [
                     {
                         label: "Got it.",

@@ -10,17 +10,18 @@ task interface server is done through HTTP AJAX calls.
       <link href="/static/lib/codecademy.themes/exercise.css" media="screen" rel="stylesheet" type="text/css" />
       <link href="/static/lib/codecademy.themes/vendor.css" media="screen" rel="stylesheet" type="text/css" />
       <link href="/static/lib/codecademy.themes/platform.css" media="screen" rel="stylesheet" type="text/css" />
-      <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet" />
-      <link href="/static/css/task.css" rel="stylesheet" media="screen" />
 
-      <link href="/static/lib/hopscotch/hopscotch.min.css" rel="stylesheet", media="screen">
+      <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet" />
+
+      <link href="/static/lib/intro.js/introjs.css" rel="stylesheet" media="screen" />
+      <link href="/static/css/task.css" rel="stylesheet" media="screen" />
    {% endblock %}
 
    {% block body %}
-      <section class="_255U1OEW5iAFH7qz_pHXM8" data-reactroot="" data-reactid="1" data-react-checksum="-96644366">
-         <div id="workspace" class="francine" data-reactid="2">
-            <header data-react-header="true" class="_2m_hDXMtwvETHFo3eGaTXE" id="task-platform-header">
-               <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj" data-reactid="5">
+      <section class="_255U1OEW5iAFH7qz_pHXM8">
+         <div id="workspace" class="francine">
+            <header class="_2m_hDXMtwvETHFo3eGaTXE" id="task-platform-header">
+               <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj">
                   <section class="_2zSA2d9oAw82vmGaiCI6HM vE2U5Z1_1p0OevhTkRrpb" data-reactid="6">
                      {% if task_part %}
                      Bash User Study - {{task_part}}
@@ -59,7 +60,7 @@ task interface server is done through HTTP AJAX calls.
                style="position:absolute;top:0%;right:36%;bottom:80%;left:0%;">
                   <div class="fcn-component">
                      <div class="accordion-container">
-                        <div class="accordion">
+                        <div class="accordion" data-step="1" data-intro="Task Description", data-position="right">
                            <div class="accordion-section">
                               <!-- <div class="accordion-section-heading" data-reactid="73">
                                  {% if task_order_number %}
@@ -185,8 +186,6 @@ task interface server is done through HTTP AJAX calls.
    {% endblock %}
 
    {% block other-scripts %}
-      <script src="/static/lib/hopscotch/hopscotch.min.js"></script>
-      <script src="/static/js/training.js"></script>
       <script src="/static/lib/xterm.js/xterm.js"></script>
       <script src="/static/lib/xterm.js/addons/attach/attach.js"></script>
       <script src="/static/lib/xterm.js/addons/fit/fit.js"></script>
@@ -197,5 +196,6 @@ task interface server is done through HTTP AJAX calls.
       <script src="/static/lib/fs_tree_vis/treelist.js"></script>
       <script src="/static/lib/fs_tree_vis/fs_tree_vis.js"></script>
 
+      <script src="/static/lib/intro.js/intro.js"></script>
       <script src="/static/js/task.js"></script>
    {% endblock %}

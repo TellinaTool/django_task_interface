@@ -668,7 +668,10 @@ def consent(request):
 @session_id_required
 def instruction(request, study_session):
     template = loader.get_template('instruction.html')
+    first_treatment = 'A' if study_session.user.group in ['group1', 'group3'] \
+        else 'B'
     context = {
-        'first_treatment': 'A'
+        'first_treatment': first_treatment,
+        'task_session_id': study_session.current_task_session_id
     }
     return HttpResponse(template.render(context, request))

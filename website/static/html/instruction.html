@@ -47,7 +47,7 @@
 
                     <div class="fcn-grid" style="cursor:auto;" data-reactid="51" >
                        <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor"
-                            style="position:absolute;top:0%;right:25%;bottom:0%;left:25%;">
+                            style="position:absolute;top:0%;right:20%;bottom:0%;left:20%;">
                            <div class="fcn-component">
                                 <div class="instruction-panel">
                                     <div class="instruction-heading">
@@ -56,49 +56,63 @@
 
                                     <div class="instruction-body">
                                         <p>Welcome to the bash commands user study. Thank you for participating!</p>
+                                        <p><i class="glyphicon glyphicon-info-sign"></i> For the best view of the task
+                                            interface, please turn on the full-screen mode of your browser.
+                                        <p>
+                                        <p><i class="glyphicon glyphicon-info-sign"></i> This page contains
+                                            important information regarding the study session. Please read it through
+                                            before you proceed.
+                                        </p>
                                         <br>
                                         <h4>1. Bash tasks</h4>
                                         <p>You will be given <b>18 tasks related to file system operations</b>.
-                                            The desired outcome of each task may be to
-                                        </p>
+                                            Each task may require you to
                                         <li>change the file system by deleting, adding, or modifying files, or</li>
                                         <li>produce output, such as a list of files</li>
-                                        <p>Your goal is to <b>write a bash one-liner</b> that performs the desired
-                                            operation without causing extra file system changes. You will work in a
-                                            bash shell in your browser.
                                         </p>
-                                        <p>You may attempt the task <b>multiple times</b>. Each task has a <b>time
-                                            limit of 10 minutes</b>, after which you will proceed to the next task
-                                            even if you have not yet completed the current task.
+                                        <p>Your goal is to <b>write a bash one-liner</b> that performs the desired
+                                            operation without causing extra file system changes.</p>
+                                        <p>You will work in a
+                                            bash shell in your browser and may attempt the task <b>multiple times</b>.
                                         </p>
                                         <br>
                                         <h4>2. Tool assistance</h4>
                                         {% if first_treatment == 'A' %}
                                             <p>For all tasks, you may use Internet resources such as Google search. And
-                                                for <b>the first 9 tasks you encounter</b>, you will be permitted to
-                                                use additional tool(s).
+                                                for <b>the first half of the study</b> (the first 9 tasks you encounter),
+                                                you will be permitted to use additional tool(s).
                                             </p>
                                         {% elif first_treatment == 'B' %}
                                             <p>For all tasks, you may use Internet resources such as Google search. And
-                                                for <b>the last 9 tasks you encounter</b>, you will be permitted to
-                                                use additional tool(s).
+                                                for <b>the second half of the study</b> (the last 9 tasks you encounter),
+                                                you will be permitted to <b>use additional tool(s)</b>.
                                             </p>
                                         {% endif %}
                                         <br>
-                                        <h4>3. Task Platform</h4>
-                                        <p>
+                                        <h4>3. Timing </h4>
+                                        <p>Each task has a <b>time limit of 10 minutes</b>, after which you will proceed
+                                            to the next task even if you have not yet completed the current task.
+                                        </p>
+                                        <p>In addition, you may spend <b>maximally 40 minutes to complete each half of
+                                            the study (9 tasks)</b>, after which you will proceed even if you have not
+                                            yet completed the current half.
                                         </p>
                                         <br>
-                                        <p>Before you start working on the real tasks in the user study, you will first
-                                            complete a training session which will get you familiarized with the task
-                                            platform as well as the additional tool(s) that you may use.
-                                            Please click the button below to proceed.
+                                        <!-- <h4>4. Interface</h4>
+                                        <p>Below is a screenshot of the interface you will be using to do the bash tasks.
+                                            The three main components of it are highlighted with the read arrows.
+                                        </p> -->
+                                        <p>You will first complete a task platform training before getting to the real
+                                            tasks. The training session will help you get familiar with the task
+                                            platform as well as the additional tool(s) that you will use.
+                                        </p>
+                                        <p>Please click on the button below to proceed.
                                         </p>
                                     </div>
 
                                     <div class="instruction-ack">
                                         <button id="instruction-read" class="btn btn-primary" type="submit">
-                                            Start Platform Training.
+                                            Start Platform Training
                                         </button>
                                     </div>
                                 </div>
@@ -113,7 +127,7 @@
     {% block other-scripts %}
         <script>
             $('#instruction-read').click(function () {
-                window.location.replace('progress');
+                window.location.replace("{{task_session_id}}");
             })
         </script>
     {% endblock %}
