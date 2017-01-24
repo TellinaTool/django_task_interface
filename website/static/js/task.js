@@ -52,11 +52,11 @@ $(document).ready(function () {
                     },
                     {
                         title: "Realtime Result Check",
-                        content: "To help you focusing on the right track, we marked up the files output by your last command execution and whether they match the expected output in the file system visualization.",
+                        content: "To help you focus on the right track, we marked up the files output by your last command execution and whether they match the expected output in the file system visualization.",
                         target: "current-tree-vis",
                         placement: "left",
                         showPrevButton: true
-                    },
+                    }/*,
                     {
                         title: "The Rest Are the Same",
                         content: "The rest of the platform remains unchanged. Please go on to complete the task.",
@@ -64,7 +64,7 @@ $(document).ready(function () {
                         placement: "bottom",
                         xOffset: 400,
                         showPrevButton: true
-                    }
+                    }*/
                 ],
                 onEnd: function () {
                     start_timer(data.task_duration);
@@ -244,15 +244,23 @@ $(document).ready(function () {
     }
 
     function refresh_vis(data) {
+        // file system diff visualization
+        build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
+
         if (data.hasOwnProperty('stdout_diff')) {
-            console.log(data);
+            //console.log(data);
             // reset height of file system diff and stdout diff
             //$("#task-progress-container").show();
             //$("#current-tree-vis-container").css('bottom', '50%');
             build_stdout_vis(data.stdout_diff, "#task-progress-vis");
         }
-        // file system diff visualization
-        build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
+        
+        $("#task-progress-vis").empty();
+        $("#task-progress-vis").append("<div>You still have something to work on...</div>");
+
+
+
+
         console.log(data.filesystem_diff);
     }
 
@@ -369,9 +377,9 @@ $(document).ready(function () {
         $("button").attr("disabled", "disabled");
         //$("#wait-dialog").css('visibility','visible');
         //$("#wait-dialog").modalDialog();
-        var $waitmsg = $('<div style="font-size:12pt;text-align: center">');
-        $waitmsg.append('Please wait while we are setting up the next task...<br />');           
-        $waitmsg.append('<img src="static/img/hourglass.gif" /></div>');
+        var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...</div>');
+        $waitmsg.append('<br />');
+        $waitmsg.append('<img src="static/img/hourglass.gif" />');
 
         BootstrapDialog.show({
             title: "Please wait...",

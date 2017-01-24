@@ -62,8 +62,8 @@ nav {
 }
 
 .tree-vis-panel {
-    padding-top: 5px;
-	padding-left: 0px;
+    margin-top: 5px;
+	margin-left: 0px;
 	background: #ffffff;
 	white-space: nowrap;
 }
