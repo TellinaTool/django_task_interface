@@ -369,12 +369,12 @@ $(document).ready(function () {
         $("button").attr("disabled", "disabled");
         //$("#wait-dialog").css('visibility','visible');
         //$("#wait-dialog").modalDialog();
-        var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...<br /><img src="static/img/hourglass.gif" /></div>');
-        //$waitmsg.append('');
-           
+        var $waitmsg = $('<div style="font-size:12pt;text-align: center">');
+        $waitmsg.append('Please wait while we are setting up the next task...<br />');           
+        $waitmsg.append('<img src="static/img/hourglass.gif" /></div>');
+
         BootstrapDialog.show({
             title: "Please wait...",
-            type: BootstrapDialog.TYPE_PRIMARY,
             message: $waitmsg,
             closable: false
         });
