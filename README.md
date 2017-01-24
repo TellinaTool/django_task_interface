@@ -11,43 +11,19 @@ and run bash commands.
 
 Command to do so for Ubuntu: `sudo apt-get install -y virtualbox vagrant`
 
-## Create `config.json`
-
-Run: `cp config.sample.json config.json`
-
-The example file is for an experiment with the following setup,
-but you can customize any of these aspects of the experiment:
-
-* Each task takes 300 seconds.
-* There are 2 participants: `bob` and `alice`.
-* There are 2 tasks:
-  1. Print hello world.
-    * Initial filesystem: none
-    * Answer: `hello world` is in standard output
-  2. Create a file named `hello.txt` in `~/dir1/dir2`.
-    * Initial file system:
-
-       ```
-       dir1/
-       file.txt
-         dir2/
-       ```
-
-    * Answer: user's home directory should look like
-
-       ```
-       dir1/
-       file.txt
-         dir2/
-           hello.txt
-       ```
-
 ## Run the server
 
 "Host" will refer to the machine that runs `vagrant up`.
 "Guest" will refer to the VM created by `vagrant up`.
 
-1. Edit `config.json` as necessary (see above).
+1. Create `data/config.json`.
+
+  ```
+  cp data/config.sample.json data/config.json
+  ```
+  
+   You can modify the configuration when necessary, the file specification is on [this page](https://github.com/TellinaTool/tellina_task_interface/tree/master/data).
+
 2. Start the VM which runs the web application:
 
   ```bash
@@ -72,9 +48,7 @@ but you can customize any of these aspects of the experiment:
 
 5. Wait until you see `Quit the server with CONTROL-C.` in the console output.
 
-6. Start the task interface for user `bob` by visiting
-   `http://127.0.0.1:10411/static/html/task.html` in a browser on the host.
-   Enter `bob` in the browser prompt and continue.
+6. Visit the task platform at `http://127.0.0.1:10411/` using your browser.
 
 7. Stop the server with `Ctrl-C` in the guest terminal.
 

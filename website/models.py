@@ -37,8 +37,8 @@ treatment_assignments = {
     'group2II': 'A',
     'group3I': 'A',
     'group3II': 'B',
-    'group4I': 'A',
-    'group4II': 'B'
+    'group4I': 'B',
+    'group4II': 'A'
 }
 
 class User(models.Model):

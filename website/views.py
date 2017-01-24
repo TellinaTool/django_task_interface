@@ -390,13 +390,30 @@ def compute_filesystem_diff(container, task, stdout_paths,
 
 def compute_stdout_diff(stdout, task, current_dir=None):
     """
-
+    Compute the difference between the user's current terminal output and the 
+    goal output.
+    
     Args:
-        stdout:
-        task:
-        current_dir:
-        unordered:
+        stdout: the user's current terminal output
+        task: the task object which contains the definition of the file system
+        current_dir: the user's current directory
 
+    Return:
+    	e.g.
+		{
+		    {
+			"line": XXX
+			"tag": 'correct'
+		    },
+		    {	
+			"line": XXX
+			"tag": 'extra'
+		    },
+		    {
+			"line": XXX
+			"tag": 'missing'
+		    }
+		}
     """
     def __equal__(l1, l2, task_id):
         if task_id == 16:
@@ -519,6 +536,7 @@ def compute_stdout_diff(stdout, task, current_dir=None):
     return { 'lines': stdout_diff, 'tag': tag }
 
 # --- Progress Indicator --- #
+
 @session_id_required
 def progress(request, study_session):
     template = loader.get_template('progress.html')

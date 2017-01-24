@@ -83,7 +83,7 @@ $(document).ready(function () {
                 // discourage a user from quiting a task
                 BootstrapDialog.show({
                     title: "Warning",
-                    message: "Do you want to give up on this task?",
+                    message: "Do you really want to give up on this task?",
                     type: BootstrapDialog.TYPE_WARNING,
                     buttons: [
                     {
@@ -134,9 +134,9 @@ $(document).ready(function () {
         if (data.hasOwnProperty('stdout_diff')) {
             console.log(data);
             // reset height of file system diff and stdout diff
-            $("#stdout-diff-vis-container").show();
-            $("#current-tree-vis-container").css('bottom', '50%');
-            build_stdout_vis(data.stdout_diff, "#stdout-diff-vis");
+            //$("#task-progress-container").show();
+            //$("#current-tree-vis-container").css('bottom', '50%');
+            build_stdout_vis(data.stdout_diff, "#task-progress-vis");
         }
         // file system diff visualization
         build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
