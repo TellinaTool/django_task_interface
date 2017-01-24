@@ -167,6 +167,12 @@
                            "type":"directory",
                            "children":[
                               {
+                                 "attributes": {
+                                 },
+                                 "type": "file",
+                                 "name": "3.md"
+                              },
+                              {
                                  "name":"1",
                                  "type":"directory",
                                  "children":[
