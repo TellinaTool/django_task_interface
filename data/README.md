@@ -38,5 +38,5 @@ but you can customize any of these aspects of the experiment:
 The command below prepares the file system copy that will be used in the user study tasks.
 
 ```
--tar xvfJ example-website.tar.xz
+-tar xvfJ example_website.tar.xz
 ```
