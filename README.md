@@ -13,34 +13,9 @@ Command to do so for Ubuntu: `sudo apt-get install -y virtualbox vagrant`
 
 ## Create `config.json`
 
-Run: `cp config.sample.json config.json`
+Run: `cp data/config.sample.json data/config.json`
 
-The example file is for an experiment with the following setup,
-but you can customize any of these aspects of the experiment:
-
-* Each task takes 300 seconds.
-* There are 2 participants: `bob` and `alice`.
-* There are 2 tasks:
-  1. Print hello world.
-    * Initial filesystem: none
-    * Answer: `hello world` is in standard output
-  2. Create a file named `hello.txt` in `~/dir1/dir2`.
-    * Initial file system:
-
-       ```
-       dir1/
-       file.txt
-         dir2/
-       ```
-
-    * Answer: user's home directory should look like
-
-       ```
-       dir1/
-       file.txt
-         dir2/
-           hello.txt
-       ```
+The file config.json sets the task to be performed. To learn the format of the `config.json`, please refer to [the data/ directory](https://github.com/TellinaTool/tellina_task_interface/tree/master/data)
 
 ## Run the server
 
