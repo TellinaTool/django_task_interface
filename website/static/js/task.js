@@ -367,7 +367,18 @@ $(document).ready(function () {
 
     function switch_task(reason) {
         $("button").attr("disabled", "disabled");
-        $("#wait-dialog").modalDialog();
+        //$("#wait-dialog").css('visibility','visible');
+        //$("#wait-dialog").modalDialog();
+        var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...<br /><img src="static/img/hourglass.gif" /></div>');
+        //$waitmsg.append('');
+           
+        BootstrapDialog.show({
+            title: "Please wait...",
+            type: BootstrapDialog.TYPE_PRIMARY,
+            message: $waitmsg,
+            closable: false
+        });
+
         // close the websocket connection to the current container
         socket.close();
         $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
