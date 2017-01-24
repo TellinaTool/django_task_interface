@@ -39,7 +39,19 @@ $(document).ready(function () {
             data.page_tour == 'init_file_search' ||
             data.page_tour == 'init_standard_output')  {
             // start training tutorial
-            introJs().start();
+            var intro = introJs();
+            intro.setOptions({
+                steps: [
+                    {
+                        element: "#img-overlay-hanger",
+                        intro: "<p>Welcome to the task platform training!</p><p>The three main components of the task platform is illustrated below.</p><img src=\"static/img/task_platform.png\" height=\"100%\" width=\"100%\"></img><br>",
+                    }
+                ]
+            }).setOption("tooltipClass", "img-overlay")
+            .setOption('showStepNumbers', false)
+            .setOption('exitOnOverlayClick', false)
+            .setOption('showBullets', false)
+            .start();
         }
 
         // start timing the task
