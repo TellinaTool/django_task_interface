@@ -11,19 +11,19 @@ and run bash commands.
 
 Command to do so for Ubuntu: `sudo apt-get install -y virtualbox vagrant`
 
-## Create `config.json`
-
-Run: `cp data/config.sample.json data/config.json`
-
-The file `config.json` sets the task to be performed. 
-To learn the format of the `config.json`, please refer to [this page](https://github.com/TellinaTool/tellina_task_interface/tree/master/data).
-
 ## Run the server
 
 "Host" will refer to the machine that runs `vagrant up`.
 "Guest" will refer to the VM created by `vagrant up`.
 
-1. Edit `config.json` as necessary (see above).
+1. Create `data/config.json`.
+
+  ```
+  cp data/config.sample.json data/config.json
+  ```
+  
+   You can modify the configuration when necessary, the file specification is on [this page](https://github.com/TellinaTool/tellina_task_interface/tree/master/data).
+
 2. Start the VM which runs the web application:
 
   ```bash
