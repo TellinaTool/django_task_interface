@@ -1,4 +1,4 @@
-## Content in this folder
+## About this folder
 
 This folder contains (1) the sample configuration file for a task, (2) a copy of the file system used in the task platform (example-website.tar.xz) and (3) the descriptions of all tasks used in our user study.
 
