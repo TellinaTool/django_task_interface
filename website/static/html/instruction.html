@@ -73,16 +73,27 @@
                                         </p>
                                         <br>
                                         <h4>2. Tool assistance</h4>
-                                        <p>For all tasks, you may use Internet resources such as Google search. For
-                                            some tasks, you will be permitted to use additional tool(s).
-					                    </p>
+                                        {% if first_treatment == 'A' %}
+                                            <p>For all tasks, you may use Internet resources such as Google search. And
+                                                for <b>the first 9 tasks you encounter</b>, you will be permitted to
+                                                use additional tool(s).
+                                            </p>
+                                        {% elif first_treatment == 'B' %}
+                                            <p>For all tasks, you may use Internet resources such as Google search. And
+                                                for <b>the last 9 tasks you encounter</b>, you will be permitted to
+                                                use additional tool(s).
+                                            </p>
+                                        {% endif %}
                                         <br>
                                         <h4>3. Task Platform</h4>
-                                        <p>You will fill in a post-study questionnaire at the end of the study.
+                                        <p>
                                         </p>
                                         <br>
-                                        <p>Before you start working on the real tasks used in the user study, you need
-                                            to complete a short training session which will Please click the button below to proceed.</p>
+                                        <p>Before you start working on the real tasks in the user study, you will first
+                                            complete a training session which will get you familiarized with the task
+                                            platform as well as the additional tool(s) that you may use.
+                                            Please click the button below to proceed.
+                                        </p>
                                     </div>
 
                                     <div class="instruction-ack">

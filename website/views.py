@@ -665,7 +665,10 @@ def consent(request):
     context = {}
     return HttpResponse(template.render(context, request))
 
-def instruction(request):
+@session_id_required
+def instruction(request, study_session):
     template = loader.get_template('instruction.html')
-    context = {}
+    context = {
+        'first_treatment': 'A'
+    }
     return HttpResponse(template.render(context, request))
