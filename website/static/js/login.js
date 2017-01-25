@@ -90,18 +90,20 @@ $(document).ready(function () {
                             action: function(dialogItself) {
                                 dialogItself.close();
                                 // redirect user into the session
-                                window.location.replace(data.task_session_id);
+                                $.get(`resume_task_session`, {task_session_id: data.task_session_id}, function(data) {
+                                    window.location.replace(data.task_session_id);
+                                });
                             }
                         },
                         {
                             label: "No, create a new session",
                             cssClass: "btn-primary",
                             action: function(dialogItself) {
+                                dialogItself.close();
+                                // redirect user to the consent page
+                                window.location.replace('consent');
                                 $.get(`/user_login`, {access_code: username, check_existing_session: false}, function(data){
-                                    console.log(data.task_session_id);
-                                    dialogItself.close();
-                                    // redirect user to the consent page
-                                    window.location.replace('consent');
+                                    // set up task session in the backend
                                 })
                             }
                         }]

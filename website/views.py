@@ -585,7 +585,6 @@ def user_login(request):
 
         # check if an incomplete study session for the user exists
         if check_existing_session == "true":
-            no_existing_session = False
             healthy_sessions = []
             for session in StudySession.objects\
                     .filter(user=user).filter(Q(status='running') | Q(status='training'))\
@@ -593,8 +592,7 @@ def user_login(request):
                 try:
                     task_session = TaskSession.objects.get(
                         session_id=session.current_task_session_id)
-                    if task_session.status == 'running' or \
-                                    task_session.status == 'paused':
+                    if task_session.status in ['running', 'paused']:
                         healthy_sessions.append(session)
                     else:
                         session.close('closed_with_error')
@@ -607,21 +605,14 @@ def user_login(request):
                 for session in existing_sessions[:-1]:
                     session.close('closed_with_error')
                 session = existing_sessions[-1]
-                # recreate a new container in case the original session is off
-                # due to container issue
-                task_session.create_new_container()
                 # remember the study session id and the task session id with
                 # cookies
                 resp = JsonResponse({
                     "status": "RUNNING_STUDY_SESSION_FOUND",
-                    "task_session_id": session.current_task_session_id,
+                    "task_session_id": session.current_task_session_id
                 })
-                resp.set_cookie('session_id', session.session_id)
-                resp.set_cookie('task_session_id', session.current_task_session_id)
-            else:
-                no_existing_session = True
 
-        if check_existing_session == "false" or no_existing_session:
+        if check_existing_session == "false" or not healthy_sessions:
             # register a new study session for the user
             session_id = '-'.join([access_code, "study_session",
                 str(StudySession.objects.filter(user=user).count() + 1)])
@@ -653,6 +644,19 @@ def user_login(request):
         resp = json_response(status='USER_DOES_NOT_EXIST')
 
     return resp
+
+def resume_task_session(request):
+    # recreate a new container in case the original session is off
+    # due to container issue
+    task_session_id = request.GET['task_session_id']
+    task_session = TaskSession.objects.get(session_id=task_session_id)
+    task_session.create_new_container()
+    resp = json_response({"task_session_id": task_session_id},
+                         status="SESSION_CREATED")
+    resp.set_cookie('session_id', task_session.study_session.session_id)
+    resp.set_cookie('task_session_id', task_session.current_task_session_id)
+    return resp
+
 
 def retrieve_access_code(request):
     first_name = request.GET['first_name']

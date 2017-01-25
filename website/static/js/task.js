@@ -335,7 +335,7 @@ $(document).ready(function () {
         $waitmsg.append('<img src="static/img/hourglass.gif" />');
 
         var wait_diaglog = BootstrapDialog.show({
-            title: 'User Study Direction',
+            title: 'Transition',
             message: $waitmsg,
             closable: false
         });
@@ -366,17 +366,16 @@ $(document).ready(function () {
                     console.log(data.treatment_order);
                     console.log(data.treatment_order);
                     var $stage_instruction = $('<div style="font-size:12pt">');
-                    $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the first 9 tasks in the user study, you may use the following assistant tools:');
+                    $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first 9 tasks in the user study, you may use the following tools:');
                     if (data.treatment_order == 0) {
-                        $stage_instruction.append('<ul><li><a href="">Tellina</a>, the natural language to bash translator</li>');
-                        $stage_instruction.append('<li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
-                        $stage_instruction.append('<p>Especially, whenever you need help for a task, we encourage you to try Tellina first.</p></div>');
+                        $stage_instruction.append('<ul><li><a href="">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
+                        $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
                     } else {
                         $stage_instruction.append('<ul><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
-                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> However, you cannot use Tellina, the natural language to bash translator.</p></div>')
+                        $stage_instruction.append('<p>However, you <b>cannot</b> use Tellina, the natural language to bash translator which was introduced in the training session.</p></div>')
                     }
                     BootstrapDialog.show({
-                        title: "User Study Direction: Ready to Start",
+                        title: "Ready to Start",
                         message: $stage_instruction,
                         buttons: [{
                             label: "Start Task Session",
@@ -390,16 +389,16 @@ $(document).ready(function () {
                     });
                 } else if (data.status == 'ENTERING_STAGE_II') {
                     var $stage_instruction = $('<div style="font-size:12pt">');
-                    if (data.treatment_order == 'B') {
-                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the last 9 tasks in the user study, you may use the following tool in addition to what you have already accessed so far:');
-                        $stage_instruction.append('<ul><li><a href="">Tellina Natural Language to Bash Translator</a>.</li></ul></p>');
-                        $stage_instruction.append('<p>Especially, whenever you need help from the tool(s), we encourage you to try Tellina first.</p></div>');
+                    if (data.treatment_order == 1) {
+                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, you may use the following tool <b>in addition</b> to what you already have accessed so far:');
+                        $stage_instruction.append('<ul><li><a href="">Tellina</a>, the natural language to bash translator</li></ul></p>');
+                        $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
                     } else {
-                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the last 9 tasks in the user study, please stop using Tellina, the natural language to bash translator.</p>');
-                        $stage_instruction.append('<p>From now on, whenever you need help, please only resort to the resources available in your bash terminal (s.a. man pages) or online except for Tellina.</p></div>');
+                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, please <b>stop</b> using Tellina when solving a task.</p>');
+                        $stage_instruction.append('<p>Whenever you need help, please only resort to the resources available in your bash terminal or online (except for Tellina).</p></div>');
                     }
                     BootstrapDialog.show({
-                        title: "User Study Direction: Half-Way Done",
+                        title: "Half-Way Done",
                         message: $stage_instruction,
                         buttons: [{
                             label: "Resume Task Session",
