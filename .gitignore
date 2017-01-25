@@ -5,6 +5,7 @@
 .vagrant
 website/migrations
 data/example_website
+data/website
 data/config.json
 task_manager_lock_*
 *.log
