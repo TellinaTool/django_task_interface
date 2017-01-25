@@ -127,7 +127,12 @@
     {% block other-scripts %}
         <script>
             $('#instruction-read').click(function () {
-                window.location.replace("{{task_session_id}}");
+                $.get(`/instruction_read`, function() {
+                    $.get(`/go_to_next_task`, function(data) {
+                        console.log(data);
+                        window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
+                    });
+                });
             })
         </script>
     {% endblock %}

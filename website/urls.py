@@ -15,8 +15,10 @@ urlpatterns = [
     url(r'^retrieve_access_code$', views.retrieve_access_code),
 
     # consent & instruction
-    url(r'^instruction$', views.instruction),
     url(r'^consent$', views.consent),
+    url(r'^consent_signed$', views.consent_signed),
+    url(r'^instruction$', views.instruction),
+    url(r'^instruction_read$', views.instruction_read),
 
     # task session
     url(r'^.*-study_session-.*-task-.*', views.get_current_task),

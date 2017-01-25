@@ -110,7 +110,9 @@
     {% block other-scripts %}
         <script>
             $('#instruction-read').click(function () {
-                window.location.replace('instruction');
+                $.get(`/consent_signed`, function() {
+                    window.location.replace('instruction');
+                });
             })
         </script>
     {% endblock %}

@@ -213,9 +213,11 @@ class StudySession(models.Model):
 
     :member user: The participant of the session.
     :member session_id: an application-wide unique study session ID.
-    :member total_num_tasks: Total number of tasks in the study session.
     :member creation_time: Time the study session is created.
     :member close_time: Time the study session is closed.
+    :member total_num_training_tasks: Total number of training tasks in the
+        study session.
+    :member total_num_tasks: Total number of tasks in the study session.
 
     :member current_task_session_id: The id of the task session that the user
         is undertaking. '' if no task session is running.
@@ -232,19 +234,22 @@ class StudySession(models.Model):
         - 'closed_with_error': The session is closed due to exceptions.
         - 'paused': The user left the study session in the middle. Paused
             study sessions can be resumed.
-        - 'training': The user is at the training state of the study session.
-        - 'running': The user is currently taking the study session.
+        - 'pre-consent': The user has not signed the consent form.
+        - 'pre-training': The user is at the pre-training stage of the study
+            session.
+        - 'training': The user is at the training stage of the study session.
+        - 'running': The user is taking the study session.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     session_id = models.TextField(primary_key=True)
+    creation_time = models.DateTimeField()
+    end_time = models.DateTimeField(default='1111-11-11 00:00:00')
     total_num_training_tasks = models.PositiveIntegerField(
         default=len(TASK_TRAINING))
     total_num_tasks = models.PositiveIntegerField(
         default=len(TASK_BLOCK_I) + len(TASK_BLOCK_II))
-    creation_time = models.DateTimeField(default='1111-11-11 00:00:00')
-    end_time = models.DateTimeField(default='1111-11-11 00:00:00')
 
-    current_task_session_id = models.TextField()
+    current_task_session_id = models.TextField(default='')
     num_tasks_completed = models.PositiveIntegerField(default=0)
     filesystem_change_seen = models.BooleanField(default=False)
     file_search_seen = models.BooleanField(default=False)
@@ -278,15 +283,15 @@ class StudySession(models.Model):
         return False
 
     def update_current_task_session_id(self):
-        if self.status == 'training':
+        if self.status in ['pre-consent', 'pre-training', 'training']:
             new_task_session_id = self.session_id + \
                 '-training-task-{}'.format(self.num_tasks_completed + 1)
         elif self.status == 'running':
             new_task_session_id = self.session_id + \
                 '-task-{}'.format(self.num_tasks_completed + 1)
         else:
-            raise ValueError('Wrong study session status: {} (should be '
-                    '"running" or "training" only.)'.format(self.status))
+            raise ValueError('Wrong study session status: {} while updating '
+                             'current task session id'.format(self.status))
         self.current_task_session_id = new_task_session_id
         self.save()
         return new_task_session_id
@@ -310,7 +315,7 @@ class StudySession(models.Model):
             assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
         assert(self.num_tasks_completed <= self.total_num_tasks)
 
-        if self.status == 'training':
+        if self.status in ['pre-consent', 'pre-training', 'training']:
             return 'O'
         elif self.status == 'running':
             if self.num_tasks_completed < self.switch_point:
@@ -320,8 +325,8 @@ class StudySession(models.Model):
             else:
                 return 'III'
         else:
-            raise ValueError('Wrong study session status: {} (should be '
-                    '"running" or "training" only.)'.format(self.status))
+            raise ValueError('Wrong study session status: {} while checking '
+                             'current study session stage'.format(self.status))
 
     @property
     def task_block_order(self):

@@ -57,7 +57,8 @@ def get_current_task(request, task_session):
     Args:
         task_session
 
-    Returns the information of the currently task in the user's study session.
+    Returns the information of the task which the user is currently working on
+    in the study session.
     """
     task = task_session.task
     study_session = task_session.study_session
@@ -137,8 +138,8 @@ def get_additional_task_info(request, task_session):
 
     return json_response(resp)
 
-@task_session_id_required
-def go_to_next_task(request, task_session):
+@session_id_required
+def go_to_next_task(request, study_session):
     """
     Args:
 
@@ -147,14 +148,15 @@ def go_to_next_task(request, task_session):
     Create a new task session.
     """
 
-    study_session = task_session.study_session
-
-    # if a task session has ended, ignore requests for updating task attributes
-    if task_session.status == 'running':
-        # close current_task_session
-        task_session.close(request.GET['reason_for_close'])
-        # update relevant study session attributes
-        study_session.inc_num_tasks_completed()
+    # close the currently running task session if there is any
+    if study_session.current_task_session_id:
+        task_session = TaskSession.objects.get(
+            session_id=study_session.current_task_session_id)
+        if task_session.status == 'running':
+            # close current_task_session
+            task_session.close(request.GET['reason_for_close'])
+            # update relevant study session attributes
+            study_session.inc_num_tasks_completed()
 
     # check for study session stage change or completion
     if study_session.stage == 'III':
@@ -174,21 +176,25 @@ def go_to_next_task(request, task_session):
     else:
         # create new task session
         next_task_session_id = study_session.update_current_task_session_id()
-        create_task_session(study_session)
-        if study_session.stage_change():
-            if study_session.stage == 'I':
-                status = 'ENTERING_STAGE_I'
-            elif study_session.stage == 'II':
-                status = 'ENTERING_STAGE_II'
-        else:
-            status = ''
-        resp = json_response({
-            "task_session_id": next_task_session_id,
-            "treatment_order": study_session.treatment_order
-            },
-            status=status
-        )
-        resp.set_cookie('task_session_id', next_task_session_id)
+        try:
+            create_task_session(study_session)
+            if study_session.stage_change():
+                if study_session.stage == 'I':
+                    status = 'ENTERING_STAGE_I'
+                elif study_session.stage == 'II':
+                    status = 'ENTERING_STAGE_II'
+            else:
+                status = ''
+            resp = json_response({
+                "task_session_id": next_task_session_id,
+                "treatment_order": study_session.treatment_order
+                },
+                status=status
+            )
+            resp.set_cookie('task_session_id', next_task_session_id)
+        except ObjectDoesNotExist:
+            study_session.close('closed_with_error')
+            resp = json_response(status='TASK_SESSION_CREATION_FAILED')
 
     return resp
 
@@ -233,7 +239,8 @@ def create_task_session(study_session):
             start_time = timezone.now(),
             status = 'running'
         )
-        print('Log: {} created'.format(task_session_id))
+
+        print('Task session {} created'.format(task_session_id))
 
 # --- Terminal I/O --- #
 
@@ -583,11 +590,19 @@ def user_login(request):
     try:
         user = User.objects.get(access_code=access_code)
 
-        # check if an incomplete study session for the user exists
+        # check if an incomplete study session of the user exists
         if check_existing_session == "true":
+            existing_sessions = []
+            for session in StudySession.objects\
+                .filter(user=user).filter(Q(status='pre-consent') |
+                                          Q(status='pre-training')):
+                # if the user is still at the pre-training stage for that
+                # session, ignore it
+                session.close('closed_with_error')
             healthy_sessions = []
             for session in StudySession.objects\
-                    .filter(user=user).filter(Q(status='running') | Q(status='training'))\
+                    .filter(user=user).filter(Q(status='running') |
+                                              Q(status='training'))\
                     .order_by('creation_time'):
                 try:
                     task_session = TaskSession.objects.get(
@@ -597,16 +612,15 @@ def user_login(request):
                     else:
                         session.close('closed_with_error')
                 except ObjectDoesNotExist:
-                    # task session is corrupted
+                    # close the study session due to errors in the task session
                     session.close('closed_with_error')
             if healthy_sessions:
-                # close previous running sessions if not properly closed
-                existing_sessions = healthy_sessions
+                # close previous running sessions except for the most recent one
+                existing_sessions.extend(healthy_sessions)
                 for session in existing_sessions[:-1]:
                     session.close('closed_with_error')
                 session = existing_sessions[-1]
-                # remember the study session id and the task session id with
-                # cookies
+                # cache the study session id and the task session id in cookies
                 resp = JsonResponse({
                     "status": "RUNNING_STUDY_SESSION_FOUND",
                     "task_session_id": session.current_task_session_id
@@ -616,30 +630,16 @@ def user_login(request):
             # register a new study session for the user
             session_id = '-'.join([access_code, "study_session",
                 str(StudySession.objects.filter(user=user).count() + 1)])
-
-            session = StudySession.objects.create(
+            StudySession.objects.create(
                 user = user,
                 session_id = session_id,
                 creation_time = timezone.now(),
-                
-		        status = 'training'
+		        status = 'pre-consent'
             )
+            # remember the study session id with cookies
+            resp = json_response(status="SESSION_CREATED")
+            resp.set_cookie('session_id', session_id)
 
-            # initialize the first task session
-            init_task_session_id = session.update_current_task_session_id()
-            session.save()
-
-            try:
-                create_task_session(session)
-                # remember the study session id and the task session id with
-                # cookies
-                resp = json_response({"task_session_id": init_task_session_id},
-                                     status="SESSION_CREATED")
-                resp.set_cookie('session_id', session_id)
-                resp.set_cookie('task_session_id', init_task_session_id)
-            except ObjectDoesNotExist:
-                session.close('closed_with_error')
-                resp = json_response(status='TASK_SESSION_CREATION_FAILED')
     except ObjectDoesNotExist:
         resp = json_response(status='USER_DOES_NOT_EXIST')
 
@@ -678,12 +678,25 @@ def instruction(request, study_session):
     first_treatment = study_session.treatment_order
     context = {
         'first_treatment': first_treatment,
-        'task_session_id': study_session.current_task_session_id
     }
     return HttpResponse(template.render(context, request))
+
+@session_id_required
+def instruction_read(request, study_session):
+    study_session.status = 'training'
+    study_session.save()
+    return json_response({
+        'task_session_id': study_session.current_task_session_id
+    })
 
 @session_id_required
 def consent(request, study_session):
     template = loader.get_template('consent.html')
     context = {}
     return HttpResponse(template.render(context, request))
+
+@session_id_required
+def consent_signed(request, study_session):
+    study_session.status = 'pre-training'
+    study_session.save()
+    return json_response()
