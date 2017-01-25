@@ -118,7 +118,7 @@ function build_fs_tree_vis(data, div_id) {
         //add arrows if it is a folder
         entered.append("span").attr("class", function (d) {
             var icon = d.children ? " glyphicon-chevron-down"
-                : d._children ? "glyphicon-chevron-right" : "";
+                : d._children ? "glyphicon-chevron-right" : "glyphicon-chevron-right non-visible";
             return "glyphicon " + icon;
         });
         //add icons for folder for file
@@ -181,7 +181,7 @@ function build_fs_tree_vis(data, div_id) {
         //update caret direction
         nodeEls.select("span").attr("class", function (d) {
             var icon = d.children ? " glyphicon-chevron-down"
-                : d._children ? "glyphicon-chevron-right" : "";
+                : d._children ? "glyphicon-chevron-right" : "glyphicon-chevron-right non-visible";
             return "glyphicon " + icon;
         });
         // make the glyphicon smaller, and align cneter
