@@ -32,7 +32,7 @@ nav {
     word-wrap: break-word;
 }
 
-.tree-vis-panel li {    
+#task-progress-vis-container .tree-vis-panel li {    
   /*white-space:nowrap;*/
   font-size: 10pt;
 }
