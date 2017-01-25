@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    // restore the $.browser method of jQuery<1.9
+    // restore the $.browser method for jQuery<1.9
     jQuery.browser = {};
     (function () {
         jQuery.browser.msie = false;
@@ -57,9 +57,13 @@ $(document).ready(function () {
                             $('.img-overlay').css('max-width', '200px').css('min-width', '200px');
                         break;
                     }
+                    if (this._introItems.length - 1 == this._currentStep || this._introItems.length == 1) {
+                        $('.introjs-skipbutton').show();
+                    }
                 }).setOption('exitOnOverlayClick', false)
                 .setOption('showBullets', false)
                 .start();
+                $('.introjs-skipbutton').hide();
             } else {
                 is_training_fs_change = true;
                 /* var intro = introJs().setOptions(fs_change_training)
@@ -281,7 +285,24 @@ $(document).ready(function () {
                                 refresh_vis(data);
                                 if (data.status == 'TASK_COMPLETED') {
                                     clearTimeout(task_time_out);
-                                    setTimeout(function() {
+                                    if (is_training_fs_change) {
+                                        setTimeout(function() {
+                                            BootstrapDialog.show({
+                                                title: "Training Completed",
+                                                message: "Awesome! You've completed the task platform training. You are ready to start the task session.",
+                                                buttons: [{
+                                                    label: "Proceed",
+                                                    cssClass: "btn-primary",
+                                                    action: function(dialogItself) {
+                                                        dialogItself.close();
+                                                        switch_task('passed');
+                                                    }
+                                                }],
+                                                closable: false
+                                            });
+                                        }, 300);
+                                    } else {
+                                        setTimeout(function() {
                                             BootstrapDialog.show({
                                                 title: "Good Job",
                                                 message: "You passed the task! Please proceed to the next task.",
@@ -296,7 +317,8 @@ $(document).ready(function () {
                                                 }],
                                                 closable: false
                                             });
-                                    }, 300);
+                                        }, 300);
+                                    }
                                 }
                             }
                         );
@@ -370,7 +392,7 @@ $(document).ready(function () {
                         $stage_instruction.append('<p>However, you <b>cannot</b> use Tellina, the natural language to bash translator which was introduced in the training session.</p></div>')
                     }
                     BootstrapDialog.show({
-                        title: "You are ready to start, please be reminded that",
+                        title: "You are ready to start the task session, please be reminded that",
                         message: $stage_instruction,
                         buttons: [{
                             label: "Start Task Session",

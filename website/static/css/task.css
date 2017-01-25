@@ -42,10 +42,6 @@ nav {
     min-width: 720px;
 }
 
-.introjs-skipbutton {
-    display: none;
-}
-
 .tree-vis-panel .fileattributes {
     color: #000000;
     font-size: 14px;
