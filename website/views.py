@@ -675,9 +675,8 @@ def retrieve_access_code(request):
 @session_id_required
 def instruction(request, study_session):
     template = loader.get_template('instruction.html')
-    first_treatment = study_session.treatment_order
     context = {
-        'first_treatment': first_treatment,
+        'treatment_order': study_session.treatment_order,
     }
     return HttpResponse(template.render(context, request))
 

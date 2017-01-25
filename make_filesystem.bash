@@ -19,6 +19,6 @@ mkfs.ext4 -q -F ~/$name.ext4
 mount -o loop,rw ~/$name.ext4 /$name
 mkdir /$name/home
 # Copy file system
-cp -r $fs_path /$name/home/website
+cp -r $fs_path /$name/home/
 
 chown --recursive vagrant:vagrant /$name/home

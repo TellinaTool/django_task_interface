@@ -77,12 +77,12 @@
                                         </p>
                                         <br>
                                         <h4>2. Tool assistance</h4>
-                                        {% if first_treatment == 'A' %}
+                                        {% if treatment_order == 0 %}
                                             <p>For all tasks, you may use Internet resources such as Google search. And
                                                 for <b>the first half of the study</b> (the first 9 tasks you encounter),
                                                 you will be permitted to use additional tool(s).
                                             </p>
-                                        {% elif first_treatment == 'B' %}
+                                        {% elif treatment_order == 1 %}
                                             <p>For all tasks, you may use Internet resources such as Google search. And
                                                 for <b>the second half of the study</b> (the last 9 tasks you encounter),
                                                 you will be permitted to <b>use additional tool(s)</b>.
