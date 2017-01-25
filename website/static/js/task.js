@@ -10,7 +10,8 @@ $(document).ready(function () {
         }
     })();
 
-    var is_training = false;
+    var is_training = false, is_training_fs_search = false,
+        is_training_fs_change = false;
     var showing_tips = false;
     var task_time_out;
     // create terminal object
@@ -41,6 +42,7 @@ $(document).ready(function () {
 
             // start training tutorial
             if (data.page_tour == 'init_file_search') {
+                is_training_fs_search = true;
                 var intro = introJs().setOptions(fs_search_training)
                 .setOption("tooltipClass", "img-overlay")
                 .onchange(function(targetElement) {
@@ -59,6 +61,7 @@ $(document).ready(function () {
                 .setOption('showBullets', false)
                 .start();
             } else {
+                is_training_fs_change = true;
                 /* var intro = introJs().setOptions(fs_change_training)
                 .setOption('exitOnOverlayClick', false)
                 .setOption('showBullets', false)
@@ -91,9 +94,14 @@ $(document).ready(function () {
             if (is_training) {
                 // reveal the answer to the user if he/she decides to quit the
                 // training tasks
+                var correct_answer = '';
+                if (is_training_fs_search)
+                    correct_answer = "The solution to this task is \"find css -type f\". Input this command in the terminal (without quotes) and observe the effect."
+                else
+                    correct_answer = "The solution to this task is \"find css -type f | xargs rm\". Input this command in the terminal (without quotes) and observe the effect."
                 BootstrapDialog.show({
                     title: "Solution",
-                    message: "The solution to this task is \"find css -type f\". Input this command in the terminal and observe the effect.",
+                    message: correct_answer,
                     buttons: [
                     {
                         label: "Got it.",
@@ -288,7 +296,7 @@ $(document).ready(function () {
                                                 }],
                                                 closable: false
                                             });
-                                        }, 300);
+                                    }, 300);
                                 }
                             }
                         );
@@ -362,7 +370,7 @@ $(document).ready(function () {
                         $stage_instruction.append('<p>However, you <b>cannot</b> use Tellina, the natural language to bash translator which was introduced in the training session.</p></div>')
                     }
                     BootstrapDialog.show({
-                        title: "Ready to Start",
+                        title: "You are ready to start, please be reminded that",
                         message: $stage_instruction,
                         buttons: [{
                             label: "Start Task Session",
@@ -385,7 +393,7 @@ $(document).ready(function () {
                         $stage_instruction.append('<p>Whenever you need help, please only resort to the resources available in your bash terminal or online (except for Tellina).</p></div>');
                     }
                     BootstrapDialog.show({
-                        title: "Half-Way Done",
+                        title: "You're half-Way done!",
                         message: $stage_instruction,
                         buttons: [{
                             label: "Resume Task Session",

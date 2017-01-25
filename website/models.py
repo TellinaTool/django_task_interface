@@ -418,22 +418,19 @@ class TaskSession(models.Model):
         page_tour = None
         if self.task.type == 'stdout':
             if not self.study_session.standard_output_seen:
-                if self.study_session.status == 'training' and \
-                                self.study_session.num_tasks_completed == 0:
+                if self.study_session.status == 'training':
                     page_tour = 'init_standard_output'
                 else:
                     page_tour = 'first_standard_output'
         if self.task.type == 'file_search':
             if not self.study_session.file_search_seen:
-                if self.study_session.status == 'training' and \
-                                self.study_session.num_tasks_completed == 0:
+                if self.study_session.status == 'training':
                     page_tour = 'init_file_search'
                 else:
                     page_tour = 'first_file_search'
         if self.task.type == 'filesystem_change':
             if not self.study_session.filesystem_change_seen:
-                if self.study_session.status == 'training' and \
-                                self.study_session.num_tasks_completed == 0:
+                if self.study_session.status == 'training':
                     page_tour = 'init_filesystem_change'
                 else:
                     page_tour = 'first_filesystem_change'

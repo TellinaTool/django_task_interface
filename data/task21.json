@@ -1,7 +1,7 @@
 {
    "task_id": "21",
    "type": "file_search",
-   "description": "List all the files (and subdirectories if any) under the \"css\" directory.",
+   "description": "List all the regular files (i.e. excluding subdirectories if any) under the \"css\" directory.",
    "file_attributes": [],
    "target_dir": "website/css",
    "difficulty": 0,
