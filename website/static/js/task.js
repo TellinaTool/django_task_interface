@@ -147,31 +147,73 @@ $(document).ready(function () {
         // file system diff visualization
         
         $("#task-progress-vis").empty();
-        $("#task-progress-vis").append("<div>You still have something more to work on...</div>");
+        $("#task-progress-vis").append('<div style="font-weight: bold;">You still have something more to work on...</div>');
         $("#task-progress-vis").append("<ol id='task-progress-report'></ol>");
 
         build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
-        $("#task-progress-report").append("<li>Your current filesystem status does not match the goal file system status \
-                                            (view the visualization above for details).\
-                                                <ul><li>Files/Directories reprentes as XXX are extra files in your FS.</li>\
-                                                <li>Files/Directories reprentes as XXX are missing files in your FS.</li>\
-                                                </ul></li>");
-        $("#task-progress-report").append("<li>Files/directories selected by your command mismatches the desirable result \
-                                            (view the file system visualization for details):\
-                                            <ul><li>Files/Directories highlighted as XXX are files failed to be selected by your command.</li>\
-                                                <li>Files/Directories highlighted as XXX are files wrongly selected by your command.</li>\
-                                                </ul></li>");
+
+        // TODO: add condition to compute these
+        exists_fs_extra = true;
+        exists_fs_missing = true;
+
+        // add explanation when fs mismatch
+        if (exists_fs_extra || exists_fs_missing) {
+            var legend_content = "";
+            if (exists_fs_extra) {
+                legend_content += '<li>Files/Directories that are <b>extra</b> in your FS:\
+                                    <span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-file"></span>file</span> or \
+                                    <span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.\
+                                    </li>';
+            }
+            if (exists_fs_missing) {
+                legend_content += '<li>Files/Directories <b>missing</b> in your current FS: \
+                                    <span style="opacity: 0.3;"><span class="glyphicon glyphicon-file"></span>file</span> or \
+                                    <span style="opacity: 0.3;"><span class="glyphicon glyphicon-folder-close"></span>dir</span></li>';
+            }
+
+            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your current filesystem status does not match the goal file system status \
+                                            (view the visualization above for details).</font>\
+                                                <ul class="legend-ul">' + legend_content +
+                                                '</ul></li>');
+        }
+
+        // TODO: add conditon to compute these
+        exists_select_missing = true;
+        exists_select_wrong = true;
+
+        if (exists_select_wrong || exists_select_missing) {
+
+            var legend_content = "";
+            legend_content += '<li>Files/Directories your command <b>failed</b> to select: \
+                            <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-file"></span>file</span>,\
+                            <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
+
+            legend_content += '<li>Files/Directories your command <b>wrongly</b> selected: \
+                                <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-file"></span>file</span>,\
+                                <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
+
+            legend_content += '<li>Files/Directories your command <b>correctly</b> selected: \
+                               <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-file"></span>file</span>,\
+                               <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
+
+            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Files/directories selected by your command mismatches the desirable result \
+                                                    (view the file system visualization for details)</font>:\
+                                            <ul class="legend-ul">' + legend_content + '</ul></li>');
+        }
+
+        
 
         if (data.hasOwnProperty('stdout_diff')) {
             //console.log(data);
             // reset height of file system diff and stdout diff
             //$("#task-progress-container").show();
             //$("#current-tree-vis-container").css('bottom', '50%');
-            $("#task-progress-report").append("<li>Your terminal output mismatches the solution output, see below: \
-                                                   (lines in <span style='color: grey'>grey</span> are those you failed to print, \
-                                                    lines in <span style='color: red'>red</span> are those you wrongly print.)\
-                                                    <div id='std-out-diff' style='min-height:10px;border-style: dashed; padding-left:10px;'></div>\
-                                              </li>");
+
+            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your terminal output mismatches the solution output, see below</font>: \
+                                                   <ul class="legend-ul"><li>There are lines missing in your print result: <span style="color:#CCCCCC">an output line</span>.</li> \
+                                                    <li>There are lines wrongly printed by your command: <span style="color: red;text-decoration:line-through">an output line</span>.</li></ul>\
+                                                    <div id="std-out-diff" style="min-height:10px;border-style: dashed; padding-left:10px;"></div>\
+                                              </li>');
             build_stdout_vis(data.stdout_diff, "#std-out-diff");
 
         }

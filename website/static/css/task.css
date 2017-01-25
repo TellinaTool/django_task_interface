@@ -20,6 +20,10 @@ nav {
     overflow: hidden;
 }
 
+.legend-ul li {
+    list-style-type: disc;
+}
+
 .tree-vis-panel {
     word-wrap: break-word;
 }
