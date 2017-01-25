@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^user_login$', views.user_login),
     url(r'^register_user$', views.register_user),
     url(r'^retrieve_access_code$', views.retrieve_access_code),
+    url(r'^resume_task_session', views.resume_task_session),
 
     # consent & instruction
     url(r'^consent$', views.consent),

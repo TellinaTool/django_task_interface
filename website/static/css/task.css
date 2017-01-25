@@ -38,8 +38,12 @@ nav {
 }
 
 .img-overlay {
-    max-width: 800px;
-    min-width: 800px;
+    max-width: 720px;
+    min-width: 720px;
+}
+
+.introjs-skipbutton {
+    display: none;
 }
 
 .tree-vis-panel .fileattributes {

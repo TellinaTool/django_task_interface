@@ -37,21 +37,34 @@ $(document).ready(function () {
         if (data.page_tour == 'init_filesystem_change' ||
             data.page_tour == 'init_file_search' ||
             data.page_tour == 'init_standard_output')  {
+            is_training = true;
+
             // start training tutorial
-            var intro = introJs();
-            intro.setOptions({
-                steps: [
+            if (data.page_tour == 'init_file_search') {
+                var intro = introJs().setOptions(fs_search_training)
+                .setOption("tooltipClass", "img-overlay")
+                .onchange(function(targetElement) {
+                    console.log(targetElement.getAttribute("step"));
+                    switch (targetElement.getAttribute("step"))
                     {
-                        element: "#img-overlay-hanger",
-                        intro: "<p>Welcome to the task platform training!</p><p>The three main components of the task platform is illustrated below.</p><img src=\"static/img/task_platform.png\" height=\"100%\" width=\"100%\"></img><br>",
+                        case "9":
+                            $('.img-overlay').css('max-width', '140px').css('min-width', '140px');
+                        break;
+
+                        default:
+                            $('.img-overlay').css('max-width', '200px').css('min-width', '200px');
+                        break;
                     }
-                ]
-            }).setOption("tooltipClass", "img-overlay")
-            .setOption('showStepNumbers', false)
-            .setOption('exitOnOverlayClick', false)
-            .setOption('showBullets', false)
-            .start();
-        }
+                }).setOption('exitOnOverlayClick', false)
+                .setOption('showBullets', false)
+                .start();
+            } else {
+                /* var intro = introJs().setOptions(fs_change_training)
+                .setOption('exitOnOverlayClick', false)
+                .setOption('showBullets', false)
+                .start(); */
+            }
+        };
 
         // start timing the task
         if (!is_training && !showing_tips) {
@@ -236,7 +249,6 @@ $(document).ready(function () {
         socket.onopen = function() {
             console.log('WebSocket opened');
 
-            // runFakeTerminal();
             runRealTerminal();
 
             // Setup stdin and stdout buffers to collect and send streams to server
@@ -261,35 +273,7 @@ $(document).ready(function () {
                                 refresh_vis(data);
                                 if (data.status == 'TASK_COMPLETED') {
                                     clearTimeout(task_time_out);
-                                    if (is_training) {
-                                        var calloutMgr = hopscotch.getCalloutManager();
-                                        calloutMgr.createCallout({
-                                          id: 'attach-icon',
-                                          target: 'current-tree-vis',
-                                          placement: 'left',
-                                          title: 'Task Completed',
-                                          content: 'When you print the correct files on the terminal, there will be no difference mark ups on the visualization.',
-                                          onClose: function() {
-                                            setTimeout(function() {
-                                                BootstrapDialog.show({
-                                                    title: "Training Completed",
-                                                    message: "Awesome! You've completed the task platform training. Please click on the button below to proceed.",
-                                                    buttons: [{
-                                                        label: "Proceed",
-                                                        cssClass: "btn-primary",
-                                                        action: function(dialogItself) {
-                                                            dialogItself.close();
-                                                            clearTimeout(task_time_out);
-                                                            switch_task('passed');
-                                                        }
-                                                    }],
-                                                    closable: false
-                                                });
-                                            }, 300)
-                                          }
-                                        });
-                                     } else {
-                                        setTimeout(function() {
+                                    setTimeout(function() {
                                             BootstrapDialog.show({
                                                 title: "Good Job",
                                                 message: "You passed the task! Please proceed to the next task.",
@@ -305,7 +289,6 @@ $(document).ready(function () {
                                                 closable: false
                                             });
                                         }, 300);
-                                    }
                                 }
                             }
                         );
@@ -334,22 +317,25 @@ $(document).ready(function () {
         $waitmsg.append('<br/>');
         $waitmsg.append('<img src="static/img/hourglass.gif" />');
 
-        var wait_diaglog = BootstrapDialog.show({
-            title: 'Transition',
-            message: $waitmsg,
-            closable: false
-        });
+        var wait_diaglog;
+        var wait_diaglog_timeout = setTimeout(function () {
+            wait_diaglog = BootstrapDialog.show({
+                title: 'Keep Calm',
+                message: $waitmsg,
+                closable: false
+            });
+        }, 500);
 
         // close the websocket connection to the current container
         socket.close();
         $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
-            wait_diaglog.close();
             if (data.status == 'STUDY_SESSION_COMPLETE') {
+                clearTimeout(wait_diaglog_timeout);
                 BootstrapDialog.show({
                     title: "Congratulations, you have completed the study!",
                     message: "Report: passed " + data.num_passed + "/" + data.num_total +
                              " tasks; given up " + data.num_given_up + "/" + data.num_total + " tasks.\n\n" +
-                             "Please go on to fill in the post-study questionnaire.",
+                             "Please proceed to fill in the <a href=\"https://docs.google.com/a/cs.washington.edu/forms/d/e/1FAIpQLSdX1qM91hIG7mEy-6cTIbZ3b5iiUyMkytLHG3Mh03WFsACtvA/viewforms\">post-study questionnaire</a>.",
                     buttons: [{
                         label: "Go to questionnaire",
                         cssClass: "btn-primary",
@@ -362,6 +348,7 @@ $(document).ready(function () {
                 });
                 console.log("Study session completed.");
             } else {
+                wait_diaglog.close();
                 if (data.status == 'ENTERING_STAGE_I') {
                     console.log(data.treatment_order);
                     console.log(data.treatment_order);

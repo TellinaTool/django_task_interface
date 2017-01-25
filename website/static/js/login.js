@@ -90,7 +90,7 @@ $(document).ready(function () {
                             action: function(dialogItself) {
                                 dialogItself.close();
                                 // redirect user into the session
-                                $.get(`resume_task_session`, {task_session_id: data.task_session_id}, function(data) {
+                                $.get(`/resume_task_session`, {task_session_id: data.task_session_id}, function(data) {
                                     window.location.replace(data.task_session_id);
                                 });
                             }

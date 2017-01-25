@@ -649,14 +649,14 @@ def resume_task_session(request):
     # recreate a new container in case the original session is off
     # due to container issue
     task_session_id = request.GET['task_session_id']
+    print(task_session_id)
     task_session = TaskSession.objects.get(session_id=task_session_id)
     task_session.create_new_container()
     resp = json_response({"task_session_id": task_session_id},
                          status="SESSION_CREATED")
     resp.set_cookie('session_id', task_session.study_session.session_id)
-    resp.set_cookie('task_session_id', task_session.current_task_session_id)
+    resp.set_cookie('task_session_id', task_session_id)
     return resp
-
 
 def retrieve_access_code(request):
     first_name = request.GET['first_name']
