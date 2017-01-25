@@ -24,21 +24,18 @@ TASK_TRAINING = [21, 22]
 TASK_BLOCK_I = [5, 10, 6, 9, 19, 1, 18, 17, 16]
 TASK_BLOCK_II = [8, 7, 2, 14, 12, 4, 13, 15, 11]
 
-treatment_A = 'Tellina or Google Search'
-treatment_B = 'Google Search'
+treatment_names = {
+    'A': 'Tellina or Google Search',
+    'B': 'Google Search'
+}
 
-treatment_A_training_tasks = [1]
-treatment_B_training_tasks = [2]
-
+# key: treatment order + study session stage
+# value: treatment
 treatment_assignments = {
-    'group1I': 'A',
-    'group1II': 'B',
-    'group2I': 'B',
-    'group2II': 'A',
-    'group3I': 'A',
-    'group3II': 'B',
-    'group4I': 'B',
-    'group4II': 'A'
+    '0I': 'A',
+    '0II': 'B',
+    '1I': 'B',
+    '1II': 'A'
 }
 
 class User(models.Model):
@@ -149,7 +146,8 @@ def create_container(filesystem_name, task):
 
     # Start container and write standard output and error to a log file
     subprocess.run(
-        args='docker start -a {} >container_{}.log 2>&1 &'.format(container_id, container_id),
+        args='docker start -a {} >container_{}.log 2>&1 &'
+            .format(container_id, container_id),
         shell=True,
         executable='/bin/bash',
     )
@@ -164,6 +162,8 @@ def create_container(filesystem_name, task):
     subprocess.call(['docker', 'exec', '-u', 'root', container_id,
         'chown', '-R', '{}:{}'.format(USER_NAME, USER_NAME),
         '/home/{}'.format(USER_NAME)])
+
+    # Change file parameters according to the task specification if necessary
     if task.task_id == 3:
         # TODO: to read the owner of a file correctly, the disk_2_dict function
         # needs to read from the docker container instead of the virtual file
@@ -237,9 +237,11 @@ class StudySession(models.Model):
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     session_id = models.TextField(primary_key=True)
-    total_num_tasks = models.PositiveIntegerField(default=
-        len(TASK_BLOCK_I) + len(TASK_BLOCK_II))
-    creation_time = models.DateTimeField(default='')
+    total_num_training_tasks = models.PositiveIntegerField(
+        default=len(TASK_TRAINING))
+    total_num_tasks = models.PositiveIntegerField(
+        default=len(TASK_BLOCK_I) + len(TASK_BLOCK_II))
+    creation_time = models.DateTimeField(default='1111-11-11 00:00:00')
     end_time = models.DateTimeField(default='1111-11-11 00:00:00')
 
     current_task_session_id = models.TextField()
@@ -257,55 +259,31 @@ class StudySession(models.Model):
             self.status = reason_for_close
             self.save()
 
-    def get_part(self):
-        # compute which part of the study the user is currently at
-        if not WEBSITE_DEVELOP:
-            assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
-        if self.user.group in ['group1', 'group4']:
-            part1_tasks = TASK_BLOCK_I
-        else:
-            part1_tasks = TASK_BLOCK_II
-        if self.status == 'training':
-            return 'O'
-        elif self.status == 'running':
-            if self.num_tasks_completed < len(part1_tasks):
-                return 'I'
-            elif self.num_tasks_completed < self.total_num_tasks:
-                return 'II'
-            else:
-                return 'III'
-        else:
-            raise ValueError('Wrong study session status: {} (should be '
-                    '"running" or "training" only.)'.format(self.status))
-
-    def get_treatment(self):
-        if self.get_part() in ['I', 'II']:
-            return treatment_assignments[self.user.group + self.get_part()]
-        else:
-            return ''
-
     def inc_num_tasks_completed(self):
         self.num_tasks_completed += 1
+        if self.status == 'training' and \
+            self.num_tasks_completed == self.total_num_training_tasks:
+            # reset num_tasks_completed when the training session is completed
+            self.num_tasks_completed = 0
+            self.status = 'running'
         self.save()
 
-    def switch_part(self):
+    def stage_change(self):
+        # check if the study session is going through a stage change
         if self.status == 'running':
-            if self.user.group in ['group1', 'group4']:
-                part1_tasks = TASK_BLOCK_I
-            else:
-                part1_tasks = TASK_BLOCK_II
             if self.num_tasks_completed == 0 or \
-                    self.num_tasks_completed == len(part1_tasks) or \
-                    self.num_tasks_completed == self.total_num_tasks:
+              self.num_tasks_completed == self.switch_point or \
+              self.num_tasks_completed == self.total_num_tasks:
                 return True
         return False
 
     def update_current_task_session_id(self):
         if self.status == 'training':
-            new_task_session_id = self.session_id + '-training-task-0'
+            new_task_session_id = self.session_id + \
+                '-training-task-{}'.format(self.num_tasks_completed + 1)
         elif self.status == 'running':
             new_task_session_id = self.session_id + \
-                   '-task-{}'.format(self.num_tasks_completed + 1)
+                '-task-{}'.format(self.num_tasks_completed + 1)
         else:
             raise ValueError('Wrong study session status: {} (should be '
                     '"running" or "training" only.)'.format(self.status))
@@ -325,12 +303,56 @@ class StudySession(models.Model):
         self.standard_output_seen = True
         self.save()
 
+    @property
+    def stage(self):
+        # compute which stage of the study the user is currently at
+        if not WEBSITE_DEVELOP:
+            assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
+        assert(self.num_tasks_completed <= self.total_num_tasks)
+
+        if self.status == 'training':
+            return 'O'
+        elif self.status == 'running':
+            if self.num_tasks_completed < self.switch_point:
+                return 'I'
+            elif self.num_tasks_completed < self.total_num_tasks:
+                return 'II'
+            else:
+                return 'III'
+        else:
+            raise ValueError('Wrong study session status: {} (should be '
+                    '"running" or "training" only.)'.format(self.status))
+
+    @property
+    def task_block_order(self):
+        # the task block order of the study session
+        if self.user.group in ['group1', 'group4']:
+            return '0'
+        else:
+            return '1'
+
+    @property
+    def switch_point(self):
+        # number of tasks in the first part of the study
+        if self.user.group in ['group1', 'group4']:
+            return len(TASK_BLOCK_I)
+        else:
+            return len(TASK_BLOCK_II)
+
+    @property
+    def treatment_order(self):
+        # the treatment order of the study session
+        if self.user.group in ['group1', 'group3']:
+            return '0'
+        else:
+            return '1'
+
 class TaskSession(models.Model):
     """
     A task performed by a user in a study session.
 
     :member study_session: The study session to which the task session belong.
-    :member study_session_part: The part of the study session the task session
+    :member study_session_stage: The part of the study session the task session
         is in.
     :member session_id: an application-wide unique task session ID.
     :member container: The Container model associated with the task session.
@@ -350,7 +372,7 @@ class TaskSession(models.Model):
         - 'passed':      The user started the task and passed it
     """
     study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
-    study_session_part = models.TextField()
+    study_session_stage = models.TextField()
     session_id = models.TextField(primary_key=True)
     container = models.ForeignKey(Container, default=None)
     is_training = models.BooleanField(default=False)
@@ -385,7 +407,8 @@ class TaskSession(models.Model):
         self.container.destroy()
         self.container = None
 
-    def get_page_tour(self):
+    @property
+    def page_tour(self):
         # check if page tour needs to be displayed for a task session
         page_tour = None
         if self.task.type == 'stdout':

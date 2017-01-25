@@ -60,20 +60,18 @@ def get_current_task(request, task_session):
     Returns the information of the currently task in the user's study session.
     """
     task = task_session.task
-
     study_session = task_session.study_session
-    task_part = task_session.study_session.get_part()
-
+    task_part = study_session.stage
     order_number = study_session.num_tasks_completed + 1
+    is_training = (task_part == 'O')
 
-    is_training = study_session.status == 'training'
     if is_training:
         context = {
             "is_training": is_training,
             "task_part": 'Training',
             "task_description": task.description,
-            "task_order_number": 1,
-            "total_num_tasks": 1,
+            "task_order_number": order_number,
+            "total_num_tasks": study_session.total_num_training_tasks,
             "first_name": study_session.user.first_name,
             "last_name": study_session.user.last_name,
         }
@@ -125,7 +123,7 @@ def get_additional_task_info(request, task_session):
             'filesystem_diff': fs_diff,
             'stdout_diff': stdout_diff,
             'task_duration': task.duration.seconds,
-            'page_tour': task_session.get_page_tour(),
+            'page_tour': task_session.page_tour,
             'container_port': container_port
         }
     else:
@@ -133,7 +131,7 @@ def get_additional_task_info(request, task_session):
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
             'task_duration': task.duration.seconds,
-            'page_tour': task_session.get_page_tour(),
+            'page_tour': task_session.page_tour,
             'container_port': container_port
         }
 
@@ -156,15 +154,11 @@ def go_to_next_task(request, task_session):
         # close current_task_session
         task_session.close(request.GET['reason_for_close'])
         # update relevant study session attributes
-        if study_session.status == 'training':
-            study_session.status = 'running'
-        else:
-            study_session.inc_num_tasks_completed()
+        study_session.inc_num_tasks_completed()
 
-    # check for user study completion
-    num_tasks_completed = study_session.num_tasks_completed
-    assert(num_tasks_completed <= study_session.total_num_tasks)
-    if num_tasks_completed == study_session.total_num_tasks:
+    # check for study session stage change or completion
+    if study_session.stage == 'III':
+        # study session completed
         study_session.close('finished')
         resp = json_response(
             {
@@ -178,14 +172,22 @@ def go_to_next_task(request, task_session):
         resp.set_cookie('session_id', '')
         resp.set_cookie('task_session_id', '')
     else:
+        # create new task session
         next_task_session_id = study_session.update_current_task_session_id()
         create_task_session(study_session)
-        if study_session.switch_part():
-            status = 'SWITCH_PART'
+        if study_session.stage_change():
+            if study_session.stage == 'I':
+                status = 'ENTERING_STAGE_I'
+            elif study_session.stage == 'II':
+                status = 'ENTERING_STAGE_II'
         else:
-            status = 'RUNNING'
-        resp = json_response({"task_session_id": next_task_session_id},
-                             status=status)
+            status = ''
+        resp = json_response({
+            "task_session_id": next_task_session_id,
+            "treatment_order": study_session.treatment_order
+            },
+            status=status
+        )
         resp.set_cookie('task_session_id', next_task_session_id)
 
     return resp
@@ -196,13 +198,13 @@ def create_task_session(study_session):
     for the user.
     """
     user = study_session.user
-    study_session_part = study_session.get_part()
+    study_session_stage = study_session.stage
     task_session_id = study_session.current_task_session_id
-    is_training = (study_session.status == 'training')
+    is_training = (study_session_stage == 'O')
 
     if not TaskSession.objects.filter(session_id=task_session_id).exists():
         if is_training:
-            task_id = TASK_TRAINING[0]
+            task_id = TASK_TRAINING[study_session.num_tasks_completed]
         else:
             if user.group in ['group1', 'group4']:
                 part1_tasks = TASK_BLOCK_I
@@ -211,7 +213,7 @@ def create_task_session(study_session):
                 part1_tasks = TASK_BLOCK_II
                 part2_tasks = TASK_BLOCK_I
 
-            if study_session_part == 'I':
+            if study_session_stage == 'I':
                 task_id = part1_tasks[study_session.num_tasks_completed]
             else:
                 task_id = part2_tasks[study_session.num_tasks_completed
@@ -223,7 +225,7 @@ def create_task_session(study_session):
 
         TaskSession.objects.create(
             study_session = study_session,
-            study_session_part = study_session.get_part(),
+            study_session_stage = study_session.stage,
             session_id = task_session_id,
             container = container,
             is_training = is_training,
@@ -535,18 +537,6 @@ def compute_stdout_diff(stdout, task, current_dir=None):
 
     return { 'lines': stdout_diff, 'tag': tag }
 
-# --- Progress Indicator --- #
-
-@session_id_required
-def progress(request, study_session):
-    template = loader.get_template('progress.html')
-    context = {
-        'step': study_session.get_part(),
-        'treatment': study_session.get_treatment(),
-        'task_session_id': study_session.current_task_session_id
-    }
-    return HttpResponse(template.render(context, request))
-
 # --- User Login --- #
 
 def register_user(request):
@@ -678,18 +668,18 @@ def retrieve_access_code(request):
             "access_code": 'USER_DOES_NOT_EXIST'
         })
 
-def consent(request):
-    template = loader.get_template('consent.html')
-    context = {}
-    return HttpResponse(template.render(context, request))
-
 @session_id_required
 def instruction(request, study_session):
     template = loader.get_template('instruction.html')
-    first_treatment = 'A' if study_session.user.group in ['group1', 'group3'] \
-        else 'B'
+    first_treatment = study_session.treatment_order
     context = {
         'first_treatment': first_treatment,
         'task_session_id': study_session.current_task_session_id
     }
+    return HttpResponse(template.render(context, request))
+
+@session_id_required
+def consent(request, study_session):
+    template = loader.get_template('consent.html')
+    context = {}
     return HttpResponse(template.render(context, request))

@@ -34,7 +34,6 @@ $(document).ready(function () {
         refresh_vis(data);
 
         // Check if page tour needs to be displayed
-        console.log(data.page_tour);
         if (data.page_tour == 'init_filesystem_change' ||
             data.page_tour == 'init_file_search' ||
             data.page_tour == 'init_standard_output')  {
@@ -104,6 +103,7 @@ $(document).ready(function () {
                         cssClass: "btn-danger",
                         action: function(dialogItself) {
                             dialogItself.close();
+                            clearTimeout(task_time_out);
                             switch_task('quit');
                         }
                     },
@@ -134,6 +134,7 @@ $(document).ready(function () {
                          cssClass: "btn-primary",
                          action: function(dialogItself) {
                              dialogItself.close();
+                             clearTimeout(task_time_out);
                              switch_task('time_out');
                          }
                      }],
@@ -230,12 +231,13 @@ $(document).ready(function () {
                                             setTimeout(function() {
                                                 BootstrapDialog.show({
                                                     title: "Training Completed",
-                                                    message: "Awesome! You've completed the task platform training. You are ready to start the user study session.",
+                                                    message: "Awesome! You've completed the task platform training. Please click on the button below to proceed.",
                                                     buttons: [{
                                                         label: "Proceed",
                                                         cssClass: "btn-primary",
                                                         action: function(dialogItself) {
                                                             dialogItself.close();
+                                                            clearTimeout(task_time_out);
                                                             switch_task('passed');
                                                         }
                                                     }],
@@ -254,6 +256,7 @@ $(document).ready(function () {
                                                     cssClass: "btn-primary",
                                                     action: function(dialogItself) {
                                                         dialogItself.close();
+                                                        clearTimeout(task_time_out);
                                                         switch_task('passed');
                                                     }
                                                 }],
@@ -278,10 +281,6 @@ $(document).ready(function () {
         };
     }
 
-    /* $(".accordion").scroll(function(event) {
-        $(".accordion-section-heading").css("position", "fixed");
-    }); */
-
     function runRealTerminal() {
         term.attach(socket);
         term._initialized = true;
@@ -289,14 +288,12 @@ $(document).ready(function () {
 
     function switch_task(reason) {
         $("button").attr("disabled", "disabled");
-        //$("#wait-dialog").css('visibility','visible');
-        //$("#wait-dialog").modalDialog();
         var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...</div>');
-        $waitmsg.append('<br />');
+        $waitmsg.append('<br/>');
         $waitmsg.append('<img src="static/img/hourglass.gif" />');
 
-        BootstrapDialog.show({
-            title: "Please wait...",
+        var wait_diaglog = BootstrapDialog.show({
+            title: 'User Study Direction',
             message: $waitmsg,
             closable: false
         });
@@ -304,6 +301,7 @@ $(document).ready(function () {
         // close the websocket connection to the current container
         socket.close();
         $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
+            wait_diaglog.close();
             if (data.status == 'STUDY_SESSION_COMPLETE') {
                 BootstrapDialog.show({
                     title: "Congratulations, you have completed the study!",
@@ -315,16 +313,62 @@ $(document).ready(function () {
                         cssClass: "btn-primary",
                         action: function(dialogItself) {
                             dialogItself.close();
-                            setTimeout(window.location.replace(`http:\/\/${location.hostname}:10411`), 2000);
+                            window.location.replace(`http:\/\/${location.hostname}:10411`);
                         }
                     }],
                     closable: false,
                 });
                 console.log("Study session completed.");
-                // window.location.replace('progress');
             } else {
-                if (data.status == 'SWITCH_PART') {
-                    window.location.replace('progress');
+                if (data.status == 'ENTERING_STAGE_I') {
+                    console.log(data.treatment_order);
+                    console.log(data.treatment_order);
+                    var $stage_instruction = $('<div style="font-size:12pt">');
+                    $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the first 9 tasks in the user study, you may use the following assistant tools:');
+                    if (data.treatment_order == 0) {
+                        $stage_instruction.append('<ul><li><a href="">Tellina</a>, the natural language to bash translator</li>');
+                        $stage_instruction.append('<li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
+                        $stage_instruction.append('<p>Especially, whenever you need help for a task, we encourage you to try Tellina first.</p></div>');
+                    } else {
+                        $stage_instruction.append('<ul><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
+                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> However, you cannot use Tellina, the natural language to bash translator.</p></div>')
+                    }
+                    BootstrapDialog.show({
+                        title: "User Study Direction: Ready to Start",
+                        message: $stage_instruction,
+                        buttons: [{
+                            label: "Start Task Session",
+                            cssClass: "btn-primary",
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
+                            }
+                        }],
+                        closable: false,
+                    });
+                } else if (data.status == 'ENTERING_STAGE_II') {
+                    var $stage_instruction = $('<div style="font-size:12pt">');
+                    if (data.treatment_order == 'B') {
+                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the last 9 tasks in the user study, you may use the following tool in addition to what you have already accessed so far:');
+                        $stage_instruction.append('<ul><li><a href="">Tellina Natural Language to Bash Translator</a>.</li></ul></p>');
+                        $stage_instruction.append('<p>Especially, whenever you need help from the tool(s), we encourage you to try Tellina first.</p></div>');
+                    } else {
+                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the last 9 tasks in the user study, please stop using Tellina, the natural language to bash translator.</p>');
+                        $stage_instruction.append('<p>From now on, whenever you need help, please only resort to the resources available in your bash terminal (s.a. man pages) or online except for Tellina.</p></div>');
+                    }
+                    BootstrapDialog.show({
+                        title: "User Study Direction: Half-Way Done",
+                        message: $stage_instruction,
+                        buttons: [{
+                            label: "Resume Task Session",
+                            cssClass: "btn-primary",
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
+                            }
+                        }],
+                        closable: false,
+                    });
                 } else {
                     window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                     console.log(`${location.hostname}:10411/${data.task_session_id}`);

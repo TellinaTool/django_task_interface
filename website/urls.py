@@ -18,9 +18,6 @@ urlpatterns = [
     url(r'^instruction$', views.instruction),
     url(r'^consent$', views.consent),
 
-    # progress page
-    url(r'^progress$', views.progress),
-
     # task session
     url(r'^.*-study_session-.*-task-.*', views.get_current_task),
     url(r'^get_current_task$', views.get_current_task),
