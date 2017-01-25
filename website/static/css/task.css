@@ -32,6 +32,16 @@ nav {
     word-wrap: break-word;
 }
 
+.introjs-helperNumberLayer {
+    background: #9e2e2a;
+    text-shadow: none;
+    font-family: inherit;
+    font-size: inherit;
+    border: 2px solid white;
+    top: -12px;
+    left: 0px;
+}
+
 #task-progress-vis-container .tree-vis-panel li {    
   /*white-space:nowrap;*/
   font-size: 10pt;

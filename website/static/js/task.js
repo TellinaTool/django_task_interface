@@ -178,8 +178,8 @@ $(document).ready(function () {
         build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
 
         // TODO: add condition to compute these
-        exists_fs_extra = true;
-        exists_fs_missing = true;
+        exists_fs_extra = false;
+        exists_fs_missing = false;
 
         // add explanation when fs mismatch
         if (exists_fs_extra || exists_fs_missing) {
@@ -203,8 +203,8 @@ $(document).ready(function () {
         }
 
         // TODO: add conditon to compute these
-        exists_select_missing = true;
-        exists_select_wrong = true;
+        exists_select_missing = false;
+        exists_select_wrong = false;
 
         if (exists_select_wrong || exists_select_missing) {
 
