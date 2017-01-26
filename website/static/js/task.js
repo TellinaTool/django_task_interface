@@ -46,7 +46,7 @@ $(document).ready(function () {
                 var intro = introJs().setOptions(fs_search_training)
                 .setOption("tooltipClass", "img-overlay")
                 .onchange(function(targetElement) {
-                    console.log(targetElement.getAttribute("step"));
+                    //console.log(targetElement.getAttribute("step"));
                     switch (targetElement.getAttribute("step"))
                     {
                         case "9":
@@ -169,17 +169,46 @@ $(document).ready(function () {
     }
 
     function refresh_vis(data) {
-        // file system diff visualization
-        
-        $("#task-progress-vis").empty();
-        $("#task-progress-vis").append('<div style="font-weight: bold;">You still have something more to work on...</div>');
-        $("#task-progress-vis").append("<ol id='task-progress-report'></ol>");
+
+        // search in the tree for data exists a tag if val is null/ or value equals to val
+        function exists_somewhere_in_tree(data, tag, val) {
+            if (data.hasOwnProperty('tag') && data.tag.hasOwnProperty(tag)) {
+                if (val == null || (data.tag[tag] == val))
+                    return true;
+            }
+            if (data.hasOwnProperty('children')) {
+                for(var i = 0; i < data.children.length; i ++) {
+                    if (exists_somewhere_in_tree(data.children[i], tag, val))
+                        return true;
+                }
+            }
+            return false;
+        };
 
         build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
 
-        // TODO: add condition to compute these
-        exists_fs_extra = false;
-        exists_fs_missing = false;
+        exists_fs_extra = exists_somewhere_in_tree(data.filesystem_diff, "extra", null);
+        exists_fs_missing = exists_somewhere_in_tree(data.filesystem_diff, "missing", null);
+        exists_select_missing = exists_somewhere_in_tree(data.filesystem_diff, "selected", -1);
+        exists_select_wrong = exists_somewhere_in_tree(data.filesystem_diff, "selected", 1);
+        exists_select_correct = exists_somewhere_in_tree(data.filesystem_diff, "selected", 1);
+        exists_different_stdout = false; //data.hasOwnProperty('stdout_diff') && exists_somewhere_in_tree(data.stdout_diff, "");
+        for (var i = 0; i < data.stdout_diff.lines.length; i ++) {
+            if (data.stdout_diff.lines[i].tag == "incorrect" || data.stdout_diff.lines[i].tag == "missing") {
+                exists_different_stdout = true; 
+            }
+        }
+
+        $("#task-progress-vis").empty();
+        if ((exists_fs_extra || exists_fs_missing || exists_select_missing 
+            || exists_select_wrong || exists_different_stdout)) {
+            // file system diff visualization
+            $("#task-progress-vis").append('<div style="font-weight: bold;">You still have something more to work on...</div>');
+            $("#task-progress-vis").append("<ol id='task-progress-report'></ol>");
+        } else {
+            $("#task-progress-vis").append('<div style="font-weight: bold;">No error! You are doing a perfect job.</div>');
+            $("#task-progress-vis").append("<ol id='task-progress-report'></ol>");
+        }
 
         // add explanation when fs mismatch
         if (exists_fs_extra || exists_fs_missing) {
@@ -202,51 +231,52 @@ $(document).ready(function () {
                                                 '</ul></li>');
         }
 
-        // TODO: add conditon to compute these
-        exists_select_missing = false;
-        exists_select_wrong = false;
 
-        if (exists_select_wrong || exists_select_missing) {
+
+        if (exists_select_wrong || exists_select_missing || exists_select_correct) {
 
             var legend_content = "";
-            legend_content += '<li>Files/Directories your command <b>failed</b> to select: \
+            if (exists_select_missing) {
+                legend_content += '<li>Files/Directories your command <b>failed</b> to select: \
                             <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                             <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
+            }
 
-            legend_content += '<li>Files/Directories your command <b>wrongly</b> selected: \
+            if (exists_select_wrong) {
+                legend_content += '<li>Files/Directories your command <b>wrongly</b> selected: \
                                 <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                                 <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
+            }
 
-            legend_content += '<li>Files/Directories your command <b>correctly</b> selected: \
+            if (exists_select_correct) {
+                legend_content += '<li>Files/Directories your command <b>correctly</b> selected: \
                                <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                                <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
+            }
 
             $("#task-progress-report").append('<li><font style="text-decoration: underline;">Files/directories selected by your command mismatches the desirable result \
                                                     (view the file system visualization for details)</font>:\
                                             <ul class="legend-ul">' + legend_content + '</ul></li>');
         }
 
-        
-
         if (data.hasOwnProperty('stdout_diff')) {
             //console.log(data);
             // reset height of file system diff and stdout diff
             //$("#task-progress-container").show();
             //$("#current-tree-vis-container").css('bottom', '50%');
+
+            console.log(data.stdout_diff);
             
             $("#current-tree-vis-container").css("bottom", "70%");
             $("#task-progress-vis-container").css("top", "30.5%");
 
             $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your terminal output mismatches the solution output, see below</font>: \
-                                                   <ul class="legend-ul"><li>There are lines missing in your print result: <span style="color:#CCCCCC">an output line</span>.</li> \
-                                                    <li>There are lines wrongly printed by your command: <span style="color: red;text-decoration:line-through">an output line</span>.</li></ul>\
-                                                    <div id="std-out-diff" style="min-height:10px;border-style: dashed; padding-left:10px;"></div>\
+                                                   <ul class="legend-ul"><li>There are lines <b>missing</b> in your print result: presented as "<span style="color:#CCCCCC">some line</span>".</li> \
+                                                    <li>There are lines <b>wrongly printed</b>: presented as "<span style="color: red;text-decoration:line-through">some line</span>".</li>\
+                                                    <li>Your output v.s. solution output: <div id="std-out-diff" style="min-height:10px;border-style: dashed; padding-left:10px;"></div></li></ul>\
                                               </li>');
             build_stdout_vis(data.stdout_diff, "#std-out-diff");
-
         }
-
-        console.log(data.filesystem_diff);
     }
 
     function set_websocket(container_port)  {
