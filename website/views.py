@@ -122,6 +122,7 @@ def get_additional_task_info(request, task_session):
         resp = {
             'task_duration': task.duration.seconds,
             'task_solution': task.solution,
+            'treatment_order': task_session.study_session.treatment_order,
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
             'stdout_diff': stdout_diff,
@@ -132,6 +133,7 @@ def get_additional_task_info(request, task_session):
         resp = {
             'task_duration': task.duration.seconds,
             'task_solution': task.solution,
+            'treatment_order': task_session.study_session.treatment_order,
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
             'page_tour': task_session.page_tour,

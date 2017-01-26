@@ -43,12 +43,13 @@ $(document).ready(function () {
                 is_training_fs_search = true;
                 var intro = introJs().setOptions(task_platform_training)
                 .setOption("tooltipClass", "img-overlay")
+                .setOption('exitOnOverlayClick', false)
+                .setOption('showBullets', false)
                 .onchange(function(targetElement) {
-                    //console.log(targetElement.getAttribute("step"));
-                    switch (targetElement.getAttribute("step"))
+                    switch (this._currentStep)
                     {
-                        case "9":
-                            $('.img-overlay').css('max-width', '140px').css('min-width', '140px');
+                        case 10:
+                            $('.img-overlay').css('max-width', '400px').css('min-width', '400px');
                         break;
 
                         default:
@@ -58,16 +59,15 @@ $(document).ready(function () {
                     if (this._introItems.length - 1 == this._currentStep || this._introItems.length == 1) {
                         $('.introjs-skipbutton').show();
                     }
-                }).setOption('exitOnOverlayClick', false)
-                .setOption('showBullets', false)
+                })
+                .oncomplete(function () {
+                    show_training_task_i_assistant_tool_dialog(data.treatment_order);
+                })
                 .start();
                 $('.introjs-skipbutton').hide();
             } else {
                 is_training_fs_change = true;
-                /* var intro = introJs().setOptions(fs_change_training)
-                .setOption('exitOnOverlayClick', false)
-                .setOption('showBullets', false)
-                .start(); */
+                show_training_task_ii_assistant_tool_dialog(data.treatment_order);
             }
         };
 
@@ -135,16 +135,17 @@ $(document).ready(function () {
         exists_select_missing = exists_somewhere_in_tree(data.filesystem_diff, "selected", -1);
         exists_select_wrong = exists_somewhere_in_tree(data.filesystem_diff, "selected", 1);
         exists_select_correct = exists_somewhere_in_tree(data.filesystem_diff, "selected", 1);
-        
+
         exists_stdout_missing = false;
         exists_stdout_incorrect = false;
-        for (var i = 0; i < data.stdout_diff.lines.length; i ++) {
-            if (data.stdout_diff.lines[i].tag == "incorrect")
-                exists_stdout_incorrect = true; 
-            if (data.stdout_diff.lines[i].tag == "missing")
-                exists_stdout_missing  = true;
+        if (data.hasOwnProperty('stdout_diff')) {
+            for (var i = 0; i < data.stdout_diff.lines.length; i ++) {
+                if (data.stdout_diff.lines[i].tag == "incorrect")
+                    exists_stdout_incorrect = true;
+                if (data.stdout_diff.lines[i].tag == "missing")
+                    exists_stdout_missing  = true;
+            }
         }
-
         $("#task-progress-vis").empty();
         if (exists_fs_extra || exists_fs_missing || exists_select_missing 
             || exists_select_wrong || exists_stdout_incorrect || exists_stdout_missing) {
@@ -176,8 +177,6 @@ $(document).ready(function () {
                                                 <ul class="legend-ul">' + legend_content +
                                                 '</ul></li>');
         }
-
-
 
         if (exists_select_wrong || exists_select_missing || exists_select_correct) {
 
@@ -398,9 +397,9 @@ $(document).ready(function () {
     function switch_task(reason) {
         // close the websocket connection to the current container
         socket.close();
+        $("button").attr("disabled", "disabled");
 
         // show wait dialog
-        $("button").attr("disabled", "disabled");
         var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...</div>');
         $waitmsg.append('<br/>');
         $waitmsg.append('<img src="static/img/hourglass.gif" />');

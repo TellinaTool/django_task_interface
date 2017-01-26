@@ -1,5 +1,5 @@
 /**
- * Define task platform training tours, rendered by the hopscotch library.
+ * Define task platform training tours, rendered by the intro.js library.
  */
 
 var task_platform_training = {
@@ -55,16 +55,13 @@ var task_platform_training = {
         },
         {
             element: "#img-overlay-hanger",
-            intro: "Now that you have learnt about every component on the platform, please go on to complete the two training tasks. Raise your hand and let us know if you have any question.",
+            intro: "<div style=\"font-size: 12px\"><p>You may use any resources available in your bash terminal or online when trying to solve a task.</p><p>For some tasks you can also use the following tool: <ul><li><a href=\"\">Tellina, a natural language to bash translator.</a></li></ul></p><p>Click on the link and try it now.</p></div>",
+            position: "bottom"
+        },
+        {
+            element: "#img-overlay-hanger",
+            intro: "Now that you have learnt about Tellina and every component on the platform, please go on to complete the training task. Raise your hand and let us know if you have any question.",
             position: "bottom"
         }
     ]
 };
-
-var tellina_google_training_first = {};
-
-var google_training_first = {};
-
-var tellina_google_training_second = {};
-
-var google_training_second = {};
