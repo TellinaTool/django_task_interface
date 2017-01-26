@@ -1,4 +1,4 @@
-FROM node:4-onbuild
+FROM node:7-onbuild
 
 # Install net-tools so the server can get the IP of our host
 RUN apt-get update && \
