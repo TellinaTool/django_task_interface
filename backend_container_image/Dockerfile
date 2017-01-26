@@ -1,4 +1,4 @@
-FROM node:4-onbuild
+FROM node:7-onbuild
 
 # Install Vim as an interactive program to test from xterm
 RUN apt-get update && \

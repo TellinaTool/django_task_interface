@@ -21,7 +21,8 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "hashicorp/precise64"
+  # config.vm.box = "hashicorp/precise64"
+  config.vm.box = "ubuntu/xenial64"
 
   # Ensure that VirtualBox guest additions are reinstalled when the VM's
   # kernel is updated. We need guest additions for 'vagrant ssh'.
@@ -30,10 +31,10 @@ Vagrant.configure("2") do |config|
 
   # Upgrade the VM kernel to prepare for Docker install.
   # See https://docs.docker.com/engine/installation/linux/ubuntulinux/#/prerequisites-by-ubuntu-version.
-  config.vm.provision "shell", inline: <<-SHELL
-    sudo apt-get update
-    sudo apt-get install -y linux-image-generic-lts-trusty libgl1-mesa-glx-lts-trusty
-  SHELL
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   sudo apt-get update
+  #   sudo apt-get install -y linux-image-generic-lts-trusty libgl1-mesa-glx-lts-trusty
+  # SHELL
 
   # Reboot the VM so kernel upgrade works.
   config.vm.provision :reload
