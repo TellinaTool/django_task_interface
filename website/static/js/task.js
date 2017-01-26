@@ -12,13 +12,11 @@ $(document).ready(function () {
 
     var is_training = false, is_training_fs_search = false,
         is_training_fs_change = false;
-    var showing_tips = false;
     var task_time_out;
+
     // create terminal object
     var term, protocol, socketURL, socket, pid, charWidth, charHeight;
     var terminalContainer = document.getElementById('bash-terminal');
-
-    var filesystem_error_msg = "We've caught a file system error in the backend. Please try a few seconds later."
 
     create_new_terminal();
 
@@ -43,7 +41,7 @@ $(document).ready(function () {
             // start training tutorial
             if (data.page_tour == 'init_file_search') {
                 is_training_fs_search = true;
-                var intro = introJs().setOptions(fs_search_training)
+                var intro = introJs().setOptions(task_platform_training)
                 .setOption("tooltipClass", "img-overlay")
                 .onchange(function(targetElement) {
                     console.log(targetElement.getAttribute("step"));
@@ -74,7 +72,7 @@ $(document).ready(function () {
         };
 
         // start timing the task
-        if (!is_training && !showing_tips) {
+        if (!is_training) {
             start_timer(data.task_duration);
         }
 
@@ -96,50 +94,9 @@ $(document).ready(function () {
 
         $("#quit-button").click(function() {
             if (is_training) {
-                // reveal the answer to the user if he/she decides to quit the
-                // training tasks
-                var correct_answer = '';
-                if (is_training_fs_search)
-                    correct_answer = "The solution to this task is \"find css -type f\". Input this command in the terminal (without quotes) and observe the effect."
-                else
-                    correct_answer = "The solution to this task is \"find css -type f | xargs rm\". Input this command in the terminal (without quotes) and observe the effect."
-                BootstrapDialog.show({
-                    title: "Solution",
-                    message: correct_answer,
-                    buttons: [
-                    {
-                        label: "Got it.",
-                        cssClass: "btn-danger",
-                        action: function(dialogItself) {
-                            dialogItself.close();
-                        }
-                    }]
-                });
+                show_solution_dialog(data.task_solution);
             } else {
-                // discourage a user from quiting a task
-                BootstrapDialog.show({
-                    title: "Warning",
-                    message: "Do you really want to give up on this task?",
-                    type: BootstrapDialog.TYPE_WARNING,
-                    buttons: [
-                    {
-                        icon: 'glyphicon glyphicon-warning-sign',
-                        label: " Yes, give up.",
-                        cssClass: "btn-danger",
-                        action: function(dialogItself) {
-                            dialogItself.close();
-                            clearTimeout(task_time_out);
-                            switch_task('quit');
-                        }
-                    },
-                    {
-                        label: "No, I'll keep trying",
-                        cssClass: "btn-primary",
-                        action: function(dialogItself) {
-                            dialogItself.close();
-                        }
-                    }],
-                });
+                show_quit_confirmation_dialog();
             }
         })
     });
@@ -149,22 +106,7 @@ $(document).ready(function () {
             task_time_out = setTimeout(function() {
                  console.log('task time out');
                  clearTimeout(task_time_out);
-
-                 // prompt the user that they have to move on to the next task
-                 BootstrapDialog.show({
-                     title: "Time's Up",
-                     message: "The current task session is time out. Please proceed to the next task.",
-                     buttons: [{
-                         label: "Proceed",
-                         cssClass: "btn-primary",
-                         action: function(dialogItself) {
-                             dialogItself.close();
-                             clearTimeout(task_time_out);
-                             switch_task('time_out');
-                         }
-                     }],
-                     closable: false,
-                 });
+                 show_times_up_dialog();
         }, num_secs * 1000);
     }
 
@@ -290,36 +232,11 @@ $(document).ready(function () {
                                     clearTimeout(task_time_out);
                                     if (is_training_fs_change) {
                                         setTimeout(function() {
-                                            BootstrapDialog.show({
-                                                title: "Training Completed",
-                                                message: "Awesome! You've completed the task platform training. You are ready to start the task session.",
-                                                buttons: [{
-                                                    label: "Proceed",
-                                                    cssClass: "btn-primary",
-                                                    action: function(dialogItself) {
-                                                        dialogItself.close();
-                                                        switch_task('passed');
-                                                    }
-                                                }],
-                                                closable: false
-                                            });
+                                            show_training_completion_dialog();
                                         }, 300);
                                     } else {
                                         setTimeout(function() {
-                                            BootstrapDialog.show({
-                                                title: "Good Job",
-                                                message: "You passed the task! Please proceed to the next task.",
-                                                buttons: [{
-                                                    label: "Proceed",
-                                                    cssClass: "btn-primary",
-                                                    action: function(dialogItself) {
-                                                        dialogItself.close();
-                                                        clearTimeout(task_time_out);
-                                                        switch_task('passed');
-                                                    }
-                                                }],
-                                                closable: false
-                                            });
+                                            show_task_completion_dialog();
                                         }, 300);
                                     }
                                 }
@@ -339,105 +256,6 @@ $(document).ready(function () {
         };
     }
 
-    function runRealTerminal() {
-        term.attach(socket);
-        term._initialized = true;
-    }
-
-    function switch_task(reason) {
-        $("button").attr("disabled", "disabled");
-        var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...</div>');
-        $waitmsg.append('<br/>');
-        $waitmsg.append('<img src="static/img/hourglass.gif" />');
-
-        var wait_diaglog;
-        var wait_diaglog_timeout = setTimeout(function () {
-            wait_diaglog = BootstrapDialog.show({
-                title: 'Keep Calm',
-                message: $waitmsg,
-                closable: false
-            });
-        }, 500);
-
-        // close the websocket connection to the current container
-        socket.close();
-        $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
-            if (data.status == 'STUDY_SESSION_COMPLETE') {
-                clearTimeout(wait_diaglog_timeout);
-                BootstrapDialog.show({
-                    title: "Congratulations, you have completed the study!",
-                    message: "Report: passed " + data.num_passed + "/" + data.num_total +
-                             " tasks; given up " + data.num_given_up + "/" + data.num_total + " tasks.\n\n" +
-                             "Please proceed to fill in the <a href=\"https://docs.google.com/a/cs.washington.edu/forms/d/e/1FAIpQLSdX1qM91hIG7mEy-6cTIbZ3b5iiUyMkytLHG3Mh03WFsACtvA/viewforms\">post-study questionnaire</a>.",
-                    buttons: [{
-                        label: "Go to questionnaire",
-                        cssClass: "btn-primary",
-                        action: function(dialogItself) {
-                            dialogItself.close();
-                            window.location.replace(`http:\/\/${location.hostname}:10411`);
-                        }
-                    }],
-                    closable: false,
-                });
-                console.log("Study session completed.");
-            } else {
-                wait_diaglog.close();
-                if (data.status == 'ENTERING_STAGE_I') {
-                    console.log(data.treatment_order);
-                    console.log(data.treatment_order);
-                    var $stage_instruction = $('<div style="font-size:12pt">');
-                    $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first 9 tasks in the user study, you may use the following tools:');
-                    if (data.treatment_order == 0) {
-                        $stage_instruction.append('<ul><li><a href="">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
-                        $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
-                    } else {
-                        $stage_instruction.append('<ul><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
-                        $stage_instruction.append('<p>However, you <b>cannot</b> use Tellina, the natural language to bash translator which was introduced in the training session.</p></div>')
-                    }
-                    BootstrapDialog.show({
-                        title: "You are ready to start the task session, please be reminded that",
-                        message: $stage_instruction,
-                        buttons: [{
-                            label: "Start Task Session",
-                            cssClass: "btn-primary",
-                            action: function(dialogItself) {
-                                dialogItself.close();
-                                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
-                            }
-                        }],
-                        closable: false,
-                    });
-                } else if (data.status == 'ENTERING_STAGE_II') {
-                    var $stage_instruction = $('<div style="font-size:12pt">');
-                    if (data.treatment_order == 1) {
-                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, you may use the following tool <b>in addition</b> to what you already have accessed so far:');
-                        $stage_instruction.append('<ul><li><a href="">Tellina</a>, the natural language to bash translator</li></ul></p>');
-                        $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
-                    } else {
-                        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, please <b>stop</b> using Tellina when solving a task.</p>');
-                        $stage_instruction.append('<p>Whenever you need help, please only resort to the resources available in your bash terminal or online (except for Tellina).</p></div>');
-                    }
-                    BootstrapDialog.show({
-                        title: "You're half-Way done!",
-                        message: $stage_instruction,
-                        buttons: [{
-                            label: "Resume Task Session",
-                            cssClass: "btn-primary",
-                            action: function(dialogItself) {
-                                dialogItself.close();
-                                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
-                            }
-                        }],
-                        closable: false,
-                    });
-                } else {
-                    window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
-                    console.log(`${location.hostname}:10411/${data.task_session_id}`);
-                }
-            }
-        });
-    }
-
     function create_new_terminal() {
         term = new Terminal({
             cursorBlink: true
@@ -451,5 +269,129 @@ $(document).ready(function () {
         term.fit();
         // console.log(term.cols);
         // console.log(term.rows);
+    }
+
+    function runRealTerminal() {
+        term.attach(socket);
+        term._initialized = true;
+    }
+
+    /* --- interaction.js --- */
+
+    function show_quit_confirmation_dialog(task_time_out) {
+        // discourage a user from quiting a task
+        BootstrapDialog.show({
+            title: "Warning",
+            message: "Do you really want to give up on this task?",
+            type: BootstrapDialog.TYPE_WARNING,
+            buttons: [
+            {
+                icon: 'glyphicon glyphicon-warning-sign',
+                label: " Yes, give up.",
+                cssClass: "btn-danger",
+                action: function(dialogItself) {
+                    dialogItself.close();
+                    clearTimeout(task_time_out);
+                    switch_task('quit');
+                }
+            },
+            {
+                label: "No, I'll keep trying",
+                cssClass: "btn-primary",
+                action: function(dialogItself) {
+                    dialogItself.close();
+                }
+            }],
+        });
+    }
+
+    function show_times_up_dialog() {
+        // prompt the user that they have to move on to the next task
+         BootstrapDialog.show({
+             title: "Time's Up",
+             message: "The current task session is time out. Please proceed to the next task.",
+             buttons: [{
+                 label: "Proceed",
+                 cssClass: "btn-primary",
+                 action: function(dialogItself) {
+                     dialogItself.close();
+                     switch_task('time_out');
+                 }
+             }],
+             closable: false,
+         });
+    }
+
+    function show_task_completion_dialog() {
+        BootstrapDialog.show({
+            title: "Good Job",
+            message: "You passed the task! Please proceed to the next task.",
+            buttons: [{
+                label: "Proceed",
+                cssClass: "btn-primary",
+                action: function(dialogItself) {
+                    dialogItself.close();
+                    switch_task('passed');
+                }
+            }],
+            closable: false
+        });
+    }
+
+    function show_training_completion_dialog() {
+        BootstrapDialog.show({
+            title: "Training Completed",
+            message: "Awesome! You've completed the task platform training. You are ready to start the task session.",
+            buttons: [{
+                label: "Proceed",
+                cssClass: "btn-primary",
+                action: function(dialogItself) {
+                    dialogItself.close();
+                    switch_task('passed');
+                }
+            }],
+            closable: false
+        });
+    }
+
+    function switch_task(reason) {
+        // close the websocket connection to the current container
+        socket.close();
+
+        // show wait dialog
+        $("button").attr("disabled", "disabled");
+        var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...</div>');
+        $waitmsg.append('<br/>');
+        $waitmsg.append('<img src="static/img/hourglass.gif" />');
+
+        var wait_diaglog;
+        var wait_diaglog_timeout = setTimeout(function () {
+            wait_diaglog = BootstrapDialog.show({
+                title: 'Keep Calm',
+                message: $waitmsg,
+                closable: false
+            });
+        }, 300);
+
+        // set up the environment for the next task
+        $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
+            if (data.status == 'STUDY_SESSION_COMPLETE') {
+                clearTimeout(wait_diaglog_timeout);
+                var study_completion_report = "Report: passed " + data.num_passed + "/" + data.num_total +
+                    " tasks; given up " + data.num_given_up + "/" + data.num_total + " tasks.";
+                show_study_completion_dialog(study_completion_report);
+                console.log("Study session completed.");
+            } else {
+                wait_diaglog.close();
+                if (data.status == 'ENTERING_STAGE_I') {
+                    console.log(data.treatment_order);
+                    show_entering_stage_i_dialog(data.treatment_order, data.task_session_id);
+                } else if (data.status == 'ENTERING_STAGE_II') {
+                    show_entering_stage_ii_dialog(data.treatment_order, data.task_session_id);
+                } else {
+                    window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
+                }
+            }
+        });
     }
 });

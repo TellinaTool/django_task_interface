@@ -75,6 +75,8 @@ class Task(models.Model):
     :member stdout: The expected standard output for the task. Empty if task
         type is not 'stdout'.
     :member duration: How much time is alotted for the task.
+    :member solution (for training purpose): A bash one-liner that solves the
+        task (a task usually have more than one solutions).
     """
     task_id = models.PositiveIntegerField()
     type = models.TextField()
@@ -84,6 +86,7 @@ class Task(models.Model):
     goal_filesystem = models.TextField(default='')
     stdout = models.TextField(default='')
     duration = models.DurationField()
+    solution = models.TextField(default='')
 
 # --- Container Management --- #
 

@@ -120,18 +120,20 @@ def get_additional_task_info(request, task_session):
     if task.type == "stdout":
         stdout_diff = compute_stdout_diff('', task)
         resp = {
+            'task_duration': task.duration.seconds,
+            'task_solution': task.solution,
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
             'stdout_diff': stdout_diff,
-            'task_duration': task.duration.seconds,
             'page_tour': task_session.page_tour,
             'container_port': container_port
         }
     else:
         resp = {
+            'task_duration': task.duration.seconds,
+            'task_solution': task.solution,
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
-            'task_duration': task.duration.seconds,
             'page_tour': task_session.page_tour,
             'container_port': container_port
         }

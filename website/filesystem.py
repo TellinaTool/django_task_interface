@@ -606,15 +606,14 @@ def extract_path(input, current_dir=None):
     return path
 
 def filesystem_sort(fs):
-    if not fs or fs['type'] == 'file':
-        return
-    else:
+    if fs and fs['type'] == 'directory':
         for child in fs['children']:
             filesystem_sort(child)
         fs['children'] = sorted([c for c in fs['children'] if c['type'] == 'file'],
                                 key=lambda x:x['name']) + \
                          sorted([c for c in fs['children'] if c['type'] != 'file'],
                                 key=lambda x:x['name'])
+    return fs
 
 if __name__=="__main__":
     with open('fs1.json') as data_file:    
