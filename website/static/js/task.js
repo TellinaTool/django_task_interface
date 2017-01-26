@@ -170,6 +170,9 @@ $(document).ready(function () {
 
     function refresh_vis(data) {
 
+        // update treevis
+        build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
+
         // search in the tree for data exists a tag if val is null/ or value equals to val
         function exists_somewhere_in_tree(data, tag, val) {
             if (data.hasOwnProperty('tag') && data.tag.hasOwnProperty(tag)) {
@@ -185,23 +188,24 @@ $(document).ready(function () {
             return false;
         };
 
-        build_fs_tree_vis(data.filesystem_diff, "#current-tree-vis");
-
         exists_fs_extra = exists_somewhere_in_tree(data.filesystem_diff, "extra", null);
         exists_fs_missing = exists_somewhere_in_tree(data.filesystem_diff, "missing", null);
         exists_select_missing = exists_somewhere_in_tree(data.filesystem_diff, "selected", -1);
         exists_select_wrong = exists_somewhere_in_tree(data.filesystem_diff, "selected", 1);
         exists_select_correct = exists_somewhere_in_tree(data.filesystem_diff, "selected", 1);
-        exists_different_stdout = false; //data.hasOwnProperty('stdout_diff') && exists_somewhere_in_tree(data.stdout_diff, "");
+        
+        exists_stdout_missing = false;
+        exists_stdout_incorrect = false;
         for (var i = 0; i < data.stdout_diff.lines.length; i ++) {
-            if (data.stdout_diff.lines[i].tag == "incorrect" || data.stdout_diff.lines[i].tag == "missing") {
-                exists_different_stdout = true; 
-            }
+            if (data.stdout_diff.lines[i].tag == "incorrect")
+                exists_stdout_incorrect = true; 
+            if (data.stdout_diff.lines[i].tag == "missing")
+                exists_stdout_missing  = true;
         }
 
         $("#task-progress-vis").empty();
-        if ((exists_fs_extra || exists_fs_missing || exists_select_missing 
-            || exists_select_wrong || exists_different_stdout)) {
+        if (exists_fs_extra || exists_fs_missing || exists_select_missing 
+            || exists_select_wrong || exists_stdout_incorrect || exists_stdout_missing) {
             // file system diff visualization
             $("#task-progress-vis").append('<div style="font-weight: bold;">You still have something more to work on...</div>');
             $("#task-progress-vis").append("<ol id='task-progress-report'></ol>");
@@ -270,10 +274,17 @@ $(document).ready(function () {
             $("#current-tree-vis-container").css("bottom", "70%");
             $("#task-progress-vis-container").css("top", "30.5%");
 
+            missing_legend = "";
+            if (exists_stdout_missing)
+                missing_line_legend = '<li>There are lines <b>missing</b> in your print result: presented as "<span style="color:#CCCCCC">some line</span>".</li>';
+            
+            wrong_line_legend = "";
+            if (exists_stdout_incorrect)
+                wrong_line_legend = '<li>There are lines <b>wrongly printed</b>: presented as "<span style="color: red;text-decoration:line-through">some line</span>".</li>';
+
             $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your terminal output mismatches the solution output, see below</font>: \
-                                                   <ul class="legend-ul"><li>There are lines <b>missing</b> in your print result: presented as "<span style="color:#CCCCCC">some line</span>".</li> \
-                                                    <li>There are lines <b>wrongly printed</b>: presented as "<span style="color: red;text-decoration:line-through">some line</span>".</li>\
-                                                    <li>Your output v.s. solution output: <div id="std-out-diff" style="min-height:10px;border-style: dashed; padding-left:10px;"></div></li></ul>\
+                                                   <ul class="legend-ul" id="std-out-diff-legend">' + missing_line_legend + wrong_line_legend +
+                                                    '<li>Your output v.s. solution output: <div id="std-out-diff" style="min-height:10px;border-style: dashed; padding-left:10px;"></div></li></ul>\
                                               </li>');
             build_stdout_vis(data.stdout_diff, "#std-out-diff");
         }

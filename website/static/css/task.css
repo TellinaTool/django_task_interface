@@ -47,6 +47,14 @@ nav {
   font-size: 10pt;
 }
 
+
+#current-tree-vis li {
+    white-space: nowrap;
+}
+#std-out-diff li {
+    white-space: nowrap;
+}
+
 #stdout-diff-vis-container {
     display: none;
 }
