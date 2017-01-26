@@ -235,7 +235,7 @@ $(document).ready(function () {
             //$("#current-tree-vis-container").css('bottom', '50%');
             
             $("#current-tree-vis-container").css("bottom", "70%");
-            $("#task-progress-vis-container").css("top", "30%");
+            $("#task-progress-vis-container").css("top", "30.5%");
 
             $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your terminal output mismatches the solution output, see below</font>: \
                                                    <ul class="legend-ul"><li>There are lines missing in your print result: <span style="color:#CCCCCC">an output line</span>.</li> \
