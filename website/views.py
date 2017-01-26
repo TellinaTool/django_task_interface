@@ -242,8 +242,6 @@ def create_task_session(study_session):
 
         print('Task session {} created'.format(task_session_id))
 
-# --- Terminal I/O --- #
-
 @task_session_id_required
 @csrf_exempt
 def on_command_execution(request, task_session):
@@ -350,6 +348,8 @@ def reset_file_system(request, task_session):
         }
     
     return json_response(resp)
+
+# --- Task Result Verification --- #
 
 def compute_filesystem_diff(container, task, stdout_paths,
                             save_initial_filesystem=False):
