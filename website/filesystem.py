@@ -57,7 +57,7 @@ and four are incorrect.
                # (3) incorrect: a file/dir is in current FS but has the wrong attribute
                # (4) ch_tag (directory only): errors in the children of a directory
                # (5) (file attributes only): a file in current FS
-                    exists in the target FS, but the attribute value in incorrect
+                    exists in the target FS, but the attribute value is incorrect,
                     in this case the correct attribute value is added as a suffix
                     to the current value
                # (6) to_select (filesearch tasks only): a node should be selected in the
@@ -89,8 +89,8 @@ _CTIME = 6
 _MTIME = 7
 _CONTENT = 8
 
-ERROR_TAGS = ['extra', 'missing', 'incorrect', 'ch_extra',
-              'ch_missing', 'ch_incorrect']
+ERROR_TAGS = ['extra', 'missing', 'incorrect', 'stdout_missing',
+              'stdout_extra', 'ch_extra', 'ch_missing', 'ch_incorrect']
 
 
 class Node(object):
@@ -521,7 +521,6 @@ def annotate_node(fs, path, tag, including_self=True, recursive=False,
     node = fs
     # descend to the target node if the path depth is greater than 1
     if len(steps) > 1:
-        stack.append(fs)
         for step in steps:
             step_matched = False
             for child in node['children']:
@@ -530,8 +529,8 @@ def annotate_node(fs, path, tag, including_self=True, recursive=False,
                     step_matched = True
                     if tag_exists(child, 'missing'):
                         break
-                    node = child
                     stack.append(node)
+                    node = child
             if not step_matched:
                 raise ValueError('Specified path does not exist '
                                  'in the file system')
@@ -565,15 +564,37 @@ def tag_exists(node, tag):
 
 def add_tag(node, tag, value=1):
     if not 'tag' in node:
-        node['tag'] = {}
+        node['tag'] = collections.defaultdict(int)
     node['tag'][tag] = value
 
 def inc_tag(node, tag):
     if not 'tag' in node:
-        node['tag'] = {}
+        node['tag'] = collections.defaultdict(int)
         node['tag'][tag] = 1
     else:
         node['tag'][tag] += 1
+
+def annotate_stdout_errors(fs_diff, stdout_diff):
+    """
+    Given the standard output diff object, annotate the paths with standard
+    output errors in the file system diff object.
+
+    Args:
+        fs_diff:
+        stdout_diff:
+
+    """
+    # TODO: the current implementation is inefficient for it look through each
+    # standard output diff line linearly; it might be possible to make use of
+    # the tree structure of the file system
+    for stdout_line in stdout_diff['lines']:
+        if stdout_line['tag'] in ['missing', 'extra']:
+            path = extract_path(stdout_line['line'])
+            print(path)
+            if path:
+                annotate_node(fs_diff, path, 'stdout_'+stdout_line['tag'])
+
+# --- Other File System Utilities --- #
 
 def extract_path(input, current_dir=None):
     """

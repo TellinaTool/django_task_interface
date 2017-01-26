@@ -205,13 +205,11 @@ $(document).ready(function () {
         }
 
         if (data.hasOwnProperty('stdout_diff')) {
-            //console.log(data);
+            // console.log(data.filesystem_diff);
             // reset height of file system diff and stdout diff
             //$("#task-progress-container").show();
             //$("#current-tree-vis-container").css('bottom', '50%');
 
-            console.log(data.stdout_diff);
-            
             $("#current-tree-vis-container").css("bottom", "70%");
             $("#task-progress-vis-container").css("top", "30.5%");
 

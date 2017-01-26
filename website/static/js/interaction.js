@@ -53,13 +53,11 @@ function show_training_task_i_assistant_tool_dialog(treatment_order) {
 
 function show_training_task_ii_assistant_tool_dialog(treatment_order) {
     var $instruction = $('<div style="font-size:12pt">');
-    $instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the second training task, ');
     if (treatment_order == 1) {
-        $instruction.append('you may use Tellina <b>in addition to</b> what you have already accessed so far.</p>');
+        $instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the second training task, you may use Tellina <b>in addition to</b> what you have already accessed so far.</p>');
         $instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
     } else {
-        $instruction.append('please <b>do not</b> use Tellina to solve it.</p>');
-        $instruction.append('<p>When you need help, please only resort to the other resources available online or in your bash terminal.</p></div>');
+        $instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the second training task, please <b>only</b> resort to the resources available in your bash terminal or online <b>except for Tellina</b>.</p></div>');
     }
     setTimeout(function () {
         BootstrapDialog.show({

@@ -119,6 +119,7 @@ def get_additional_task_info(request, task_session):
 
     if task.type == "stdout":
         stdout_diff = compute_stdout_diff('', task)
+        annotate_stdout_errors(fs_diff, stdout_diff)
         resp = {
             'task_duration': task.duration.seconds,
             'task_solution': task.solution,
@@ -149,13 +150,15 @@ def go_to_next_task(request, study_session):
 
         task_session:
 
-    Create a new task session.
-    """
+    Close the existing task session (if there is any) and create a new task
+    session.
 
+    """
     # close the currently running task session if there is any
     if study_session.current_task_session_id:
         task_session = TaskSession.objects.get(
             session_id=study_session.current_task_session_id)
+        print(study_session.current_task_session_id)
         if task_session.status == 'running':
             # close current_task_session
             task_session.close(request.GET['reason_for_close'])
@@ -290,6 +293,8 @@ def on_command_execution(request, task_session):
         # the file/directory names cannot contain spaces
         if stdout_diff['tag'] == 'correct':
             task_completed = True
+        else:
+            annotate_stdout_errors(fs_diff, stdout_diff)
         resp = { 'filesystem_diff': fs_diff, 'stdout_diff': stdout_diff }
     elif task.type == 'file_search' or task.type == 'filesystem_change':
         # check if the current file system is the same as the goal file system
@@ -336,6 +341,7 @@ def reset_file_system(request, task_session):
 
     if task.type == 'stdout':
         stdout_diff = compute_stdout_diff('', task)
+        annotate_stdout_errors(fs_diff, stdout_diff)
         resp = {
             'container_id': container_id,
             'container_port': container.port,
@@ -413,7 +419,7 @@ def compute_stdout_diff(stdout, task, current_dir=None):
 
     Return:
     	e.g.
-		{
+		[
 		    {
 			"line": XXX
 			"tag": 'correct'
@@ -426,7 +432,7 @@ def compute_stdout_diff(stdout, task, current_dir=None):
 			"line": XXX
 			"tag": 'missing'
 		    }
-		}
+		]
     """
     def __equal__(l1, l2, task_id):
         if task_id == 16:
@@ -653,7 +659,6 @@ def resume_task_session(request):
     # recreate a new container in case the original session is off
     # due to container issue
     task_session_id = request.GET['task_session_id']
-    print(task_session_id)
     task_session = TaskSession.objects.get(session_id=task_session_id)
     task_session.create_new_container()
     resp = json_response({"task_session_id": task_session_id},

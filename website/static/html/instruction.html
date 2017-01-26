@@ -88,8 +88,6 @@
                                                 you will be permitted to <b>use additional tool(s)</b>.
                                             </p>
                                         {% endif %}
-                                        <p>You will see directions in the task session about which tools to access.
-                                        </p>
                                         <br>
                                         <h4>3. Timing </h4>
                                         <p>Each task has a <b>time limit of 10 minutes</b>, after which you will proceed
@@ -130,7 +128,7 @@
         <script>
             $('#instruction-read').click(function () {
                 $.get(`/instruction_read`, function() {
-                    $.get(`/go_to_next_task`, function(data) {
+                    $.get(`/go_to_next_task`, {reason_for_close: ''}, function(data) {
                         console.log(data);
                         window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                     });
