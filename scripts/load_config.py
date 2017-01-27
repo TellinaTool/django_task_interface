@@ -68,14 +68,15 @@ def run():
                         stdout = f.read()
                 else:
                     stdout = ''
-                    goal = task['goal_filesystem']
-                    filesystem_sort(goal)
+                solution = task['solution'] if 'solution' in task else ''
                 Task.objects.create(
                     task_id = task['task_id'],
                     type=task['type'],
                     description=task['description'],
                     file_attributes = file_attributes,
-                    goal_filesystem = json.dumps(goal),
+                    goal_filesystem = json.dumps(
+                        filesystem_sort(task['goal_filesystem'])),
                     stdout=stdout,
                     duration=datetime.timedelta(seconds=task_duration),
+                    solution = solution
                 )
