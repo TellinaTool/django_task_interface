@@ -455,3 +455,24 @@ class ActionHistory(models.Model):
     task_session = models.ForeignKey(TaskSession, on_delete=models.CASCADE)
     action = models.TextField()
     action_time = models.DateTimeField()
+
+# --- Peripheral Data --- #
+
+class Researcher(models.Model):
+    """
+    :member first name: researcher's first name
+    :member last name: researcher's last name
+    :member email: researcher's email address
+    """
+    first_name = models.TextField()
+    last_name = models.TextField()
+    email = models.TextField()
+
+
+class Software(models.Model):
+    """
+    :member name: name of the software
+    :member url: url of the software
+    """
+    name = models.TextField()
+    url = models.TextField()

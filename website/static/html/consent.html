@@ -56,6 +56,11 @@
 
                                     <div class="instruction-body">
                                         <h4>Research team</h4>
+                                        {% if researcher_list %}
+                                            {% for researcher in researcher_list %}
+                                                <li>{{researcher.first_name}}&nbsp;{{researcher.last_name}}:&nbsp;{{researcher.email}}</li>
+                                            {% endfor %}
+                                        {% endif %}
                                         <br>
                                         <h4>PROCEDURES</h4>
                                         <p> As a participant in this user study, you will be asked to

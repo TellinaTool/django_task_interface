@@ -129,7 +129,6 @@
             $('#instruction-read').click(function () {
                 $.get(`/instruction_read`, function() {
                     $.get(`/go_to_next_task`, {reason_for_close: ''}, function(data) {
-                        console.log(data);
                         window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                     });
                 });

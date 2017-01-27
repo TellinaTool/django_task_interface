@@ -700,7 +700,9 @@ def instruction_read(request, study_session):
 @session_id_required
 def consent(request, study_session):
     template = loader.get_template('consent.html')
-    context = {}
+    context = {
+        'researcher_list': Researcher.objects.all()
+    }
     return HttpResponse(template.render(context, request))
 
 @session_id_required
