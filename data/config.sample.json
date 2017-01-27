@@ -25,5 +25,18 @@
       "last_name": "Y",
       "group": "group4"
     }
+  ],
+  "researchers": [
+    {
+      "first_name": "Youknow",
+      "last_name": "Who",
+      "email": "me@youknowwho.com"
+    }
+  ],
+  "softwares": [
+    {
+      "name": "Tellina",
+      "url": "http://www.tellina.ai"
+    }
   ]
 }
