@@ -54,6 +54,11 @@ nav {
     font-size: 12pt;
 }
 
+#fs-vis-legend-container {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
 #task-progress-vis-container .tree-vis-panel {    
   /*white-space:nowrap;*/
   font-size: 10pt;
