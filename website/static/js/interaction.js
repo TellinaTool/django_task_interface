@@ -26,14 +26,14 @@ function show_solution_dialog(solution) {
 }
 
 function show_training_task_i_assistant_tool_dialog(treatment_order) {
-    var $instruction = $('<div style="font-size:12pt">');
-    $instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first training task, you may use:');
+    var $instruction = '<div>' +
+    '<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first training task, you may use:';
     if (treatment_order == 0) {
-        $instruction.append('<ul><li><a href="">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
-        $instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
+        $instruction += '<ul><li><a href="">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>';
+        $instruction += '<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>';
     } else {
-        $instruction.append('<ul><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
-        $instruction.append('<p>However, you <b>cannot</b> use Tellina, the natural language to bash translator which you just tried out.</p></div>')
+        $instruction += '<ul><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>';
+        $instruction += '<p>However, you <b>cannot</b> use Tellina, the natural language to bash translator which you just tried out.</p></div>';
     }
     setTimeout(function () {
         BootstrapDialog.show({
