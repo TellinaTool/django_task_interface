@@ -6,7 +6,7 @@ var task_platform_training = {
     steps: [
         {
             element: "#img-overlay-hanger",
-            intro: "<div style=\"font-size: 12px\"><p>Welcome to the task platform training!</p><p>The task platform consists of three main conponents (as illustrated below):<ul><li>the task description</li><li>the bash terminal</li><li>a visualization of your file system status and your progress in the task.</li></ul></p></div><img src=\"static/img/task_platform.png\" height=\"100%\" width=\"100%\"></img><br>",
+            intro: "<div style=\"\"><p>Welcome to the task platform training!</p><p>The task platform consists of three main conponents (as illustrated below):<ul><li>the task description</li><li>the bash terminal</li><li>a visualization of your file system status and your progress in the task.</li></ul></p></div><img src=\"static/img/task_platform.png\" height=\"100%\" width=\"100%\"></img><br>",
         },
         {
             element: "#task-description",
@@ -55,7 +55,7 @@ var task_platform_training = {
         },
         {
             element: "#img-overlay-hanger",
-            intro: "<div style=\"font-size: 12px\"><p>You may use any resources available in your bash terminal or online when trying to solve a task.</p><p>For some tasks you can also use the following tool: <ul><li><a href=\"\">Tellina, a natural language to bash translator.</a></li></ul></p><p>Click on the link and try it now.</p></div>",
+            intro: "<div style=\"\"><p>You may use any resources available in your bash terminal or online when trying to solve a task.</p><p>For some tasks you can also use the following tool: <ul><li><a href=\"\">Tellina, a natural language to bash translator.</a></li></ul></p><p>Click on the link and try it now.</p></div>",
             position: "bottom"
         },
         {

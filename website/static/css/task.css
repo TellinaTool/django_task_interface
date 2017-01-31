@@ -11,6 +11,14 @@
     visibility: hidden;
 }
 
+div p {
+    font-size: inherit;
+}
+
+div li {
+    font-size: inherit;
+}
+
 body {
 	cursor: default;
 }

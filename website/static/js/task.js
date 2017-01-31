@@ -398,7 +398,7 @@ $(document).ready(function () {
         $("button").attr("disabled", "disabled");
 
         // show wait dialog
-        var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...</div>');
+        var $waitmsg = $('<div style="text-align: center;">Please wait while we are setting up the next task...</div>');
         $waitmsg.append('<br/>');
         $waitmsg.append('<img src="static/img/hourglass.gif" />');
 

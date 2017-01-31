@@ -52,7 +52,7 @@ function show_training_task_i_assistant_tool_dialog(treatment_order) {
 }
 
 function show_training_task_ii_assistant_tool_dialog(treatment_order) {
-    var $instruction = $('<div style="font-size:12pt">');
+    var $instruction = $('<div>');
     if (treatment_order == 1) {
         $instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the second training task, you may use Tellina <b>in addition to</b> what you have already accessed so far.</p>');
         $instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
@@ -78,7 +78,7 @@ function show_training_task_ii_assistant_tool_dialog(treatment_order) {
 /* --- Task Session Interactions --- */
 
 function show_entering_stage_i_dialog(treatment_order, task_session_id) {
-    var $stage_instruction = $('<div style="font-size:12pt">');
+    var $stage_instruction = $('<div style="">');
     $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first 9 tasks in the user study, you may use the following tools:');
     if (treatment_order == 0) {
         $stage_instruction.append('<ul><li><a href="">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
@@ -103,7 +103,7 @@ function show_entering_stage_i_dialog(treatment_order, task_session_id) {
 }
 
 function show_entering_stage_ii_dialog(treatment_order, task_session_id) {
-    var $stage_instruction = $('<div style="font-size:12pt">');
+    var $stage_instruction = $('<div style="">');
     if (treatment_order == 1) {
         $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, you may use the following tool <b>in addition</b> to what you already have accessed so far:');
         $stage_instruction.append('<ul><li><a href="">Tellina</a>, the natural language to bash translator</li></ul></p>');
