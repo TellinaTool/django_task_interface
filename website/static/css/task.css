@@ -50,7 +50,11 @@ nav {
     left: 0px;
 }
 
-#task-progress-vis-container .tree-vis-panel li {    
+#current-tree-vis-container .tree-vis-panel {
+    font-size: 12pt;
+}
+
+#task-progress-vis-container .tree-vis-panel {    
   /*white-space:nowrap;*/
   font-size: 10pt;
 }
