@@ -41,7 +41,7 @@ $(document).ready(function () {
             // start training tutorial
             if (data.page_tour == 'init_file_search') {
                 is_training_fs_search = true;
-                var intro = introJs().setOptions(task_platform_training)
+                var intro = introJs("#workspace").setOptions(task_platform_training)
                 .setOption("tooltipClass", "img-overlay")
                 .setOption('exitOnOverlayClick', false)
                 .setOption('showBullets', false)
