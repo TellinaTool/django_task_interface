@@ -1,7 +1,7 @@
 {
    "task_id": "15",
    "type": "filesystem_change",
-   "description": "Rename the directory \"showdown\" to instead have the name \"showup\".",
+   "description": "Rename the \"showdown\" directory to \"showup\".",
    "file_attributes": [],
    "target_dir": "website/lib",
    "difficulty": 1,

@@ -1,7 +1,7 @@
 {
    "task_id": "1",
    "type": "file_search",
-   "description": "List all of the files in the \"content\" directory (and its subdirectories) that are larger than 800 bytes but smaller than 10kB.",
+   "description": "List all files under the \"content\" directory that are larger than 800 bytes but smaller than 10kB.",
    "file_attributes": [3],
    "target_dir": "website/content",
    "difficulty": 2,

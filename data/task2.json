@@ -1,7 +1,7 @@
 {
    "task_id": "2",
    "type": "filesystem_change",
-   "description": "Create a tar archive named \"html.tar\" that contains all files with the \".html\" extension in or under your current directory.",
+   "description": "Create a tar archive named \"html.tar\" that contains all files with the \".html\" extension in or under the \"website\" directory.",
    "file_attributes": [],
    "target_dir": "website",
    "difficulty": 4,
