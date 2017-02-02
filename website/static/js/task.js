@@ -175,10 +175,9 @@ $(document).ready(function () {
                                     <span style="opacity: 0.3;"><span class="glyphicon glyphicon-folder-close"></span>dir</span></li>';
             }
 
-            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your current filesystem status does not match the goal file system status \
-                                            (view the visualization above for details).</font>\
-                                                <ul class="legend-ul">' + legend_content +
-                                                '</ul></li>');
+            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your current filesystem status does not match the goal file system status (e.g., missing file, contain extra files).</font></li>');
+            // add 
+            // <ul class="legend-ul">' + legend_content + '</ul>
         }
 
         if (exists_select_wrong || exists_select_missing || exists_select_correct) {
@@ -205,9 +204,7 @@ $(document).ready(function () {
                                <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
             }
 
-            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Files/directories selected by your command mismatches the desirable result \
-                                                    (view the file system visualization for details)</font>:\
-                                            <ul class="legend-ul">' + legend_content + '</ul></li>');
+            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Files/dirs selected by your command mismatches the desirable result.</font></li>');
         }
 
         if (data.hasOwnProperty('stdout_diff')) {
