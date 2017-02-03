@@ -61,13 +61,13 @@ $(document).ready(function () {
                     }
                 })
                 .oncomplete(function () {
-                    show_training_task_i_assistant_tool_dialog(data.treatment_order);
+                    show_training_task_i_assistant_tool_dialog(data);
                 })
                 .start();
                 $('.introjs-skipbutton').hide();
             } else {
                 is_training_fs_change = true;
-                show_training_task_ii_assistant_tool_dialog(data.treatment_order);
+                show_training_task_ii_assistant_tool_dialog(data);
             }
         };
 
@@ -426,9 +426,9 @@ $(document).ready(function () {
                 wait_diaglog.close();
                 if (data.status == 'ENTERING_STAGE_I') {
                     console.log(data.treatment_order);
-                    show_entering_stage_i_dialog(data.treatment_order, data.task_session_id);
+                    show_entering_stage_i_dialog(data);
                 } else if (data.status == 'ENTERING_STAGE_II') {
-                    show_entering_stage_ii_dialog(data.treatment_order, data.task_session_id);
+                    show_entering_stage_ii_dialog(data);
                 } else {
                     window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                 }

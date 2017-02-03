@@ -104,6 +104,7 @@ def get_additional_task_info(request, task_session):
     task = task_session.task
     container = task_session.container
     container_port = container.port
+    research_tool_url = Software.objects.get(name='Tellina').url
 
     # with open('fs-7-8.json', 'w') as o_f:
     #     json.dump(disk_2_dict(
@@ -124,6 +125,7 @@ def get_additional_task_info(request, task_session):
             'task_duration': task.duration.seconds,
             'task_solution': task.solution,
             'treatment_order': task_session.study_session.treatment_order,
+            'research_tool_url': research_tool_url,
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
             'stdout_diff': stdout_diff,
@@ -135,6 +137,7 @@ def get_additional_task_info(request, task_session):
             'task_duration': task.duration.seconds,
             'task_solution': task.solution,
             'treatment_order': task_session.study_session.treatment_order,
+            'research_tool_url': research_tool_url,
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
             'page_tour': task_session.page_tour,

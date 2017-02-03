@@ -55,7 +55,7 @@ var task_platform_training = {
         },
         {
             element: "#img-overlay-hanger",
-            intro: "<div style=\"\"><p>You may use any resources available in your bash terminal or online when trying to solve a task.</p><p>For some tasks you can also use the following tool: <ul><li><a href=\"\">Tellina, a natural language to bash translator.</a></li></ul></p><p>Click on the link and try it now.</p></div>",
+            intro: '<div style=""><p>You may use any resources available in your bash terminal or online when trying to solve a task.</p><p>For some tasks you can also use the following tool: <ul><li><a href="" target="_blank">Tellina, a natural language to bash translator.</a></li></ul></p><p>Click on the link and try it now.</p></div>',
             position: "bottom"
         },
         {
