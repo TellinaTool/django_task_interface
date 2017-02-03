@@ -25,6 +25,14 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="/static/js/bootstrap-modal.js"> </script>
         <script src="/static/js/bootstrap-dialog.js"></script>
+
+        <script>
+            // prevent the user from navigating back and force with the browser
+            history.pushState(null, null, document.URL);
+            window.addEventListener('popstate', function () {
+                history.pushState(null, null, document.URL);
+            });
+        </script>
         {% block other-scripts %}{% endblock %}
     </body>
 </html>

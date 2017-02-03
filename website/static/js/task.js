@@ -381,11 +381,11 @@ $(document).ready(function () {
 
     function show_training_completion_dialog() {
         BootstrapDialog.show({
-            title: "Training Completed",
+            title: "Training: Completed",
             message: "Awesome! You've completed the task platform training. You are ready to start the task session.",
             buttons: [{
                 label: "Proceed",
-                cssClass: "btn-primary",
+                cssClass: "btn-danger",
                 action: function(dialogItself) {
                     dialogItself.close();
                     switch_task('passed');

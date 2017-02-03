@@ -37,7 +37,7 @@ function show_training_task_i_assistant_tool_dialog(treatment_order) {
     }
     setTimeout(function () {
         BootstrapDialog.show({
-            title: 'Assistant Tools',
+            title: 'Training: Assistant Tools',
             message: $instruction,
             buttons: [{
                 label: "Got it",
@@ -61,7 +61,7 @@ function show_training_task_ii_assistant_tool_dialog(treatment_order) {
     }
     setTimeout(function () {
         BootstrapDialog.show({
-            title: 'Assistant Tools',
+            title: 'Training: Assistant Tools',
             message: $instruction,
             buttons: [{
                 label: "Got it",
@@ -110,7 +110,7 @@ function show_entering_stage_ii_dialog(treatment_order, task_session_id) {
         $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
     } else {
         $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, please <b>stop</b> using Tellina when solving a task.</p>');
-        $stage_instruction.append('<p>When you find yourself in need of help, please only resort to the other resources available online or in your bash terminal.</p></div>');
+        $stage_instruction.append('<p>When you find yourself in need of help, please only resort to the <b>other resources</b> available online or in your bash terminal.</p></div>');
     }
     BootstrapDialog.show({
         title: "You're half-way done!",
