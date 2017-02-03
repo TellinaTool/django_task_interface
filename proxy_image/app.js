@@ -17,30 +17,36 @@ child_process.exec("route -n | awk '/UG[ \t]/{print $2}'", {'shell': '/bin/bash'
   wss.on('connection', function connection(ws) {
     console.log(`Connection from ${ws.upgradeReq.url}`);
 
-    // Get port of container to connect to
-    var port = parseInt(url.parse(ws.upgradeReq.url).pathname.split('/')[1]);
+    // check if the websocket URL is in expected format, if not, do nothing
+    var url_parts = url.parse(ws.upgradeReq.url).pathname.split('/');
 
-    // Open WebSocket to container
-    var containerURL = `ws://${dockerHostIP}:${port}`;
-    console.log(`Opening websocket to ${containerURL}`);
-    var containerWebSocket = new WebSocket(containerURL);
+    if (url_parts.length > 1 && !isNaN(url_parts[1])) {
+        // Get port of container to connect to
+        var port = parseInt(url_parts[1]);
 
-    // When container WebSocket connects...
-    containerWebSocket.on('open', function() {
-      console.log(`Websocket ${containerURL} opened`);
+        // Open WebSocket to container
+        var containerURL = `ws://${dockerHostIP}:${port}`;
+        console.log(`Opening websocket to ${containerURL}`);
+        var containerWebSocket = new WebSocket(containerURL);
 
-      // Forward xterm -> container
-      ws.on('message', function(message) {
-        console.log('xterm -> container: ' + message);
-        containerWebSocket.send(message);
-      });
+        // When container WebSocket connects...
+        containerWebSocket.on('open', function() {
+          console.log(`Websocket ${containerURL} opened`);
 
-      // Forward container -> xterm
-      containerWebSocket.on('message', function(message) {
-        console.log('container -> xterm: ' + message);
-        // message = message.replace(/\s\r/g, "");
-        ws.send(message);
-      });
-    });
+          // Forward xterm -> container
+          ws.on('message', function(message) {
+            console.log('xterm -> container: ' + message);
+            containerWebSocket.send(message);
+          });
+
+          // Forward container -> xterm
+          containerWebSocket.on('message', function(message) {
+            console.log('container -> xterm: ' + message);
+            ws.send(message);
+          });
+        });
+    } else {
+        console.log(`Invalid URL received: ${ws.upgradeReq.url}`);
+    }
   });
 });
