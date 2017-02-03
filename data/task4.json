@@ -1,7 +1,7 @@
 {
   "task_id": "4",
   "type": "filesystem_change",
-  "description": "Delete all empty sub-directories under the \"content\" directory (recursively).",
+  "description": "Recursively delete all empty sub-directories under the \"content\" directory.",
    "file_attributes": [],
   "target_dir": "website/content",
    "difficulty": 2,

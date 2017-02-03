@@ -45,8 +45,8 @@ def run():
         access_code = first_name.lower() + '-' + last_name.lower()
         if not User.objects.filter(access_code=access_code).exists():
             User.objects.create(
-                first_name = first_name, last_name = last_name,
-                access_code = access_code, group = group
+                first_name=first_name, last_name=last_name,
+                access_code=access_code, group=group
             )
 
     # register tasks
@@ -80,3 +80,22 @@ def run():
                     duration=datetime.timedelta(seconds=task_duration),
                     solution = solution
                 )
+
+    # register researchers
+    for researcher in config['researchers']:
+        first_name = researcher['first_name']
+        last_name = researcher['last_name']
+        email = researcher['email']
+        if not Researcher.objects.filter(email=email).exists():
+            Researcher.objects.create(
+                first_name=first_name, last_name=last_name, email=email
+            )
+
+    # register software tools
+    for software in config['softwares']:
+        name = software['name']
+        url = software['url']
+        if not Software.objects.filter(url=url).exists():
+            Software.objects.create(
+                name=name, url=url
+            )

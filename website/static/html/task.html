@@ -20,7 +20,7 @@ task interface server is done through HTTP AJAX calls.
    {% endblock %}
 
    {% block body %}
-      <section class="_255U1OEW5iAFH7qz_pHXM8">
+      <section class="_255U1OEW5iAFH7qz_pHXM8" id="task_section">
          <div id="workspace" class="francine">
             <header class="_2m_hDXMtwvETHFo3eGaTXE" id="task-platform-header">
                <nav class="y7tvmmg7fKu4JpdaYECtN _2Tp4ILE5wDYNdLO-nT8psj">
@@ -113,7 +113,7 @@ task interface server is done through HTTP AJAX calls.
                     style="position:absolute;top:0%;right:0%;bottom:0%;left:64%;">
                   <!-- Current Directory -->
                   <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor fcn-slot--no-right-neighbor vis-container"
-                       style="position:absolute;top:0%;right:0%;bottom:40%;left:0%;" 
+                       style="position:absolute;top:0%;right:0%;bottom:30%;left:0%;" 
                        id="current-tree-vis-container">
                      <div class="accordion-container fcn-component" style="height=100%">
                         <div class="accordion">
@@ -121,7 +121,10 @@ task interface server is done through HTTP AJAX calls.
                               File system status
                            </div>
                            <div class="accordion-section-body tree-vis-panel" id="current-tree-vis"
-                                style="position: absolute; top: 32px; width:100%; bottom: 0">
+                                style="position: absolute; top: 32px; width:100%; bottom: 30px;">
+                           </div>
+                           <div id="fs-vis-legend-container" style="position: absolute; height: 30px; width:100%; bottom: 0; border-top:dashed 1px;">
+                              <table><tr id="fs-vis-legend"></tr></table>
                            </div>
                         </div>
                      </div>
@@ -129,7 +132,7 @@ task interface server is done through HTTP AJAX calls.
 
                   <!-- Progress -->
                   <div class="fcn-slot fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor fcn-slot--no-right-neighbor vis-container"
-                       style="position:absolute;top:60.5%;right:0%;bottom:0%;left:0%;" 
+                       style="position:absolute;top:70.5%;right:0%;bottom:0%;left:0%;" 
                        id="task-progress-vis-container">
                      <div class="accordion-container fcn-component" style="height=100%">
                         <div class="accordion">
@@ -174,6 +177,9 @@ task interface server is done through HTTP AJAX calls.
    {% endblock %}
 
    {% block other-scripts %}
+      <script>
+         $("body").addClass("_255U1OEW5iAFH7qz_pHXM8");
+      </script>
       <script src="/static/lib/xterm.js/xterm.js"></script>
       <script src="/static/lib/xterm.js/addons/attach/attach.js"></script>
       <script src="/static/lib/xterm.js/addons/fit/fit.js"></script>

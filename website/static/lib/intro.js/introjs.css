@@ -226,7 +226,7 @@ tr.introjs-showElement > th {
   margin: 0;
   text-decoration: none;
   text-shadow: 1px 1px 0 #fff;
-  font: 11px/normal sans-serif;
+  font-size: 11px;
   color: #333;
   white-space: nowrap;
   cursor: pointer;

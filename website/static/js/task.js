@@ -41,7 +41,7 @@ $(document).ready(function () {
             // start training tutorial
             if (data.page_tour == 'init_file_search') {
                 is_training_fs_search = true;
-                var intro = introJs().setOptions(task_platform_training)
+                var intro = introJs("#workspace").setOptions(task_platform_training)
                 .setOption("tooltipClass", "img-overlay")
                 .setOption('exitOnOverlayClick', false)
                 .setOption('showBullets', false)
@@ -147,6 +147,7 @@ $(document).ready(function () {
             }
         }
         $("#task-progress-vis").empty();
+        $("#fs-vis-legend").empty();
         if (exists_fs_extra || exists_fs_missing || exists_select_missing 
             || exists_select_wrong || exists_stdout_incorrect || exists_stdout_missing) {
             // file system diff visualization
@@ -161,47 +162,49 @@ $(document).ready(function () {
         if (exists_fs_extra || exists_fs_missing) {
             var legend_content = "";
             if (exists_fs_extra) {
+                $("#fs-vis-legend").append('<td><span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-file"></span>file</span> extra</td>');
                 legend_content += '<li>Files/Directories that are <b>extra</b> in your FS:\
                                     <span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-file"></span>file</span> or \
                                     <span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.\
                                     </li>';
             }
             if (exists_fs_missing) {
+                $("#fs-vis-legend").append('<td><span style="opacity: 0.3;"><span class="glyphicon glyphicon-file"></span>file</span> missing</td>');
                 legend_content += '<li>Files/Directories <b>missing</b> in your current FS: \
                                     <span style="opacity: 0.3;"><span class="glyphicon glyphicon-file"></span>file</span> or \
                                     <span style="opacity: 0.3;"><span class="glyphicon glyphicon-folder-close"></span>dir</span></li>';
             }
 
-            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your current filesystem status does not match the goal file system status \
-                                            (view the visualization above for details).</font>\
-                                                <ul class="legend-ul">' + legend_content +
-                                                '</ul></li>');
+            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your current filesystem status does not match the goal file system status (e.g., missing file, contain extra files).</font></li>');
+            // add 
+            // <ul class="legend-ul">' + legend_content + '</ul>
         }
 
         if (exists_select_wrong || exists_select_missing || exists_select_correct) {
 
             var legend_content = "";
             if (exists_select_missing) {
+                $("#fs-vis-legend").append('<td><span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-file"></span>file</span> failed to select</td>');
                 legend_content += '<li>Files/Directories your command <b>failed</b> to select: \
                             <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                             <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
             }
 
             if (exists_select_wrong) {
+                $("#fs-vis-legend").append('<td><span style="background-color: #DF9496;"><span class="glyphicon glyphicon-file"></span>file</span> wrongly selected</td>');
                 legend_content += '<li>Files/Directories your command <b>wrongly</b> selected: \
                                 <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                                 <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
             }
 
             if (exists_select_correct) {
+                $("#fs-vis-legend").append('<td><span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-file"></span>file</span> correctly selected</td>');
                 legend_content += '<li>Files/Directories your command <b>correctly</b> selected: \
                                <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                                <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
             }
 
-            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Files/directories selected by your command mismatches the desirable result \
-                                                    (view the file system visualization for details)</font>:\
-                                            <ul class="legend-ul">' + legend_content + '</ul></li>');
+            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Files/dirs selected by your command mismatches the desirable result.</font></li>');
         }
 
         if (data.hasOwnProperty('stdout_diff')) {
@@ -378,11 +381,11 @@ $(document).ready(function () {
 
     function show_training_completion_dialog() {
         BootstrapDialog.show({
-            title: "Training Completed",
+            title: "Training: Completed",
             message: "Awesome! You've completed the task platform training. You are ready to start the task session.",
             buttons: [{
                 label: "Proceed",
-                cssClass: "btn-primary",
+                cssClass: "btn-danger",
                 action: function(dialogItself) {
                     dialogItself.close();
                     switch_task('passed');
@@ -398,7 +401,7 @@ $(document).ready(function () {
         $("button").attr("disabled", "disabled");
 
         // show wait dialog
-        var $waitmsg = $('<div style="font-size:12pt;text-align: center">Please wait while we are setting up the next task...</div>');
+        var $waitmsg = $('<div style="text-align: center;">Please wait while we are setting up the next task...</div>');
         $waitmsg.append('<br/>');
         $waitmsg.append('<img src="static/img/hourglass.gif" />');
 
