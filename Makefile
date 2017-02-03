@@ -45,5 +45,3 @@ clean:
 	rm -rf db.sqlite3 website/migrations
 	# Remove log files
 	rm -f *.log
-	# Remove container log file
-	
