@@ -65,46 +65,57 @@
                                         </p>
                                         <br>
                                         <h4>1. Bash tasks</h4>
-                                        <p>You will be given <b>18 tasks related to file system operations</b>.
-                                            Each task may require you to
+                                        <p>You will be given <b>18 filesystem tasks</b>. Each task may require you to
                                         <li>change the file system by deleting, adding, or modifying files, or</li>
-                                        <li>produce output, such as a list of files</li>
+                                        <li>produce output, such as a list of files.</li>
                                         </p>
                                         <p>Your goal is to <b>write a bash one-liner</b> that performs the desired
                                             operation without causing extra file system changes.</p>
-                                        <p>You will work in a
-                                            bash shell in your browser and may attempt the task <b>multiple times</b>.
+                                        <p>You will work in a bash shell in your browser and may attempt the task
+                                            <b>multiple times</b>.
                                         </p>
                                         <br>
                                         <h4>2. Tool assistance</h4>
-                                        {% if treatment_order == "0" %}
-                                            <p>For all tasks, you may use Internet resources such as Google search. And
-                                                for <b>the first half of the study</b> (the first 9 tasks you encounter),
-                                                you will be permitted to use <b>additional tool(s)</b>.
-                                            </p>
-                                        {% elif treatment_order == "1" %}
-                                            <p>For all tasks, you may use Internet resources such as Google search. And
-                                                for <b>the second half of the study</b> (the last 9 tasks you encounter),
-                                                you will be permitted to use <b>additional tool(s)</b>.
-                                            </p>
-                                        {% endif %}
+                                            <p>For all tasks, you may use Internet resources such as Google search. In
+                                                addition, you will be given different assistant tools at different points
+                                                of the study.</p>
+                                            {% if treatment_order == "0" %}
+                                                <li>For the first half of the study (the first 9 tasks you encounter),
+                                                    you will be given Tellina, a tool that translates the natural language
+                                                    description of a task to a bash command;
+                                                </li>
+                                                <li>For the second half of the study (the second 9 tasks you encounter),
+                                                    you will be given Explainshell, a tool that explains the usage of each
+                                                    token in a bash command.
+                                                </li>
+                                            {% elif treatment_order == "1" %}
+                                                <li>For the first half of the study (the first 9 tasks you encounter),
+                                                    you will be given Explainshell, a tool that explains the usage of each
+                                                    token in a bash command;
+                                                </li>
+                                                <li>For the second half of the study (the second 9 tasks you encounter),
+                                                    you will be given Tellina, a tool that translates the natural language
+                                                    description of a task to a bash command.
+                                                </li>
+                                            {% endif %}
                                         <br>
                                         <h4>3. Timing </h4>
                                         <p>Each task has a <b>time limit of 10 minutes</b>, after which you will proceed
                                             to the next task even if you have not yet completed the current task.
                                         </p>
-                                        <p>In addition, you may spend <b>maximally 40 minutes to complete each half of
-                                            the study (9 tasks)</b>, after which you will proceed even if you have not
-                                            yet completed the current half.
+                                        <p>In addition, you may spend <b>at most 40 minutes in each half of the study
+                                            (9 tasks)</b>, after which you will proceed to the next step regardless of
+                                            completion status.
                                         </p>
                                         <br>
-                                        <!-- <h4>4. Interface</h4>
-                                        <p>Below is a screenshot of the interface you will be using to do the bash tasks.
+                                        <h4>4. Training Sessions</h4>
+                                        <!-- <p>Below is a screenshot of the interface you will be using to do the bash tasks.
                                             The three main components of it are highlighted with the read arrows.
                                         </p> -->
-                                        <p>You will first complete a task platform training before getting to the real
-                                            tasks. The training session will help you get familiar with the task
-                                            platform as well as the additional tool(s) that you will use.
+                                        <p>You will complete a training session before getting to each half of the study.
+                                            The training session will familiarize you with the task platform as well as
+                                            the assistant tools that you will use. You will not be timed in the training
+                                            session and may stay as long as it is necessary.
                                         </p>
                                         <p>Please click on the button below to proceed.
                                         </p>
@@ -128,7 +139,22 @@
         <script>
             $('#instruction-read').click(function () {
                 $.get(`/instruction_read`, function() {
+                    // show wait dialog
+                    var $waitmsg = $('<div style="text-align: center;">Please wait while we are setting up the training task...</div>');
+                    $waitmsg.append('<br/>');
+                    $waitmsg.append('<img src="static/img/hourglass.gif" />');
+
+                    var wait_dialog;
+                    var wait_dialog_timeout = setTimeout(function () {
+                        wait_dialog = BootstrapDialog.show({
+                            title: 'Keep Calm',
+                            message: $waitmsg,
+                            closable: false
+                        });
+                    }, 300);
+
                     $.get(`/go_to_next_task`, {reason_for_close: ''}, function(data) {
+                        wait_dialog.close();
                         window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                     });
                 });

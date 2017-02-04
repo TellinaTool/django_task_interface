@@ -101,6 +101,7 @@ def get_additional_task_info(request, task_session):
     the task.
 
     """
+    study_session = task_session.study_session
     task = task_session.task
     container = task_session.container
     container_port = container.port
@@ -117,6 +118,14 @@ def get_additional_task_info(request, task_session):
         filesystem_status = "FILE_SYSTEM_WRITTEN_TO_DISK"
     else:
         filesystem_status = "FILE_SYSTEM_ERROR"
+
+    if study_session.stage_change():
+        if study_session.stage == 'I':
+            status = 'ENTERING_STAGE_I'
+        elif study_session.stage == 'II':
+            status = 'ENTERING_STAGE_II'
+    else:
+	    status = ''
 
     if task.type == "stdout":
         stdout_diff = compute_stdout_diff('', task)
@@ -144,7 +153,7 @@ def get_additional_task_info(request, task_session):
             'container_port': container_port
         }
 
-    return json_response(resp)
+    return json_response(resp, status=status)
 
 @session_id_required
 def go_to_next_task(request, study_session):
@@ -188,19 +197,11 @@ def go_to_next_task(request, study_session):
         next_task_session_id = study_session.update_current_task_session_id()
         try:
             create_task_session(study_session)
-            if study_session.stage_change():
-                if study_session.stage == 'I':
-                    status = 'ENTERING_STAGE_I'
-                elif study_session.stage == 'II':
-                    status = 'ENTERING_STAGE_II'
-            else:
-                status = ''
+
             resp = json_response({
                 "task_session_id": next_task_session_id,
                 "treatment_order": study_session.treatment_order
-                },
-                status=status
-            )
+            })
             resp.set_cookie('task_session_id', next_task_session_id)
         except ObjectDoesNotExist:
             study_session.close('closed_with_error')

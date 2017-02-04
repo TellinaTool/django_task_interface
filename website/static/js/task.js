@@ -46,9 +46,13 @@ $(document).ready(function () {
                 .setOption('exitOnOverlayClick', false)
                 .setOption('showBullets', false)
                 .onchange(function(targetElement) {
+                    console.log(this._currentStep);
                     switch (this._currentStep)
                     {
-                        case 10:
+                        case 0:
+                            $('.img-overlay').css('max-width', '720px').css('min-width', '720px');
+                        break;
+                        case 11:
                             $('.img-overlay').css('max-width', '400px').css('min-width', '400px');
                         break;
 
@@ -71,8 +75,19 @@ $(document).ready(function () {
             }
         };
 
+        // check if stage change information needs to be displayed
+        show_enterings_stage_dialog = false;
+        if (data.status == 'ENTERING_STAGE_I') { 
+            console.log(data.treatment_order); 
+            show_entering_stage_i_dialog(data);
+            show_enterings_stage_dialog = true;
+         } else if (data.status == 'ENTERING_STAGE_II') { 
+            show_entering_stage_ii_dialog(data);
+            show_enterings_stage_dialog = true;
+         }
+
         // start timing the task
-        if (!is_training) {
+        if (!is_training && !show_enterings_stage_dialog) {
             start_timer(data.task_duration);
         }
 
@@ -317,7 +332,7 @@ $(document).ready(function () {
         term._initialized = true;
     }
 
-    /* --- interaction.js --- */
+    /* --- interactions --- */
 
     function show_quit_confirmation_dialog(task_time_out) {
         // discourage a user from quiting a task
@@ -395,6 +410,56 @@ $(document).ready(function () {
         });
     }
 
+    function show_entering_stage_i_dialog(data) {
+        var $stage_instruction = $('<div style="">');
+        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first 9 tasks in the user study, you may use the following tools:');
+        if (data.treatment_order == 0) {
+            $stage_instruction.append('<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
+            $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
+        } else {
+            $stage_instruction.append('<ul><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
+            $stage_instruction.append('<p>However, you <b>cannot</b> use Tellina, the natural language to bash translator which was introduced in the training session.</p></div>')
+        }
+        BootstrapDialog.show({
+            title: "You are ready to start the task session, please be reminded that",
+            message: $stage_instruction,
+            buttons: [{
+                label: "Start Task Session",
+                cssClass: "btn-primary",
+                action: function(dialogItself) {
+                    dialogItself.close();
+                    start_timer(data.task_duration);
+                }
+            }],
+            closable: false,
+        });
+    }
+
+    function show_entering_stage_ii_dialog(data) {
+        var $stage_instruction = $('<div style="">');
+        if (data.treatment_order == 1) {
+            $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, you may use the following tool <b>in addition</b> to what you already have accessed so far:');
+            $stage_instruction.append('<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina</a>, the natural language to bash translator</li></ul></p>');
+            $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
+        } else {
+            $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, please <b>stop</b> using Tellina when solving a task.</p>');
+            $stage_instruction.append('<p>When you find yourself in need of help, please only resort to the <b>other resources</b> available online or in your bash terminal.</p></div>');
+        }
+        BootstrapDialog.show({
+            title: "Nice job, you're half-way done!",
+            message: $stage_instruction,
+            buttons: [{
+                label: "Resume Task Session",
+                cssClass: "btn-primary",
+                action: function(dialogItself) {
+                    dialogItself.close();
+                    start_timer(data.task_duration);
+                }
+            }],
+            closable: false,
+        });
+    }
+
     function switch_task(reason) {
         // close the websocket connection to the current container
         socket.close();
@@ -424,14 +489,7 @@ $(document).ready(function () {
                 console.log("Study session completed.");
             } else {
                 wait_diaglog.close();
-                if (data.status == 'ENTERING_STAGE_I') {
-                    console.log(data.treatment_order);
-                    show_entering_stage_i_dialog(data);
-                } else if (data.status == 'ENTERING_STAGE_II') {
-                    show_entering_stage_ii_dialog(data);
-                } else {
-                    window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
-                }
+                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
             }
         });
     }
