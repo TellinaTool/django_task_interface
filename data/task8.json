@@ -1,7 +1,7 @@
 {
   "task_id": "8",
   "type": "file_search",
-  "description": "List all files under the \"website\" directory which contain the word \"setting\" in its contents and were modified after Feb. 4, 2016.",
+  "description": "List any files under the current directory containing the word \"setting\" in its content and were modified after Feb. 4, 2016.",
   "file_attributes": [7],
   "target_dir": "website",
   "difficulty": 3,

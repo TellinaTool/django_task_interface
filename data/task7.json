@@ -1,7 +1,7 @@
 {
   "task_id": "7",
   "type": "file_search",
-  "description": "List all files under the \"css\" directory that were modified more than 300 days ago.",
+  "description": "List files that are modified more than 300 days ago under the \"css\" directory.",
   "file_attributes": [7],
   "target_dir": "website/css",
   "difficulty": 1,
