@@ -1,7 +1,7 @@
 {
    "task_id": "13",
    "type": "file_search",
-   "description": "Find all files with names of pattern \"*1.md\" in or under the directory \"content\".",
+   "description": "Find all files ending with \"1.md\" under the \"content\" directory.",
    "file_attributes": [],
    "target_dir": "website/content",
    "difficulty": 1,
