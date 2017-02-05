@@ -140,14 +140,14 @@ $(document).ready(function () {
         if (exists_fs_extra || exists_fs_missing) {
             var legend_content = "";
             if (exists_fs_extra) {
-                $("#fs-vis-legend").append('<td><span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-file"></span>file</span> extra</td>');
+                $("#fs-vis-legend").append('<td><span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-file"></span>file extra</span></td>');
                 legend_content += '<li>Files/Directories that are <b>extra</b> in your FS:\
                                     <span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-file"></span>file</span> or \
                                     <span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.\
                                     </li>';
             }
             if (exists_fs_missing) {
-                $("#fs-vis-legend").append('<td><span style="opacity: 0.3;"><span class="glyphicon glyphicon-file"></span>file</span> missing</td>');
+                $("#fs-vis-legend").append('<td><span style="opacity: 0.3;"><span class="glyphicon glyphicon-file"></span>file missing</span></td>');
                 legend_content += '<li>Files/Directories <b>missing</b> in your current FS: \
                                     <span style="opacity: 0.3;"><span class="glyphicon glyphicon-file"></span>file</span> or \
                                     <span style="opacity: 0.3;"><span class="glyphicon glyphicon-folder-close"></span>dir</span></li>';
@@ -162,21 +162,21 @@ $(document).ready(function () {
 
             var legend_content = "";
             if (exists_select_missing) {
-                $("#fs-vis-legend").append('<td><span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-file"></span>file</span> failed to select</td>');
+                $("#fs-vis-legend").append('<td><span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-file"></span>file not selected</span></td>');
                 legend_content += '<li>Files/Directories your command <b>failed</b> to select: \
                             <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                             <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
             }
 
             if (exists_select_wrong) {
-                $("#fs-vis-legend").append('<td><span style="background-color: #DF9496;"><span class="glyphicon glyphicon-file"></span>file</span> wrongly selected</td>');
+                $("#fs-vis-legend").append('<td><span style="background-color: #DF9496;"><span class="glyphicon glyphicon-file"></span>file incorrectly selected</span></td>');
                 legend_content += '<li>Files/Directories your command <b>wrongly</b> selected: \
                                 <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                                 <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
             }
 
             if (exists_select_correct) {
-                $("#fs-vis-legend").append('<td><span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-file"></span>file</span> correctly selected</td>');
+                $("#fs-vis-legend").append('<td><span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-file"></span>file correctly selected</span></td>');
                 legend_content += '<li>Files/Directories your command <b>correctly</b> selected: \
                                <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                                <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
