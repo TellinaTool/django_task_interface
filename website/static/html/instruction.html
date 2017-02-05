@@ -64,7 +64,7 @@
                                             before you proceed.
                                         </p>
                                         <br>
-                                        <h4>1. Bash tasks</h4>
+                                        <h4>1. Task Sessions</h4>
                                         <p>You will be given <b>18 filesystem tasks</b>. Each task may require you to
                                         <li>change the file system by deleting, adding, or modifying files, or</li>
                                         <li>produce output, such as a list of files.</li>
@@ -80,20 +80,20 @@
                                                 addition, you will be given different assistant tools at different points
                                                 of the study.</p>
                                             {% if treatment_order == "0" %}
-                                                <li>For the first half of the study (the first 9 tasks you encounter),
+                                                <li>For the first half of the study (9 tasks),
                                                     you will be given Tellina, a tool that translates the natural language
-                                                    description of a task to a bash command;
+                                                    description of a command into a bash command;
                                                 </li>
-                                                <li>For the second half of the study (the second 9 tasks you encounter),
-                                                    you will be given Explainshell, a tool that explains the usage of each
-                                                    token in a bash command.
+                                                <li>For the second half of the study (9 tasks),
+                                                    you will be given Explainshell, a tool that explains the usage a
+                                                    bash command.
                                                 </li>
                                             {% elif treatment_order == "1" %}
-                                                <li>For the first half of the study (the first 9 tasks you encounter),
-                                                    you will be given Explainshell, a tool that explains the usage of each
-                                                    token in a bash command;
+                                                <li>For the first half of the study (9 tasks),
+                                                    you will be given Explainshell, a tool that explains the usage of
+                                                    a bash command;
                                                 </li>
-                                                <li>For the second half of the study (the second 9 tasks you encounter),
+                                                <li>For the second half of the study (9 tasks),
                                                     you will be given Tellina, a tool that translates the natural language
                                                     description of a task to a bash command.
                                                 </li>
@@ -115,15 +115,15 @@
                                         <p>You will complete a training session before getting to each half of the study.
                                             The training session will familiarize you with the task platform as well as
                                             the assistant tools that you will use. You will not be timed in the training
-                                            session and may stay as long as it is necessary.
+                                            session and may stay as long as necessary.
                                         </p>
-                                        <p>Please click on the button below to proceed.
+                                        <p>Please click on the button below to proceed to the user study.
                                         </p>
                                     </div>
 
                                     <div class="instruction-ack">
                                         <button id="instruction-read" class="btn btn-primary" type="submit">
-                                            Start Platform Training
+                                            Start User Study
                                         </button>
                                     </div>
                                 </div>
@@ -154,7 +154,8 @@
                     }, 300);
 
                     $.get(`/go_to_next_task`, {reason_for_close: ''}, function(data) {
-                        wait_dialog.close();
+                        if (wait_dialog != null)
+                            wait_dialog.close();
                         window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                     });
                 });

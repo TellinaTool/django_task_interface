@@ -64,15 +64,15 @@ def get_current_task(request, task_session):
     study_session = task_session.study_session
     task_part = study_session.stage
     order_number = study_session.num_tasks_completed + 1
-    is_training = (task_part == 'O')
+    is_training = task_session.is_training
 
     if is_training:
         context = {
             "is_training": is_training,
-            "task_part": 'Training',
+            "task_part": 'Part {} Training'.format(task_part),
             "task_description": task.description,
-            "task_order_number": order_number,
-            "total_num_tasks": study_session.total_num_training_tasks,
+            "task_order_number": 1,
+            "total_num_tasks": 1,
             "first_name": study_session.user.first_name,
             "last_name": study_session.user.last_name,
         }
@@ -138,7 +138,6 @@ def get_additional_task_info(request, task_session):
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
             'stdout_diff': stdout_diff,
-            'page_tour': task_session.page_tour,
             'container_port': container_port
         }
     else:
@@ -149,7 +148,6 @@ def get_additional_task_info(request, task_session):
             'research_tool_url': research_tool_url,
             'filesystem_status': filesystem_status,
             'filesystem_diff': fs_diff,
-            'page_tour': task_session.page_tour,
             'container_port': container_port
         }
 
@@ -166,6 +164,7 @@ def go_to_next_task(request, study_session):
     session.
 
     """
+    status = ''
     # close the currently running task session if there is any
     if study_session.current_task_session_id:
         task_session = TaskSession.objects.get(
@@ -175,7 +174,17 @@ def go_to_next_task(request, study_session):
             # close current_task_session
             task_session.close(request.GET['reason_for_close'])
             # update relevant study session attributes
-            study_session.inc_num_tasks_completed()
+            if not task_session.is_training:
+                study_session.inc_num_tasks_completed()
+            else:
+                study_session.inc_num_training_tasks_completed()
+                if study_session.stage == 'I':
+                    status = 'FIRST_TRAINING_TASK_COMPLETE'
+                elif study_session.stage == 'II':
+                    status = 'SECOND_TRAINING_TASK_COMPLETE'
+                else:
+                    raise AttributeError('Wrong study session stage: {} while '
+                        'closing training task session'.format(study_session.stage))
 
     # check for study session stage change or completion
     if study_session.stage == 'III':
@@ -197,11 +206,10 @@ def go_to_next_task(request, study_session):
         next_task_session_id = study_session.update_current_task_session_id()
         try:
             create_task_session(study_session)
-
             resp = json_response({
                 "task_session_id": next_task_session_id,
                 "treatment_order": study_session.treatment_order
-            })
+            }, status=status)
             resp.set_cookie('task_session_id', next_task_session_id)
         except ObjectDoesNotExist:
             study_session.close('closed_with_error')
@@ -217,12 +225,14 @@ def create_task_session(study_session):
     user = study_session.user
     study_session_stage = study_session.stage
     task_session_id = study_session.current_task_session_id
-    is_training = (study_session_stage == 'O')
 
     if not TaskSession.objects.filter(session_id=task_session_id).exists():
-        if is_training:
-            task_id = TASK_TRAINING[study_session.num_tasks_completed]
+        # select a task from the task database
+        if study_session.stage_change() and study_session.stage in ['I', 'II']:
+            is_training = True
+            task_id = TASK_TRAINING[study_session.num_training_tasks_completed]
         else:
+            is_training = False
             if user.group in ['group1', 'group4']:
                 part1_tasks = TASK_BLOCK_I
                 part2_tasks = TASK_BLOCK_II
@@ -263,6 +273,7 @@ def on_command_execution(request, task_session):
     Record user's terminal standard output upon command execution. Check for
     task completion.
     """
+    study_session = task_session.study_session
     task = task_session.task
     stdout = request.POST['stdout']
 
@@ -299,12 +310,19 @@ def on_command_execution(request, task_session):
             task_completed = True
         else:
             annotate_stdout_errors(fs_diff, stdout_diff)
-        resp = { 'filesystem_diff': fs_diff, 'stdout_diff': stdout_diff }
+        resp = {
+            'filesystem_diff': fs_diff,
+            'stdout_diff': stdout_diff,
+            'treatment': study_session.treatment
+        }
     elif task.type == 'file_search' or task.type == 'filesystem_change':
         # check if the current file system is the same as the goal file system
         if not fs_diff['tag']:
             task_completed = True
-        resp = { 'filesystem_diff': fs_diff }
+        resp = {
+            'filesystem_diff': fs_diff,
+            'treatment': study_session.treatment
+        }
     else:
         raise AttributeError('Unrecognized task type "{}": must be "stdout",'
             '"file_search" or "filesystem_change"'.format(task.type))
@@ -608,8 +626,8 @@ def user_login(request):
         if check_existing_session == "true":
             existing_sessions = []
             for session in StudySession.objects\
-                .filter(user=user).filter(Q(status='pre-consent') |
-                                          Q(status='pre-training')):
+                .filter(user=user).filter(Q(status='reading_consent') |
+                                          Q(status='reading_instructions')):
                 # if the user is still at the pre-training stage for that
                 # session, ignore it
                 session.close('closed_with_error')
@@ -648,7 +666,6 @@ def user_login(request):
                 user = user,
                 session_id = session_id,
                 creation_time = timezone.now(),
-		        status = 'pre-consent'
             )
             # remember the study session id with cookies
             resp = json_response(status="SESSION_CREATED")
@@ -695,7 +712,7 @@ def instruction(request, study_session):
 
 @session_id_required
 def instruction_read(request, study_session):
-    study_session.status = 'training'
+    study_session.status = 'running'
     study_session.save()
     return json_response({
         'task_session_id': study_session.current_task_session_id
@@ -711,6 +728,6 @@ def consent(request, study_session):
 
 @session_id_required
 def consent_signed(request, study_session):
-    study_session.status = 'pre-training'
+    study_session.status = 'reading_instructions'
     study_session.save()
     return json_response()

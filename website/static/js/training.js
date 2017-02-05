@@ -6,7 +6,7 @@ var task_platform_training = {
     steps: [
         {
             element: "#img-overlay-hanger",
-            intro: "<div style=\"\"><p>Welcome to the bash task platform training!</p><p>The platform consists of three main components:<ul><li>the task description</li><li>the bash terminal</li><li>the visualization of your current filesystem and your working progress.</li></ul></p></div><img src=\"static/img/task_platform.png\" height=\"100%\" width=\"100%\"></img><br>",
+            intro: "<div style=\"\"><p>Welcome! This training tutorial will familiarize you with the task platform before you start.</p><p>The platform consists of three main components:<ul><li>the task description</li><li>the bash terminal</li><li>the visualization of your current filesystem and your working progress.</li></ul></p></div><img src=\"static/img/task_platform.png\" height=\"100%\" width=\"100%\"></img><br>",
         },
         {
             element: "#task-description",
@@ -25,7 +25,7 @@ var task_platform_training = {
         },
         {
             element: "#task-progress-vis-container",
-            intro: "<p>If the task requires you to print specific content on the terminal, the lower right panel will show the difference between your terminal output and the goal output.</p> <p>Otherwise, it will be minimized.",
+            intro: "<p>If a task requires you to print specific content on the terminal, the lower right panel will show the difference between your terminal output and the goal output.</p> <p>Otherwise, it will be minimized.",
             position: "left"
         },
         {
@@ -60,7 +60,7 @@ var task_platform_training = {
         },
         {
             element: "#img-overlay-hanger",
-            intro: '<div style=""><p><i class="glyphicon glyphicon-info-sign"></i> You may use any resource available in your bash terminal or online when trying to solve a task.</p><p><i class="glyphicon glyphicon-info-sign"></i> There are also additional tools you can use and you will be given instructions on them shortly.</p><p>Now that you have learned about the task platform, please go on to complete the training task. Raise your hand and let us know if you have any question.</p></div>',
+            intro: '<div style=""><p>Now that you have learned about the task platform, please go on to complete the training task.</p><p><i class="glyphicon glyphicon-info-sign"></i> You may use any resource available in your bash terminal or online when trying to solve a task.</p><p><i class="glyphicon glyphicon-info-sign"></i> There are also additional tools you can use and you will be given further instructions about them next.</p></div>',
             position: "bottom"
         }
     ]
