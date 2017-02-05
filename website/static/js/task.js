@@ -10,8 +10,9 @@ $(document).ready(function () {
         }
     })();
 
-    var is_training = false, is_training_fs_search = false,
-        is_training_fs_change = false;
+    var is_training = false;
+    var is_first_training = false;
+    var is_second_training = false;
     var task_time_out;
 
     // create terminal object
@@ -32,62 +33,19 @@ $(document).ready(function () {
 
         refresh_vis(data);
 
-        // Check if page tour needs to be displayed
-        if (data.page_tour == 'init_filesystem_change' ||
-            data.page_tour == 'init_file_search' ||
-            data.page_tour == 'init_standard_output')  {
-            is_training = true;
-
-            // start training tutorial
-            if (data.page_tour == 'init_file_search') {
-                is_training_fs_search = true;
-                var intro = introJs("#workspace").setOptions(task_platform_training)
-                .setOption("tooltipClass", "img-overlay")
-                .setOption('exitOnOverlayClick', false)
-                .setOption('showBullets', false)
-                .onchange(function(targetElement) {
-                    console.log(this._currentStep);
-                    switch (this._currentStep)
-                    {
-                        case 0:
-                            $('.img-overlay').css('max-width', '720px').css('min-width', '720px');
-                        break;
-                        case 11:
-                            $('.img-overlay').css('max-width', '400px').css('min-width', '400px');
-                        break;
-
-                        default:
-                            $('.img-overlay').css('max-width', '200px').css('min-width', '200px');
-                        break;
-                    }
-                    if (this._introItems.length - 1 == this._currentStep || this._introItems.length == 1) {
-                        $('.introjs-skipbutton').show();
-                    }
-                })
-                .oncomplete(function () {
-                    show_training_task_i_assistant_tool_dialog(data);
-                })
-                .start();
-                $('.introjs-skipbutton').hide();
-            } else {
-                is_training_fs_change = true;
-                show_training_task_ii_assistant_tool_dialog(data);
-            }
-        };
-
-        // check if stage change information needs to be displayed
-        show_enterings_stage_dialog = false;
+        // check if stage change & training information needs to be displayed
         if (data.status == 'ENTERING_STAGE_I') { 
-            console.log(data.treatment_order); 
-            show_entering_stage_i_dialog(data);
-            show_enterings_stage_dialog = true;
+            is_training = true;
+            is_first_training = true;
+            start_task_platform_training(data);
          } else if (data.status == 'ENTERING_STAGE_II') { 
-            show_entering_stage_ii_dialog(data);
-            show_enterings_stage_dialog = true;
+            is_training = true;
+            is_second_training = true;
+            show_training_task_ii_assistant_tool_dialog(data);
          }
 
         // start timing the task
-        if (!is_training && !show_enterings_stage_dialog) {
+        if (!is_training) {
             start_timer(data.task_duration);
         }
 
@@ -98,8 +56,13 @@ $(document).ready(function () {
             // reset file system
             $.get(`/reset_file_system`, function(data){
                 status = data.filesystem_status;
-                if (status == 'FILE_SYSTEM_ERROR')
-                    alert(filesystem_error_msg);
+                if (status == 'FILE_SYSTEM_ERROR') {
+                    // TODO: a file system error is likely to be caused by a
+                    // container or proxy server failure. The webpage needs to
+                    // keep running when this happens.
+                    // alert(filesystem_error_msg);
+                    console.log(filesystem_error_msg);
+                }
                 console.log(data.container_port);
                 // open websocket connection to the new container
                 set_websocket(data.container_port);
@@ -277,7 +240,8 @@ $(document).ready(function () {
             socket.onmessage = function(event) {
                 // term.write(event.data);
                 stdout += event.data;
-                // send the standard output to the backend whenever the user executes a command
+                // send the standard output to the backend whenever the user
+                // executes a command
                 // in the terminal
                 if (stdout.match(/(.|\n)*me\@[0-9a-z]{12}\:[^\n]*\$ $/)) {
                     if (stdout.split('\n').length > 1) {
@@ -286,9 +250,9 @@ $(document).ready(function () {
                                 refresh_vis(data);
                                 if (data.status == 'TASK_COMPLETED') {
                                     clearTimeout(task_time_out);
-                                    if (is_training_fs_change) {
+                                    if (is_training) {
                                         setTimeout(function() {
-                                            show_training_completion_dialog();
+                                            show_training_completion_dialog(data);
                                         }, 300);
                                     } else {
                                         setTimeout(function() {
@@ -394,10 +358,16 @@ $(document).ready(function () {
         });
     }
 
-    function show_training_completion_dialog() {
+    function show_training_completion_dialog(data) {
+        $training_completion_acknowledgement = '<p>Awesome! You have completed the training session.</p>';
+        $training_completion_acknowledgement += '<p><i class="glyphicon glyphicon-info-sign"></i> You are ready to start the task session. Remember that you may use ';
+        if (data.treatment == 'A')
+            $training_completion_acknowledgement += 'Tellina, the Internet and man pages for help at any time.<p>'
+        else
+            $training_completion_acknowledgement += 'Explainshell, the Internet (excluding Tellina) and man pages for help at any time.<p>'
         BootstrapDialog.show({
             title: "Training: Completed",
-            message: "Awesome! You've completed the task platform training. You are ready to start the task session.",
+            message: $training_completion_acknowledgement,
             buttons: [{
                 label: "Proceed",
                 cssClass: "btn-danger",
@@ -410,7 +380,7 @@ $(document).ready(function () {
         });
     }
 
-    function show_entering_stage_i_dialog(data) {
+    /* function show_entering_stage_i_dialog(data) {
         var $stage_instruction = $('<div style="">');
         $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first 9 tasks in the user study, you may use the following tools:');
         if (data.treatment_order == 0) {
@@ -428,7 +398,7 @@ $(document).ready(function () {
                 cssClass: "btn-primary",
                 action: function(dialogItself) {
                     dialogItself.close();
-                    start_timer(data.task_duration);
+                    window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                 }
             }],
             closable: false,
@@ -453,12 +423,12 @@ $(document).ready(function () {
                 cssClass: "btn-primary",
                 action: function(dialogItself) {
                     dialogItself.close();
-                    start_timer(data.task_duration);
+                    window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                 }
             }],
             closable: false,
         });
-    }
+    } */
 
     function switch_task(reason) {
         // close the websocket connection to the current container
@@ -481,14 +451,13 @@ $(document).ready(function () {
 
         // set up the environment for the next task
         $.get(`/go_to_next_task`, {reason_for_close: reason}, function(data){
+            clearTimeout(wait_diaglog_timeout);
+            if (wait_diaglog != null)
+                wait_diaglog.close();
             if (data.status == 'STUDY_SESSION_COMPLETE') {
-                clearTimeout(wait_diaglog_timeout);
-                var study_completion_report = "Report: passed " + data.num_passed + "/" + data.num_total +
-                    " tasks; given up " + data.num_given_up + "/" + data.num_total + " tasks.";
-                show_study_completion_dialog(study_completion_report);
+                show_study_completion_dialog(data);
                 console.log("Study session completed.");
             } else {
-                wait_diaglog.close();
                 window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
             }
         });

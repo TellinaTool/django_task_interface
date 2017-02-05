@@ -24,6 +24,9 @@ TASK_TRAINING = [21, 22]
 TASK_BLOCK_I = [5, 10, 6, 9, 19, 1, 18, 17, 16]
 TASK_BLOCK_II = [8, 7, 2, 14, 12, 4, 13, 15, 11]
 
+if not WEBSITE_DEVELOP:
+    assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
+
 treatment_names = {
     'A': 'Tellina or Google Search',
     'B': 'Google Search'
@@ -218,12 +221,13 @@ class StudySession(models.Model):
     :member session_id: an application-wide unique study session ID.
     :member creation_time: Time the study session is created.
     :member close_time: Time the study session is closed.
+    :member current_task_session_id: The id of the task session that the user
+        is undertaking. '' if no task session is running.
     :member total_num_training_tasks: Total number of training tasks in the
         study session.
     :member total_num_tasks: Total number of tasks in the study session.
-
-    :member current_task_session_id: The id of the task session that the user
-        is undertaking. '' if no task session is running.
+    :member num_training_tasks_completed: The number of training tasks that has
+        been completed in the study session.
     :member num_tasks_completed: The number of tasks that has been completed in
         the study session.
     :member filesystem_change_seen: Set to true if a user has seen a file
@@ -237,27 +241,28 @@ class StudySession(models.Model):
         - 'closed_with_error': The session is closed due to exceptions.
         - 'paused': The user left the study session in the middle. Paused
             study sessions can be resumed.
-        - 'pre-consent': The user has not signed the consent form.
-        - 'pre-training': The user is at the pre-training stage of the study
-            session.
-        - 'training': The user is at the training stage of the study session.
+        - 'reading_consent': The user is reading but has not signed the consent form.
+        - 'reading_instructions': The user is reading the instructions but has
+            not started the study session.
         - 'running': The user is taking the study session.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     session_id = models.TextField(primary_key=True)
     creation_time = models.DateTimeField()
     end_time = models.DateTimeField(default='1111-11-11 00:00:00')
+    current_task_session_id = models.TextField(default='')
+
     total_num_training_tasks = models.PositiveIntegerField(
         default=len(TASK_TRAINING))
     total_num_tasks = models.PositiveIntegerField(
         default=len(TASK_BLOCK_I) + len(TASK_BLOCK_II))
-
-    current_task_session_id = models.TextField(default='')
+    num_training_tasks_completed = models.PositiveIntegerField(default=0)
     num_tasks_completed = models.PositiveIntegerField(default=0)
-    filesystem_change_seen = models.BooleanField(default=False)
-    file_search_seen = models.BooleanField(default=False)
-    standard_output_seen = models.BooleanField(default=False)
-    status = models.TextField()
+
+    # filesystem_change_seen = models.BooleanField(default=False)
+    # file_search_seen = models.BooleanField(default=False)
+    # standard_output_seen = models.BooleanField(default=False)
+    status = models.TextField(default='reading_consent')
 
     def close(self, reason_for_close):
         # ignore already closed study sessions
@@ -269,56 +274,65 @@ class StudySession(models.Model):
 
     def inc_num_tasks_completed(self):
         self.num_tasks_completed += 1
-        if self.status == 'training' and \
-            self.num_tasks_completed == self.total_num_training_tasks:
-            # reset num_tasks_completed when the training session is completed
-            self.num_tasks_completed = 0
-            self.status = 'running'
+        self.save()
+
+    def inc_num_training_tasks_completed(self):
+        self.num_training_tasks_completed += 1
         self.save()
 
     def stage_change(self):
         # check if the study session is going through a stage change
-        if self.status == 'running':
-            if self.num_tasks_completed == 0 or \
-              self.num_tasks_completed == self.switch_point or \
-              self.num_tasks_completed == self.total_num_tasks:
-                return True
+        if self.num_training_tasks_completed == 0 and \
+                self.num_tasks_completed == 0:
+            # entering stage I
+            return True
+        elif self.num_training_tasks_completed == 1 and \
+                self.num_tasks_completed == self.switch_point:
+            # entering stage II
+            return True
+        elif self.num_training_tasks_completed == 2 and \
+                self.num_tasks_completed == self.total_num_tasks:
+            # entering stage III
+            return True
         return False
 
     def update_current_task_session_id(self):
-        if self.status in ['pre-consent', 'pre-training', 'training']:
+        """
+        Main task scheduling function.
+        """
+        if self.num_training_tasks_completed == 0 and \
+                        self.num_tasks_completed == 0:
             new_task_session_id = self.session_id + \
-                '-training-task-{}'.format(self.num_tasks_completed + 1)
-        elif self.status == 'running':
+                '-training-task-{}'.format(self.num_training_tasks_completed + 1)
+        elif self.num_training_tasks_completed == 1 and \
+                self.num_tasks_completed == self.switch_point:
+            new_task_session_id = self.session_id + \
+                '-training-task-{}'.format(self.num_training_tasks_completed + 1)
+        else:
             new_task_session_id = self.session_id + \
                 '-task-{}'.format(self.num_tasks_completed + 1)
-        else:
-            raise ValueError('Wrong study session status: {} while updating '
-                             'current task session id'.format(self.status))
         self.current_task_session_id = new_task_session_id
         self.save()
         return new_task_session_id
 
-    def update_filesystem_change_seen(self):
-        self.filesystem_change_seen = True
-        self.save()
+    # def update_filesystem_change_seen(self):
+    #     self.filesystem_change_seen = True
+    #     self.save()
 
-    def update_file_search_seen(self):
-        self.file_search_seen = True
-        self.save()
+    # def update_file_search_seen(self):
+    #     self.file_search_seen = True
+    #     self.save()
 
-    def update_standard_output_seen(self):
-        self.standard_output_seen = True
-        self.save()
+    # def update_standard_output_seen(self):
+    #     self.standard_output_seen = True
+    #     self.save()
 
     @property
     def stage(self):
         # compute which stage of the study the user is currently at
-        if not WEBSITE_DEVELOP:
-            assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
         assert(self.num_tasks_completed <= self.total_num_tasks)
 
-        if self.status in ['pre-consent', 'pre-training', 'training']:
+        if self.status in ['reading_consent', 'reading_instructions']:
             return 'O'
         elif self.status == 'running':
             if self.num_tasks_completed < self.switch_point:
@@ -328,7 +342,7 @@ class StudySession(models.Model):
             else:
                 return 'III'
         else:
-            raise ValueError('Wrong study session status: {} while checking '
+            raise ValueError('Wrong study session status: "{}" while checking '
                              'current study session stage'.format(self.status))
 
     @property
@@ -354,6 +368,12 @@ class StudySession(models.Model):
             return '0'
         else:
             return '1'
+
+    @property
+    def treatment(self):
+        # the treatment being used in the current half of the study
+        return treatment_assignments[self.treatment_order + self.stage]
+
 
 class TaskSession(models.Model):
     """
@@ -390,15 +410,15 @@ class TaskSession(models.Model):
     status = models.TextField()
 
     def close(self, reason_for_close):
-        if self.task.type == 'stdout' and \
-          not self.study_session.standard_output_seen:
-            self.study_session.update_standard_output_seen()
-        if self.task.type == 'file_search' and \
-          not self.study_session.file_search_seen:
-            self.study_session.update_file_search_seen()
-        if self.task.type == 'filesystem_change' and \
-          not self.study_session.filesystem_change_seen:
-            self.study_session.update_filesystem_change_seen()
+        # if self.task.type == 'stdout' and \
+        #   not self.study_session.standard_output_seen:
+        #     self.study_session.update_standard_output_seen()
+        # if self.task.type == 'file_search' and \
+        #   not self.study_session.file_search_seen:
+        #     self.study_session.update_file_search_seen()
+        # if self.task.type == 'filesystem_change' and \
+        #   not self.study_session.filesystem_change_seen:
+        #     self.study_session.update_filesystem_change_seen()
         self.end_time = timezone.now()
         self.container.destroy()
         self.status = reason_for_close
@@ -414,31 +434,6 @@ class TaskSession(models.Model):
     def destroy_container(self):
         self.container.destroy()
         self.container = None
-
-    @property
-    def page_tour(self):
-        # check if page tour needs to be displayed for a task session
-        page_tour = None
-        if self.task.type == 'stdout':
-            if not self.study_session.standard_output_seen:
-                if self.study_session.status == 'training':
-                    page_tour = 'init_standard_output'
-                else:
-                    page_tour = 'first_standard_output'
-        if self.task.type == 'file_search':
-            if not self.study_session.file_search_seen:
-                if self.study_session.status == 'training':
-                    page_tour = 'init_file_search'
-                else:
-                    page_tour = 'first_file_search'
-        if self.task.type == 'filesystem_change':
-            if not self.study_session.filesystem_change_seen:
-                if self.study_session.status == 'training':
-                    page_tour = 'init_filesystem_change'
-                else:
-                    page_tour = 'first_filesystem_change'
-
-        return page_tour
 
 
 class ActionHistory(models.Model):
