@@ -38,18 +38,67 @@ def task_session_id_required(f):
     def g(request, *args, **kwargs):
         session_id = request.COOKIES['session_id']
         task_session_id = request.COOKIES['task_session_id']
-        # ensure that the task session id matches with the study session id
+        # ensure that the task session id matches the study session id
         if not task_session_id.startswith(session_id):
             return json_response(
                 status='STUDY_SESSION_AND_TASK_SESSION_MISMATCH')
         try:
             task_session = TaskSession.objects.get(session_id=task_session_id)
+            if task_session.status != 'running':
+                # check if the study_session is completed
+                if task_session.study_session.closed():
+                    return json_response(status='STUDY_SESSION_CLOSED')
+                else:
+                    # check if there are other running task sessions in this
+                    # study session
+                    if TaskSession.objects.filter(
+                            study_session=task_session.study_session,
+                            status='running').exists():
+                        for task_session in TaskSession.objects.filter(
+                                study_session=task_session.study_session,
+                                status='running'):
+                            return json_response({
+                                    task_session_id: task_session
+                                }, status='ALTERNATE_TASK_SESSSION_FOUND')
+                    else:
+                        return json_response(status='GO_TO_NEXT_TASK')
             return f(request, *args, task_session=task_session, **kwargs)
         except ObjectDoesNotExist:
             return json_response(status='TASK_SESSION_DOES_NOT_EXIST')
     return g
 
 # --- Task Management --- #
+
+@task_session_id_required
+def update_task_timing(request, task_session):
+    study_session = task_session.study_session
+    current_time = timezone.now()
+
+    if task_session.start_time is None:
+        # check if a half-session just starts
+        if study_session.stage_change and study_session.stage in ['I', 'II']:
+            study_session.half_session_start_time = current_time
+        task_session.start_time = current_time
+        task_session.save()
+        return json_response({
+            'time_left': task_session.time_left.seconds
+        })
+    else:
+        # TODO: this behavior should be prevented in the frontend
+        # User has visited the task URL before, check time left in the task
+        # session
+        if current_time - task_session.start_time >= task_session.time_left:
+            # task has already timed out
+            return json_response({
+                'time_left': 0,
+            })
+        else:
+            task_session.time_left = task_session.time_left - \
+                                     (current_time - task_session.start_time)
+            return json_response({
+                'time_left': task_session.time_left.seconds
+            })
+            task_session.save()
 
 @task_session_id_required
 def get_current_task(request, task_session):
@@ -261,6 +310,18 @@ def create_task_session(study_session):
         # create the container of the task session
         task = Task.objects.get(task_id=task_id)
         container = create_container(task_session_id, task)
+        current_time = timezone.now()
+        if study_session.half_session_start_time is not None:
+            half_session_time_spent = \
+                current_time - study_session.half_session_start_time
+        else:
+            half_session_time_spent = timezone.timedelta(seconds=0)
+        half_session_time_left = study_session.half_session_duration \
+                                 - half_session_time_spent
+        if half_session_time_left > task.duration:
+            time_left = task.duration
+        else:
+            time_left = half_session_time_left
 
         TaskSession.objects.create(
             study_session = study_session,
@@ -269,7 +330,7 @@ def create_task_session(study_session):
             container = container,
             is_training = is_training,
             task = task,
-            start_time = timezone.now(),
+            time_left = time_left,
             status = 'running'
         )
 

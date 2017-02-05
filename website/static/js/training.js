@@ -6,7 +6,7 @@ var task_platform_training = {
     steps: [
         {
             element: "#img-overlay-hanger",
-            intro: "<div style=\"\"><p>Welcome! This training tutorial will familiarize you with the task platform before you start.</p><p>The platform consists of three main components:<ul><li>the task description</li><li>the bash terminal</li><li>the visualization of your current filesystem and your working progress.</li></ul></p></div><img src=\"static/img/task_platform.png\" height=\"100%\" width=\"100%\"></img><br>",
+            intro: "<div style=\"\"><p>Hey there! This tutorial will familiarize you with the task platform before you start.</p><p>The platform consists of three main components:<ul><li>the task description</li><li>the bash terminal</li><li>the visualization of your current filesystem and your working progress.</li></ul></p></div><img src=\"static/img/task_platform.png\" height=\"100%\" width=\"100%\"></img><br>",
         },
         {
             element: "#task-description",

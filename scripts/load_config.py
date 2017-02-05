@@ -4,13 +4,13 @@ This script uses config.json to setup initial data in the database.
 Run it with `python3 manage.py runscript load_config`.
 """
 
-from website.constants import *
 from website.models import *
 from website.filesystem import *
 
 import json
 import os
-import datetime
+
+from django.utils import timezone
 import django.contrib.auth.models as auth
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -77,7 +77,7 @@ def run():
                     goal_filesystem = json.dumps(
                         filesystem_sort(task['goal_filesystem'])),
                     stdout=stdout,
-                    duration=datetime.timedelta(seconds=task_duration),
+                    duration=timezone.timedelta(seconds=task_duration),
                     solution = solution
                 )
 

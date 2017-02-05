@@ -216,6 +216,10 @@ class StudySession(models.Model):
     :member session_id: an application-wide unique study session ID.
     :member creation_time: Time the study session is created.
     :member close_time: Time the study session is closed.
+    :member half_session_start_time: Time the user starts working on the first
+        task in each half of the study.
+    :member half_session_duration: Duration of half of the study session.
+
     :member current_task_session_id: The id of the task session that the user
         is undertaking. '' if no task session is running.
     :member total_num_training_tasks: Total number of training tasks in the
@@ -225,12 +229,7 @@ class StudySession(models.Model):
         been completed in the study session.
     :member num_tasks_completed: The number of tasks that has been completed in
         the study session.
-    :member filesystem_change_seen: Set to true if a user has seen a file
-        system change task in the study session.
-    :member file_search_seen: Set to true if a user has seen a file search task
-        in the study session.
-    :member standard_output_seen: Set to true if a user has seen a standard
-        output task in the study session.
+
     :member status: The state of the study session.
         - 'finished': The user has completed the study session.
         - 'closed_with_error': The session is closed due to exceptions.
@@ -243,10 +242,14 @@ class StudySession(models.Model):
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     session_id = models.TextField(primary_key=True)
-    creation_time = models.DateTimeField()
-    end_time = models.DateTimeField(default='1111-11-11 00:00:00')
-    current_task_session_id = models.TextField(default='')
 
+    creation_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
+    half_session_start_time = models.DateTimeField(null=True, blank=True)
+    half_session_duration = models.DurationField(
+        default=timezone.timedelta(minutes=0.5))
+
+    current_task_session_id = models.TextField(default='')
     total_num_training_tasks = models.PositiveIntegerField(
         default=len(TASK_TRAINING))
     total_num_tasks = models.PositiveIntegerField(
@@ -266,6 +269,9 @@ class StudySession(models.Model):
             self.close_time = timezone.now()
             self.status = reason_for_close
             self.save()
+
+    def closed(self):
+        return self.status in ['finished', 'closed_with_error', 'paused']
 
     def inc_num_tasks_completed(self):
         self.num_tasks_completed += 1
@@ -383,9 +389,12 @@ class TaskSession(models.Model):
     :member is_training: Set to true if the task session is for training
         purpose.
     :member task: The task being performed in the task session.
+
     :member start_time: The start time of a task session.
     :member end_time: The end time of a task session. None if the task session
         is being undertaken.
+    :member time_left: Time left in this task session.
+
     :member status: The state of the task result.
         - 'running':     The user has started the task, but the task has not
                          passed nor timed out yet
@@ -400,20 +409,14 @@ class TaskSession(models.Model):
     container = models.ForeignKey(Container, default=None)
     is_training = models.BooleanField(default=False)
     task = models.ForeignKey(Task)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(default='1111-11-11 00:00:00')
+
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    time_left = models.DurationField()
+
     status = models.TextField()
 
     def close(self, reason_for_close):
-        # if self.task.type == 'stdout' and \
-        #   not self.study_session.standard_output_seen:
-        #     self.study_session.update_standard_output_seen()
-        # if self.task.type == 'file_search' and \
-        #   not self.study_session.file_search_seen:
-        #     self.study_session.update_file_search_seen()
-        # if self.task.type == 'filesystem_change' and \
-        #   not self.study_session.filesystem_change_seen:
-        #     self.study_session.update_filesystem_change_seen()
         self.end_time = timezone.now()
         self.container.destroy()
         self.status = reason_for_close

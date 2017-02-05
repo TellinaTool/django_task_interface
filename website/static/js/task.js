@@ -24,8 +24,12 @@ $(document).ready(function () {
     // connect xterm.js terminal to the study session's container
     $.get(`/get_additional_task_info`, function(data) {
         status = data.filesystem_status;
-        if (status != "FILE_SYSTEM_WRITTEN_TO_DISK")
-            alert(filesystem_error_msg);
+        if (status != "FILE_SYSTEM_WRITTEN_TO_DISK") {
+            // TODO: a file system error is likely to be caused by a
+            // container or proxy server failure. The webpage needs to
+            // keep running when this happens, therefore do nothing.
+            console.log(filesystem_error_msg);
+        }
 
         var container_port = data.container_port;
 
@@ -46,7 +50,7 @@ $(document).ready(function () {
 
         // start timing the task
         if (!is_training) {
-            start_timer(data.task_duration);
+            start_timer();
         }
 
         $("#reset-button").click(function() {
@@ -59,7 +63,7 @@ $(document).ready(function () {
                 if (status == 'FILE_SYSTEM_ERROR') {
                     // TODO: a file system error is likely to be caused by a
                     // container or proxy server failure. The webpage needs to
-                    // keep running when this happens.
+                    // keep running when this happens, therefore do nothing.
                     // alert(filesystem_error_msg);
                     console.log(filesystem_error_msg);
                 }
@@ -79,14 +83,106 @@ $(document).ready(function () {
         })
     });
 
-    function start_timer(num_secs) {
-        console.log('timer starts');
+    function start_timer() {
+        $.get(`/start_task_timing`, function(data) {
+            console.log('timer starts (' + data.time_left + ') seconds left');
             task_time_out = setTimeout(function() {
-                 console.log('task time out');
-                 clearTimeout(task_time_out);
-                 show_times_up_dialog();
-        }, num_secs * 1000);
+                console.log('task time out');
+                clearTimeout(task_time_out);
+                show_times_up_dialog();
+            }, data.time_left * 1000);
+        });
     }
+
+    /* --- Terminal I/O --- */
+
+    function set_websocket(container_port)  {
+        protocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
+        socketURL = protocol + location.hostname + `:10412/${container_port}`;
+
+        /* var initialGeometry = term.proposeGeometry(),
+          cols = initialGeometry.cols,
+          rows = initialGeometry.rows;
+        term.resize(cols, rows);
+        charWidth = Math.ceil(term.element.offsetWidth / cols);
+        charHeight = Math.ceil(term.element.offsetHeight / rows); */
+
+        socket = new WebSocket(socketURL);
+        socket.onopen = function() {
+            console.log('WebSocket opened');
+
+            runRealTerminal();
+
+            // Setup stdin and stdout buffers to collect and send streams to server
+            var stdin = '';
+            var stdout = '';
+
+            // stdin from user input
+            term.on('data', function(data) {
+                stdin += data;
+            });
+
+            // stdout from container
+            socket.onmessage = function(event) {
+                // term.write(event.data);
+                stdout += event.data;
+                // send the standard output to the backend whenever the user
+                // executes a command
+                // in the terminal
+                if (stdout.match(/(.|\n)*me\@[0-9a-z]{12}\:[^\n]*\$ $/)) {
+                    if (stdout.split('\n').length > 1) {
+                        $.post(`/on_command_execution`, {stdout: stdout},
+                            function(data) {
+                                refresh_vis(data);
+                                if (data.status == 'TASK_COMPLETED') {
+                                    clearTimeout(task_time_out);
+                                    if (is_training) {
+                                        setTimeout(function() {
+                                            show_training_completion_dialog(data);
+                                        }, 300);
+                                    } else {
+                                        setTimeout(function() {
+                                            show_task_completion_dialog();
+                                        }, 300);
+                                    }
+                                }
+                            }
+                        );
+                    }
+                    console.log(JSON.stringify(stdout));
+                    stdout = '';
+                }
+            };
+        }
+        socket.onerror = function(event) {
+            console.log('Socket error: ' + event.data);
+        };
+        socket.onclose = function() {
+            console.log('Socket closed');
+        };
+    }
+
+    function create_new_terminal() {
+        term = new Terminal({
+            cursorBlink: true
+        });
+        // clean terminal container
+        while (terminalContainer.children.length > 0) {
+            terminalContainer.removeChild(terminalContainer.children[0]);
+        }
+        // associate JS term object with HTML div
+        term.open(terminalContainer);
+        term.fit();
+        // console.log(term.cols);
+        // console.log(term.rows);
+    }
+
+    function runRealTerminal() {
+        term.attach(socket);
+        term._initialized = true;
+    }
+
+    /* --- Visual Feedbacks --- */
 
     function refresh_vis(data) {
 
@@ -210,93 +306,7 @@ $(document).ready(function () {
         }
     }
 
-    function set_websocket(container_port)  {
-        protocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
-        socketURL = protocol + location.hostname + `:10412/${container_port}`;
-
-        /* var initialGeometry = term.proposeGeometry(),
-          cols = initialGeometry.cols,
-          rows = initialGeometry.rows;
-        term.resize(cols, rows);
-        charWidth = Math.ceil(term.element.offsetWidth / cols);
-        charHeight = Math.ceil(term.element.offsetHeight / rows); */
-
-        socket = new WebSocket(socketURL);
-        socket.onopen = function() {
-            console.log('WebSocket opened');
-
-            runRealTerminal();
-
-            // Setup stdin and stdout buffers to collect and send streams to server
-            var stdin = '';
-            var stdout = '';
-
-            // stdin from user input
-            term.on('data', function(data) {
-                stdin += data;
-            });
-
-            // stdout from container
-            socket.onmessage = function(event) {
-                // term.write(event.data);
-                stdout += event.data;
-                // send the standard output to the backend whenever the user
-                // executes a command
-                // in the terminal
-                if (stdout.match(/(.|\n)*me\@[0-9a-z]{12}\:[^\n]*\$ $/)) {
-                    if (stdout.split('\n').length > 1) {
-                        $.post(`/on_command_execution`, {stdout: stdout},
-                            function(data) {
-                                refresh_vis(data);
-                                if (data.status == 'TASK_COMPLETED') {
-                                    clearTimeout(task_time_out);
-                                    if (is_training) {
-                                        setTimeout(function() {
-                                            show_training_completion_dialog(data);
-                                        }, 300);
-                                    } else {
-                                        setTimeout(function() {
-                                            show_task_completion_dialog();
-                                        }, 300);
-                                    }
-                                }
-                            }
-                        );
-                    }
-                    console.log(JSON.stringify(stdout));
-                    stdout = '';
-                }
-            };
-        }
-        socket.onerror = function(event) {
-            console.log('Socket error: ' + event.data);
-        };
-        socket.onclose = function() {
-            console.log('Socket closed');
-        };
-    }
-
-    function create_new_terminal() {
-        term = new Terminal({
-            cursorBlink: true
-        });
-        // clean terminal container
-        while (terminalContainer.children.length > 0) {
-            terminalContainer.removeChild(terminalContainer.children[0]);
-        }
-        // associate JS term object with HTML div
-        term.open(terminalContainer);
-        term.fit();
-        // console.log(term.cols);
-        // console.log(term.rows);
-    }
-
-    function runRealTerminal() {
-        term.attach(socket);
-        term._initialized = true;
-    }
-
-    /* --- interactions --- */
+    /* --- Dialogs --- */
 
     function show_quit_confirmation_dialog(task_time_out) {
         // discourage a user from quiting a task

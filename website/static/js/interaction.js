@@ -124,18 +124,20 @@ function show_training_task_ii_assistant_tool_dialog(data) {
 function show_study_completion_dialog(data) {
     var report = "Report: passed " + data.num_passed + "/" + data.num_total +
         " tasks; given up " + data.num_given_up + "/" + data.num_total + " tasks.";
-    BootstrapDialog.show({
-        title: "Congratulations, you have completed the study!",
-        message: report + "\n\n" +
-                "Please go on to fill in the post-study questionnaire.",
-        buttons: [{
-            label: "Go to questionnaire",
-            cssClass: "btn-primary",
-            action: function(dialogItself) {
-                dialogItself.close();
-                window.location.replace(`https://docs.google.com/a/cs.washington.edu/forms/d/e/1FAIpQLSdX1qM91hIG7mEy-6cTIbZ3b5iiUyMkytLHG3Mh03WFsACtvA/viewform`);
-            }
-        }],
-        closable: false,
+    setTimeout(function () {
+        BootstrapDialog.show({
+            title: "Congratulations, you have completed the study!",
+            message: report + "\n\n" +
+                    "Please go on to fill in the post-study questionnaire.",
+            buttons: [{
+                label: "Go to questionnaire",
+                cssClass: "btn-primary",
+                action: function(dialogItself) {
+                    dialogItself.close();
+                    window.location.replace(`https://docs.google.com/a/cs.washington.edu/forms/d/e/1FAIpQLSdX1qM91hIG7mEy-6cTIbZ3b5iiUyMkytLHG3Mh03WFsACtvA/viewform`);
+                }
+            }],
+            closable: false,
+        });
     });
 }
