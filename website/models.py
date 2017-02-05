@@ -27,11 +27,6 @@ TASK_BLOCK_II = [8, 7, 2, 14, 12, 4, 13, 15, 11]
 if not WEBSITE_DEVELOP:
     assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
 
-treatment_names = {
-    'A': 'Tellina or Google Search',
-    'B': 'Google Search'
-}
-
 # key: treatment order + study session stage
 # value: treatment
 treatment_assignments = {

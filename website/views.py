@@ -65,11 +65,22 @@ def get_current_task(request, task_session):
     task_part = study_session.stage
     order_number = study_session.num_tasks_completed + 1
     is_training = task_session.is_training
-
+    if study_session.treatment == 'A':
+        assistant_tool = 'Tellina'
+        constraint_tool = ''
+    else:
+        assistant_tool = 'Explainshell'
+        if study_session.stage == 'II':
+            constraint_tool = '(excluding Tellina) '
+        else:
+            constraint_tool = ''
+    tool_reminder = 'Assistance: {}, the Internet {}and man pages'\
+                .format(assistant_tool, constraint_tool)
     if is_training:
         context = {
             "is_training": is_training,
             "task_part": 'Part {} Training'.format(task_part),
+            "task_assistant_tool_reminder": tool_reminder,
             "task_description": task.description,
             "task_order_number": 1,
             "total_num_tasks": 1,
@@ -80,6 +91,7 @@ def get_current_task(request, task_session):
         context = {
             "is_training": is_training,
             "task_part": 'Part {}'.format(task_part),
+            "task_assistant_tool_reminder": tool_reminder,
             "task_description": task.description,
             "task_order_number": order_number,
             "total_num_tasks": study_session.total_num_tasks,

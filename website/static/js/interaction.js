@@ -68,7 +68,7 @@ function show_training_task_i_assistant_tool_dialog(data) {
         $instruction += '<ul><li><a href="http://explainshell.com/" target="_blank">Explainshell, a bash command explanation tool</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online.</li></ul></p>';
         $instruction += '<p>We encourage you to <b>use Explainshell</b> when you encounter a bash command you do not completely understand. Please click on the link above to learn more about the tool.</p>';
     }
-    $instruction += '<p>Once you are familiarized with the tool, please close this dialog box and complete the training task.</p></div>';
+    $instruction += '<p>Once you are familiarized with the tool, please close this dialog box and complete this training task.</p></div>';
     setTimeout(function () {
         BootstrapDialog.show({
             title: title,
@@ -86,18 +86,23 @@ function show_training_task_i_assistant_tool_dialog(data) {
 }
 
 function show_training_task_ii_assistant_tool_dialog(data) {
-    var $instruction = '<div>' +
-    '<p><i class="glyphicon glyphicon-info-sign"></i> For the second half of the study, you may use the following assistance:';
+    var $instruction = '<div>' + '<p>Nice job! You\'ve come to the second half of the study.</p>';
     if (data.treatment_order == 1) {
         title = 'Tellina';
+        $instruction += '<p><i class="glyphicon glyphicon-info-sign"></i> Please <b>close</b> all Explainshell tabs in your browser now.</p>';
+    } else {
+        title = 'Explainshell';
+        $instruction += '<p><i class="glyphicon glyphicon-info-sign"></i> Please <b>close</b> all Tellina tabs in your browser now.</p>';
+    }
+    $instruction += '<p><i class="glyphicon glyphicon-info-sign"></i> For the second half of the study, you may use the following assistance:';
+    if (data.treatment_order == 1) {
         $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina, a natural language to bash command translator</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online (<b>including Explainshell</b>).</li></ul></p>';
         $instruction += '<p>For each task, we encourage you to <b>try Tellina first</b>. Please click on the link above to learn more about the tool.</p>';
     } else {
-        title = 'Explainshell';
         $instruction += '<ul><li><a href="http://explainshell.com/" target="_blank">Explainshell, a bash command explanation tool</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online (<b>excluding Tellina</b>).</li></ul></p>';
         $instruction += '<p>We encourage you to <b>use Explainshell</b> when you encounter a bash command you do not completely understand. Please click on the link above to learn more about the tool.</p>';
     }
-    $instruction += '<p>Once you are familiarized with the tool, please close this dialog box and complete the training task.</p></div>';
+    $instruction += '<p>Once you are familiarized with the tool, please close this dialog box and complete this training task.</p></div>';
     setTimeout(function () {
         BootstrapDialog.show({
             title: title,
