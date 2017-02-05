@@ -4,8 +4,7 @@ run: clean install_python_dependencies build_images setup_db
 	# Create the example file system
 	tar xf data/example_website.tar.xz --overwrite --directory data/
 	# Start WebSocket server, restart server if end with error
-	bash proxy_image/proxy_monitor.sh `sudo docker run --rm -p 10412:10412 proxy > proxy.log 2>&1` &
-	sleep 1
+	bash proxy_image/proxy_monitor.sh & sleep 1
 	# Load config.json into database.
 	python3 manage.py runscript load_config --traceback
 	# Run server.

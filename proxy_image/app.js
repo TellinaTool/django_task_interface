@@ -27,6 +27,7 @@ child_process.exec("route -n | awk '/UG[ \t]/{print $2}'", {'shell': '/bin/bash'
         // Open WebSocket to container
         var containerURL = `ws://${dockerHostIP}:${port}`;
         console.log(`Opening websocket to ${containerURL}`);
+
         var containerWebSocket = new WebSocket(containerURL);
 
         // When container WebSocket connects...
@@ -45,6 +46,8 @@ child_process.exec("route -n | awk '/UG[ \t]/{print $2}'", {'shell': '/bin/bash'
             ws.send(message);
           });
         });
+
+
     } else {
         console.log(`Invalid URL received: ${ws.upgradeReq.url}`);
     }
