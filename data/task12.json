@@ -1,7 +1,7 @@
 {
    "task_id": "12",
    "type": "filesystem_change",
-   "description": "Copy every .css file under the \"css\" directory into the \"backup\" directory.",
+   "description": "Get every .css file in the \"css\" directory (and its subdirectories) and copy them into the \"backup\" directory.",
    "file_attributes": [],
    "target_dir": "website/css",
    "difficulty": 3,

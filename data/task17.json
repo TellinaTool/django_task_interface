@@ -1,7 +1,7 @@
 {
    "task_id": "17",
    "type": "file_search",
-   "description": "Recursively delete all directories under the \"website\" directory that start with \"201\".",
+   "description": "Delete all directories named \"201*\" and their contents anywhere in or under your current folder.",
    "file_attributes": [],
    "target_dir": "website",
    "difficulty": 3,

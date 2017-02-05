@@ -1,7 +1,7 @@
 {
    "task_id": "22",
    "type": "filesystem_change",
-   "description": "Remove all the regular files (i.e. excluding subdirectories) under the \"css\" directory.",
+   "description": "Remove all the regular files (i.e. excluding subdirectories if any) under the \"css\" directory.",
    "file_attributes": [],
    "target_dir": "website/css",
    "solution": "find css -type f | xargs rm",
