@@ -216,9 +216,8 @@ class StudySession(models.Model):
     :member session_id: an application-wide unique study session ID.
     :member creation_time: Time the study session is created.
     :member close_time: Time the study session is closed.
-    :member half_session_start_time: Time the user starts working on the first
-        task in each half of the study.
-    :member half_session_duration: Duration of half of the study session.
+    :member half_session_time_left: Time left in the current half of the study
+        session.
 
     :member current_task_session_id: The id of the task session that the user
         is undertaking. '' if no task session is running.
@@ -245,9 +244,7 @@ class StudySession(models.Model):
 
     creation_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
-    half_session_start_time = models.DateTimeField(null=True, blank=True)
-    half_session_duration = models.DurationField(
-        default=timezone.timedelta(minutes=0.5))
+    half_session_time_left = models.DurationField(null=True, blank=True)
 
     current_task_session_id = models.TextField(default='')
     total_num_training_tasks = models.PositiveIntegerField(
@@ -273,33 +270,36 @@ class StudySession(models.Model):
     def closed(self):
         return self.status in ['finished', 'closed_with_error', 'paused']
 
+    # --- Task manager --- #
+
     def inc_num_tasks_completed(self):
-        self.num_tasks_completed += 1
+        if self.half_session_time_left <= timezone.timedelta(seconds=0):
+            # force stage change
+            if self.stage == 'I':
+                self.num_tasks_completed = self.switch_point
+            elif self.stage == 'II':
+                self.num_tasks_completed = self.total_num_tasks
+        else:
+            self.num_tasks_completed += 1
         self.save()
 
     def inc_num_training_tasks_completed(self):
         self.num_training_tasks_completed += 1
         self.save()
 
-    def stage_change(self):
-        # check if the study session is going through a stage change
-        if self.num_training_tasks_completed == 0 and \
-                self.num_tasks_completed == 0:
-            # entering stage I
-            return True
-        elif self.num_training_tasks_completed == 1 and \
-                self.num_tasks_completed == self.switch_point:
-            # entering stage II
-            return True
-        elif self.num_training_tasks_completed == 2 and \
-                self.num_tasks_completed == self.total_num_tasks:
-            # entering stage III
-            return True
-        return False
+    def start_half_session_timer(self):
+        self.half_session_time_left = timezone.timedelta(
+            minutes=half_session_length)
+        self.save()
+
+    def update_half_session_time_left(self, time_spent):
+        self.half_session_time_left -= time_spent
+        print('half_session_time_left: {}'.format(self.half_session_time_left))
+        self.save()
 
     def update_current_task_session_id(self):
         """
-        Main task scheduling function.
+        Task scheduling function.
         """
         if self.num_training_tasks_completed == 0 and \
                         self.num_tasks_completed == 0:
@@ -316,17 +316,24 @@ class StudySession(models.Model):
         self.save()
         return new_task_session_id
 
-    # def update_filesystem_change_seen(self):
-    #     self.filesystem_change_seen = True
-    #     self.save()
-
-    # def update_file_search_seen(self):
-    #     self.file_search_seen = True
-    #     self.save()
-
-    # def update_standard_output_seen(self):
-    #     self.standard_output_seen = True
-    #     self.save()
+    def stage_change(self):
+        # check if the study session is going through a stage change
+        if self.num_training_tasks_completed == 0 and \
+                self.num_tasks_completed == 0:
+            # entering stage I
+            print('entering stage I')
+            return True
+        elif self.num_training_tasks_completed == 1 and \
+                self.num_tasks_completed == self.switch_point:
+            # entering stage II
+            print('entering stage II')
+            return True
+        elif self.num_training_tasks_completed == 2 and \
+                self.num_tasks_completed == self.total_num_tasks:
+            # entering stage III
+            print('entering stage III')
+            return True
+        return False
 
     @property
     def stage(self):
@@ -347,20 +354,20 @@ class StudySession(models.Model):
                              'current study session stage'.format(self.status))
 
     @property
-    def task_block_order(self):
-        # the task block order of the study session
-        if self.user.group in ['group1', 'group4']:
-            return '0'
-        else:
-            return '1'
-
-    @property
     def switch_point(self):
         # number of tasks in the first part of the study
         if self.user.group in ['group1', 'group4']:
             return len(TASK_BLOCK_I)
         else:
             return len(TASK_BLOCK_II)
+
+    @property
+    def task_block_order(self):
+        # the task block order of the study session
+        if self.user.group in ['group1', 'group4']:
+            return '0'
+        else:
+            return '1'
 
     @property
     def treatment_order(self):
@@ -393,7 +400,8 @@ class TaskSession(models.Model):
     :member start_time: The start time of a task session.
     :member end_time: The end time of a task session. None if the task session
         is being undertaken.
-    :member time_left: Time left in this task session.
+    :member time_left: Time left in this task session. This is used for
+        redirecting the user when a half session timed out.
 
     :member status: The state of the task result.
         - 'running':     The user has started the task, but the task has not
@@ -412,14 +420,18 @@ class TaskSession(models.Model):
 
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    time_left = models.DurationField()
+    time_left = models.DurationField(null=True, blank=True)
 
     status = models.TextField()
 
     def close(self, reason_for_close):
-        self.end_time = timezone.now()
-        self.container.destroy()
         self.status = reason_for_close
+        self.end_time = timezone.now()
+        if not self.is_training:
+            time_spent = self.get_time_spent_since_last_resume(self.end_time)
+            self.update_time_left(time_spent)
+            self.study_session.update_half_session_time_left(time_spent)
+        self.container.destroy()
         self.save()
 
     def create_new_container(self):
@@ -433,6 +445,53 @@ class TaskSession(models.Model):
         self.container.destroy()
         self.container = None
 
+    def get_action_history(self):
+        # the user's action history in the task session ordered from the
+        # least recent to the most recent
+        return ActionHistory.objects.filter(task_session=self)\
+            .order_by('action_time')
+
+    def get_time_spent_since_last_resume(self, current_time):
+        # compute time spent since last time update
+        if ActionHistory.objects.filter(task_session=self,
+                                        action='__resumed__').exists():
+            most_recent_resume = self.get_action_history\
+                .filter(action='__resumed__').order_by('action_time')[-1]
+            return current_time - most_recent_resume.action_time
+        else:
+            return current_time - self.start_time
+
+    def set_time_left(self, time_left):
+        self.time_left = time_left
+        self.save()
+
+    def set_start_time(self, start_time):
+        self.start_time = start_time
+        self.save()
+
+    def update_time_left(self, time_spent):
+        self.time_left -= time_spent
+        self.save()
+
+    @property
+    def time_spent(self):
+        time_spent = timezone.timedelta(seconds=0)
+        last_resumed_time = self.start_time
+        action_history = self.get_action_history()
+        for action in action_history:
+            if action.action == '__paused__':
+                time_spent += (action.action_time - last_resumed_time)
+            if action.action == '__resumed__':
+                last_resumed_time = action.action_time
+        if self.status == 'passed':
+            # get the timestamp of the command that solves the task
+            assert(action_history)
+            last_action = action_history[len(action_history)-1]
+            time_spent += last_action.action_time - last_resumed_time
+        else:
+            time_spent += self.end_time - last_resumed_time
+        return time_spent
+
 
 class ActionHistory(models.Model):
     """
@@ -443,6 +502,9 @@ class ActionHistory(models.Model):
     :member action: The action performed by the user, including
         - bash command issued by the user in the terminal
         - `__reset__` if the user resets the filesystem
+        - `__paused__` if the user paused the task session or the task session
+            is interrupted
+        - `__resumed__` if a paused task session is resumed
     :member action_time: The time the action is taken.
     """
     task_session = models.ForeignKey(TaskSession, on_delete=models.CASCADE)

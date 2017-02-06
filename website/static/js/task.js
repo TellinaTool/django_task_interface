@@ -10,6 +10,13 @@ $(document).ready(function () {
         }
     })();
 
+    var normal_exit = false;
+    // prevent user from refreshing the page
+    window.onbeforeunload = function() {
+        if (!normal_exit)
+            return "Your task session has not been completed, are you sure you want to leave?";
+    }
+
     var is_training = false;
     var is_first_training = false;
     var is_second_training = false;
@@ -84,12 +91,19 @@ $(document).ready(function () {
     });
 
     function start_timer() {
-        $.get(`/start_task_timing`, function(data) {
+        $.get(`/update_task_timing`, function(data) {
+            console.log(data);
             console.log('timer starts (' + data.time_left + ') seconds left');
+            console.log(data.half_session_time_left + ' seconds left in the current half of study session')
+            if (data.time_left < 0)
+                data.time_left = 0;
             task_time_out = setTimeout(function() {
                 console.log('task time out');
                 clearTimeout(task_time_out);
-                show_times_up_dialog();
+                if (data.half_session_time_left > data.time_left)
+                    show_times_up_dialog();
+                else
+                    show_half_session_times_up_dialog();
             }, data.time_left * 1000);
         });
     }
@@ -107,59 +121,63 @@ $(document).ready(function () {
         charWidth = Math.ceil(term.element.offsetWidth / cols);
         charHeight = Math.ceil(term.element.offsetHeight / rows); */
 
-        socket = new WebSocket(socketURL);
-        socket.onopen = function() {
-            console.log('WebSocket opened');
+        try {
+            socket = new WebSocket(socketURL);
+            socket.onopen = function() {
+                console.log('WebSocket opened');
 
-            runRealTerminal();
+                runRealTerminal();
 
-            // Setup stdin and stdout buffers to collect and send streams to server
-            var stdin = '';
-            var stdout = '';
+                // Setup stdin and stdout buffers to collect and send streams to server
+                var stdin = '';
+                var stdout = '';
 
-            // stdin from user input
-            term.on('data', function(data) {
-                stdin += data;
-            });
+                // stdin from user input
+                term.on('data', function(data) {
+                    stdin += data;
+                });
 
-            // stdout from container
-            socket.onmessage = function(event) {
-                // term.write(event.data);
-                stdout += event.data;
-                // send the standard output to the backend whenever the user
-                // executes a command
-                // in the terminal
-                if (stdout.match(/(.|\n)*me\@[0-9a-z]{12}\:[^\n]*\$ $/)) {
-                    if (stdout.split('\n').length > 1) {
-                        $.post(`/on_command_execution`, {stdout: stdout},
-                            function(data) {
-                                refresh_vis(data);
-                                if (data.status == 'TASK_COMPLETED') {
-                                    clearTimeout(task_time_out);
-                                    if (is_training) {
-                                        setTimeout(function() {
-                                            show_training_completion_dialog(data);
-                                        }, 300);
-                                    } else {
-                                        setTimeout(function() {
-                                            show_task_completion_dialog();
-                                        }, 300);
+                // stdout from container
+                socket.onmessage = function(event) {
+                    stdout += event.data;
+                    // send the standard output to the backend whenever the user
+                    // executes a command in the terminal
+                    if (stdout.match(/(.|\n)*me\@[0-9a-z]{12}\:[^\n]*\$ $/)) {
+                        if (stdout.split('\n').length > 1) {
+                            $.post(`/on_command_execution`, {stdout: stdout},
+                                function(data) {
+                                    refresh_vis(data);
+                                    if (data.status == 'TASK_COMPLETED') {
+                                        clearTimeout(task_time_out);
+                                        if (is_training) {
+                                            setTimeout(function() {
+                                                show_training_completion_dialog(data);
+                                            }, 300);
+                                        } else {
+                                            setTimeout(function() {
+                                                show_task_completion_dialog();
+                                            }, 300);
+                                        }
                                     }
                                 }
-                            }
-                        );
+                            );
+                        }
+                        console.log(JSON.stringify(stdout));
+                        stdout = '';
                     }
-                    console.log(JSON.stringify(stdout));
-                    stdout = '';
-                }
+                };
+            }
+            socket.onerror = function(event) {
+                console.log('Socket error: ' + event.data);
+            };
+            socket.onclose = function() {
+                console.log('Socket closed');
             };
         }
-        socket.onerror = function(event) {
-            console.log('Socket error: ' + event.data);
-        };
-        socket.onclose = function() {
-            console.log('Socket closed');
-        };
+        catch (err) {
+            term.write('We are experiencing a shell connection error, please raise your hand.');
+            $.get(`/task_session_paused`);
+        }
     }
 
     function create_new_terminal() {
@@ -339,7 +357,24 @@ $(document).ready(function () {
         // prompt the user that they have to move on to the next task
          BootstrapDialog.show({
              title: "Time's Up",
-             message: "The current task session is time out. Please proceed to the next task.",
+             message: "The current task session has timed out. Please proceed to the next task.",
+             buttons: [{
+                 label: "Proceed",
+                 cssClass: "btn-primary",
+                 action: function(dialogItself) {
+                     dialogItself.close();
+                     switch_task('time_out');
+                 }
+             }],
+             closable: false,
+         });
+    }
+
+    function show_half_session_times_up_dialog() {
+        // prompt the user that they have to move on to the next task
+         BootstrapDialog.show({
+             title: "Time's Up",
+             message: "<p>You have spent 40 minutes using the current set of assistant tools. Good Job!</p> Please proceed to the next stage of the study.",
              buttons: [{
                  label: "Proceed",
                  cssClass: "btn-primary",
@@ -468,6 +503,7 @@ $(document).ready(function () {
                 show_study_completion_dialog(data);
                 console.log("Study session completed.");
             } else {
+                normal_exit = true;
                 window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
             }
         });

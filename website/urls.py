@@ -23,10 +23,11 @@ urlpatterns = [
 
     # task session
     url(r'^.*-study_session-.*-task-.*', views.get_current_task),
-    url(r'^start_task_timing', views.update_task_timing),
+    url(r'^update_task_timing', views.update_task_timing),
     url(r'^get_current_task$', views.get_current_task),
     url(r'^get_additional_task_info$', views.get_additional_task_info),
     url(r'^go_to_next_task$', views.go_to_next_task),
+    url(r'^task_session_paused', views.task_session_paused),
 
     # terminal I/O
     url(r'^on_command_execution$', views.on_command_execution),

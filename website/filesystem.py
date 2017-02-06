@@ -430,7 +430,6 @@ def annotate_path_selection(fs, task_type, paths):
 
     """
     for path in paths:
-        # print(path.as_posix())
         steps = path.as_posix().split('/')
         stack = [fs]
         node = fs
@@ -590,7 +589,6 @@ def annotate_stdout_errors(fs_diff, stdout_diff):
     for stdout_line in stdout_diff['lines']:
         if stdout_line['tag'] in ['missing', 'extra']:
             path = extract_path(stdout_line['line'])
-            print(path)
             if path:
                 annotate_node(fs_diff, path, 'stdout_'+stdout_line['tag'])
 
