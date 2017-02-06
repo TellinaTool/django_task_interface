@@ -33,6 +33,7 @@ install_python_dependencies:
 # Clean up environment left by prior server run.
 clean:
 	# Kill existing server process.
+	-ps aux | grep npm | awk '/[ \t]/ {print $2}' | xargs sudo kill -9
 	-ps aux | grep manage.py | awk '/[ \t]/ {print $2}' | xargs sudo kill -9
 	# Remove lock files.
 	-ls | grep '^task_manager_lock_' | xargs rm
@@ -42,5 +43,5 @@ clean:
 	-sudo docker rm -f `sudo docker ps -q -a`
 	# Destroy database and migrations.
 	rm -rf db.sqlite3 website/migrations
-	# Remove log files
-	rm -f *.log
+	# Remove container log file
+	rm -f container*.log
