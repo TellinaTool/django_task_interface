@@ -146,6 +146,7 @@ $(document).ready(function () {
                         if (stdout.split('\n').length > 1) {
                             $.post(`/on_command_execution`, {stdout: stdout},
                                 function(data) {
+                                    console.log(data.status);
                                     refresh_vis(data);
                                     if (data.status == 'TASK_COMPLETED') {
                                         clearTimeout(task_time_out);
@@ -251,6 +252,7 @@ $(document).ready(function () {
         }
 
         // add explanation when fs mismatch
+        var num_explanation_showing = 0;
         if (exists_fs_extra || exists_fs_missing) {
             var legend_content = "";
             if (exists_fs_extra) {
@@ -259,12 +261,14 @@ $(document).ready(function () {
                                     <span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-file"></span>file</span> or \
                                     <span style="color:red; text-decoration: line-through;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.\
                                     </li>';
+                num_explanation_showing += 1;
             }
             if (exists_fs_missing) {
                 $("#fs-vis-legend").append('<td><span style="opacity: 0.3;"><span class="glyphicon glyphicon-file"></span>file missing</span></td>');
                 legend_content += '<li>Files/Directories <b>missing</b> in your current FS: \
                                     <span style="opacity: 0.3;"><span class="glyphicon glyphicon-file"></span>file</span> or \
                                     <span style="opacity: 0.3;"><span class="glyphicon glyphicon-folder-close"></span>dir</span></li>';
+                num_explanation_showing += 1;
             }
 
             $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your current filesystem status does not match the goal file system status (e.g., missing file, contain extra files).</font></li>');
@@ -280,6 +284,7 @@ $(document).ready(function () {
                 legend_content += '<li>Files/Directories your command <b>failed</b> to select: \
                             <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                             <span style="background-color: #CCCCCC;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
+                num_explanation_showing += 1;
             }
 
             if (exists_select_wrong) {
@@ -287,6 +292,7 @@ $(document).ready(function () {
                 legend_content += '<li>Files/Directories your command <b>wrongly</b> selected: \
                                 <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                                 <span style="background-color: #DF9496;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
+                num_explanation_showing += 1;
             }
 
             if (exists_select_correct) {
@@ -294,9 +300,23 @@ $(document).ready(function () {
                 legend_content += '<li>Files/Directories your command <b>correctly</b> selected: \
                                <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-file"></span>file</span>,\
                                <span style="background-color: #FEFCD7;"><span class="glyphicon glyphicon-folder-close"></span>dir</span>.</li>';
+                num_explanation_showing += 1;
             }
 
             $("#task-progress-report").append('<li><font style="text-decoration: underline;">Files/dirs selected by your command mismatches the desirable result.</font></li>');
+        }
+        if (num_explanation_showing == 0) {
+            $("#current-tree-vis").css('bottom', '0px');
+            $("#fs-vis-legend-container").height('0px');
+            $("#fs-vis-legend-container").css('border-top', 'dashed 0px');
+        } else if (num_explanation_showing > 2) {
+            $("#current-tree-vis").css('bottom', '45px');
+            $("#fs-vis-legend-container").height('45px');
+            $("#fs-vis-legend-container").css('border-top', 'dashed 1px');
+        } else {
+            $("#current-tree-vis").css('bottom', '30px');
+            $("#fs-vis-legend-container").height('30px');
+            $("#fs-vis-legend-container").css('border-top', 'dashed 1px');
         }
 
         if (data.hasOwnProperty('stdout_diff')) {
@@ -305,8 +325,8 @@ $(document).ready(function () {
             //$("#task-progress-container").show();
             //$("#current-tree-vis-container").css('bottom', '50%');
 
-            $("#current-tree-vis-container").css("bottom", "70%");
-            $("#task-progress-vis-container").css("top", "30.5%");
+            $("#current-tree-vis-container").css("bottom", "50%");
+            $("#task-progress-vis-container").css("top", "50.5%");
 
             missing_legend = "";
             if (exists_stdout_missing)
