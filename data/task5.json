@@ -1,7 +1,7 @@
 {
    "task_id": "5",
    "type": "filesystem_change",
-   "description": "Copy all files under the \"lib\" directory into the \"js\" directory. After this operation, the \"js\" directory should have no sub-directories: all files should be in the base directory.",
+   "description": "Copy all regular files (i.e. excluding subdirectories) of \"lib\" into the folder \"js\". After this operation, the \"js\" directory should have no sub-directories: all files should be in the base directory.",
    "file_attributes": [],
    "target_dir": "website/lib",
    "difficulty": 3,
@@ -36,7 +36,7 @@
 
                            },
                            "type": "file",
-                           "name": "2013_hw1.md"
+                           "name": "2013_hw.md"
                        }
                      ]
                   },

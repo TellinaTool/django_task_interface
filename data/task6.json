@@ -1,7 +1,7 @@
 {
    "task_id": "6",
    "type": "filesystem_change",
-   "description": "Recursively delete all files and directories under the \"website\" directory that have \"bootstrap\" in their names.",
+   "description": "Delete all files and directories (recursively) under your current directory that have \"bootstrap\" in their names.",
    "file_attributes": [],
    "target_dir": "website",
    "difficulty": 2,
@@ -37,7 +37,7 @@
 
                            },
                            "type": "file",
-                           "name": "2013_hw1.md"
+                           "name": "2013_hw.md"
                        }
                      ]
                   },

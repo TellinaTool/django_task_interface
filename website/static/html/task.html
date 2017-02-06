@@ -30,7 +30,11 @@ task interface server is done through HTTP AJAX calls.
                      {% endif %}
                   </section>
                   <section id="img-overlay-hanger"></section>
-                  <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD"></section>
+                  <section class="_2zSA2d9oAw82vmGaiCI6HM AcoUR5q2eKWoCC4M_4RZD">
+                     {% if task_assistant_tool_reminder %}
+                        {{task_assistant_tool_reminder}}
+                     {% endif %}
+                  </section>
                   <section class="_2zSA2d9oAw82vmGaiCI6HM _1KKDVD6unnpNtKqV9PPUQP _2kwp78w4gxSQjvTSajoa6Q" data-reactid="14">
                      <div class="_3bI54mnYg5essxyEwnBsko _3nDVtg6dS-0_R6p0nDL-1S" data-reactid="15">
                         <div class="_3KAEuux4zG-obsW0jpG9gw" data-reactid="16"><span data-reactid="17"></span></div>
@@ -110,7 +114,7 @@ task interface server is done through HTTP AJAX calls.
 
                <!-- Direcotry Visualization -->
                <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-right-neighbor"
-                    style="position:absolute;top:0%;right:0%;bottom:0%;left:64%;">
+                    style="position:absolute;top:0%;right:0%;bottom:0%;left:64%;" id="task-progress-container">
                   <!-- Current Directory -->
                   <div class="fcn-slot fcn-slot--no-top-neighbor fcn-slot--no-bottom-neighbor fcn-slot--no-left-neighbor fcn-slot--no-right-neighbor vis-container"
                        style="position:absolute;top:0%;right:0%;bottom:30%;left:0%;" 
@@ -121,9 +125,9 @@ task interface server is done through HTTP AJAX calls.
                               File system status
                            </div>
                            <div class="accordion-section-body tree-vis-panel" id="current-tree-vis"
-                                style="position: absolute; top: 32px; width:100%; bottom: 30px;">
+                                style="position: absolute; top: 32px; width:100%;">
                            </div>
-                           <div id="fs-vis-legend-container" style="position: absolute; height: 30px; width:100%; bottom: 0; border-top:dashed 1px;">
+                           <div id="fs-vis-legend-container" style="position: absolute; width:100%; bottom: 0;">
                               <table><tr id="fs-vis-legend"></tr></table>
                            </div>
                         </div>

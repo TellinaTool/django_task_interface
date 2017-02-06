@@ -1,7 +1,7 @@
 {
    "task_id": "14",
    "type": "file_search",
-   "description": "List all files and directories under the \"website\" directory, excluding the \"content\" directory and all files and directories under it.",
+   "description": "List the files and directories in or under your current directory, but do not include the \"content\" directory and the files and directories under it.",
    "file_attributes": [],
    "target_dir": "website",
    "difficulty": 4,
@@ -42,7 +42,7 @@
 
                            },
                            "type": "file",
-                           "name": "2013_hw1.md"
+                           "name": "2013_hw.md"
                        }
                      ]
                   },

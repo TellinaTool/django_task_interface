@@ -1,7 +1,7 @@
 {
   "task_id": "18",
   "type": "file_search",
-  "description": " List all files under the \"website\" directory that have a number just before the extension. A file extension is the last part of a file name which is preceded by a full stop. For example, the file extension of \"jquery-2.0.3.min.js\" is \".js\" instead of \".min.js\".",
+  "description": " List all files in or under the current directory that have a number just before the extension. A file extension is the last part of a file name which is preceded by a full stop. For example, the file extension of \"jquery-2.0.3.min.js\" is \".js\" instead of \".min.js\".",
   "file_attributes": [],
   "target_dir": "website",
    "difficulty": 5,
@@ -37,7 +37,7 @@
 
                            },
                            "type": "file",
-                           "name": "2013_hw1.md"
+                           "name": "2013_hw.md"
                        }
                    ]
                 },

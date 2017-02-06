@@ -15,7 +15,7 @@ function build_stdout_vis(data, div_id) {
 
     function render(data) {
         var items = data.lines,
-            duration = 250;
+            duration = 0;
 
         var nodeEls = ul.selectAll("li.node").data(items, function (d) {
             d.id = d.id || ++id;

@@ -10,7 +10,7 @@ var filesystem_error_msg = "We've caught a file system error in the backend. Ple
 function show_solution_dialog(solution) {
     // reveal the answer to the user when the quit button is clicked during the
     // training session
-    var correct_answer = "The solution to this task is \"" + solution + "\". Input this command in the terminal (without quotes) and observe the effect.";
+    var correct_answer = "The solution to this task is <code>" + solution + "</code>. Input this command in the terminal (without quotes) and observe the effect.";
     BootstrapDialog.show({
         title: "Solution",
         message: correct_answer,
@@ -25,19 +25,53 @@ function show_solution_dialog(solution) {
     });
 }
 
+function start_task_platform_training(data) {
+    var intro = introJs("#workspace").setOptions(task_platform_training)
+    .setOption("tooltipClass", "img-overlay")
+    .setOption('exitOnOverlayClick', false)
+    .setOption('showBullets', false)
+    .onchange(function(targetElement) {
+        console.log(this._currentStep);
+        switch (this._currentStep)
+        {
+            case 0:
+                $('.img-overlay').css('max-width', '720px').css('min-width', '720px');
+            break;
+            case 11:
+                $('.img-overlay').css('max-width', '400px').css('min-width', '400px');
+            break;
+
+            default:
+                $('.img-overlay').css('max-width', '200px').css('min-width', '200px');
+            break;
+        }
+        if (this._introItems.length - 1 == this._currentStep || this._introItems.length == 1) {
+            $('.introjs-skipbutton').show();
+        }
+    })
+    .oncomplete(function () {
+        show_training_task_i_assistant_tool_dialog(data);
+    })
+    .start();
+    $('.introjs-skipbutton').hide();
+}
+
 function show_training_task_i_assistant_tool_dialog(data) {
     var $instruction = '<div>' +
-    '<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first training task, you may use:';
+    '<p><i class="glyphicon glyphicon-info-sign"></i> For the first half of the study, you may use the following assistance:';
     if (data.treatment_order == 0) {
-        $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>';
-        $instruction += '<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>';
+        title = 'Tellina';
+        $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina, a natural language to bash command translation tool</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online.</li></ul></p>';
+        $instruction += '<p>For each task, we encourage you to <b>try Tellina first</b>. Please click on the link above to learn more about the tool.</p>';
     } else {
-        $instruction += '<ul><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>';
-        $instruction += '<p>However, you <b>cannot</b> use Tellina, the natural language to bash translator which you just tried out.</p></div>';
+        title = 'Explainshell';
+        $instruction += '<ul><li><a href="http://explainshell.com/" target="_blank">Explainshell, a bash command explanation tool</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online.</li></ul></p>';
+        $instruction += '<p>We encourage you to <b>use Explainshell</b> when you encounter a bash command you do not completely understand. Please click on the link above to learn more about the tool.</p>';
     }
+    $instruction += '<p>Once you are familiarized with the tool, please close this dialog box and complete this training task.</p></div>';
     setTimeout(function () {
         BootstrapDialog.show({
-            title: 'Training: Assistant Tools',
+            title: title,
             message: $instruction,
             buttons: [{
                 label: "Got it",
@@ -52,16 +86,26 @@ function show_training_task_i_assistant_tool_dialog(data) {
 }
 
 function show_training_task_ii_assistant_tool_dialog(data) {
-    var $instruction = $('<div>');
+    var $instruction = '<div>' + '<p>Nice job! You\'ve come to the second half of the study.</p>';
     if (data.treatment_order == 1) {
-        $instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the second training task, you may use <a href="' + data.research_tool_url + '" target="_blank">Tellina</a> <b>in addition to</b> what you have already accessed so far.</p>');
-        $instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
+        title = 'Tellina';
+        $instruction += '<p><i class="glyphicon glyphicon-info-sign"></i> Please <b>close</b> all Explainshell tabs in your browser now.</p>';
     } else {
-        $instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> For the second training task, please <b>only</b> resort to the resources available in your bash terminal or online <b>except for Tellina</b>.</p></div>');
+        title = 'Explainshell';
+        $instruction += '<p><i class="glyphicon glyphicon-info-sign"></i> Please <b>close</b> all Tellina tabs in your browser now.</p>';
     }
+    $instruction += '<p><i class="glyphicon glyphicon-info-sign"></i> For the second half of the study, you may use the following assistance:';
+    if (data.treatment_order == 1) {
+        $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina, a natural language to bash command translator</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online (<b>including Explainshell</b>).</li></ul></p>';
+        $instruction += '<p>For each task, we encourage you to <b>try Tellina first</b>. Please click on the link above to learn more about the tool.</p>';
+    } else {
+        $instruction += '<ul><li><a href="http://explainshell.com/" target="_blank">Explainshell, a bash command explanation tool</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online (<b>excluding Tellina</b>).</li></ul></p>';
+        $instruction += '<p>We encourage you to <b>use Explainshell</b> when you encounter a bash command you do not completely understand. Please click on the link above to learn more about the tool.</p>';
+    }
+    $instruction += '<p>Once you are familiarized with the tool, please close this dialog box and complete this training task.</p></div>';
     setTimeout(function () {
         BootstrapDialog.show({
-            title: 'Training: Assistant Tools',
+            title: title,
             message: $instruction,
             buttons: [{
                 label: "Got it",
@@ -77,69 +121,23 @@ function show_training_task_ii_assistant_tool_dialog(data) {
 
 /* --- Task Session Interactions --- */
 
-function show_entering_stage_i_dialog(data) {
-    var $stage_instruction = $('<div style="">');
-    $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first 9 tasks in the user study, you may use the following tools:');
-    if (data.treatment_order == 0) {
-        $stage_instruction.append('<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
-        $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
-    } else {
-        $stage_instruction.append('<ul><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
-        $stage_instruction.append('<p>However, you <b>cannot</b> use Tellina, the natural language to bash translator which was introduced in the training session.</p></div>')
-    }
-    BootstrapDialog.show({
-        title: "You are ready to start the task session, please be reminded that",
-        message: $stage_instruction,
-        buttons: [{
-            label: "Start Task Session",
-            cssClass: "btn-primary",
-            action: function(dialogItself) {
-                dialogItself.close();
-                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
-            }
-        }],
-        closable: false,
-    });
-}
-
-function show_entering_stage_ii_dialog(data) {
-    var $stage_instruction = $('<div style="">');
-    if (data.treatment_order == 1) {
-        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, you may use the following tool <b>in addition</b> to what you already have accessed so far:');
-        $stage_instruction.append('<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina</a>, the natural language to bash translator</li></ul></p>');
-        $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
-    } else {
-        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, please <b>stop</b> using Tellina when solving a task.</p>');
-        $stage_instruction.append('<p>When you find yourself in need of help, please only resort to the <b>other resources</b> available online or in your bash terminal.</p></div>');
-    }
-    BootstrapDialog.show({
-        title: "You're half-way done!",
-        message: $stage_instruction,
-        buttons: [{
-            label: "Resume Task Session",
-            cssClass: "btn-primary",
-            action: function(dialogItself) {
-                dialogItself.close();
-                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
-            }
-        }],
-        closable: false,
-    });
-}
-
-function show_study_completion_dialog(report) {
-    BootstrapDialog.show({
-        title: "Congratulations, you have completed the study!",
-        message: report + "\n\n" +
-                "Please go on to fill in the post-study questionnaire.",
-        buttons: [{
-            label: "Go to questionnaire",
-            cssClass: "btn-primary",
-            action: function(dialogItself) {
-                dialogItself.close();
-                window.location.replace(`https://docs.google.com/a/cs.washington.edu/forms/d/e/1FAIpQLSdX1qM91hIG7mEy-6cTIbZ3b5iiUyMkytLHG3Mh03WFsACtvA/viewforms`);
-            }
-        }],
-        closable: false,
+function show_study_completion_dialog(data) {
+    var report = "Report: passed " + data.num_passed + "/" + data.num_total +
+        " tasks; given up " + data.num_given_up + "/" + data.num_total + " tasks.";
+    setTimeout(function () {
+        BootstrapDialog.show({
+            title: "Congratulations, you have completed the study!",
+            message: report + "\n\n" +
+                    "Please go on to fill in the post-study questionnaire.",
+            buttons: [{
+                label: "Go to questionnaire",
+                cssClass: "btn-primary",
+                action: function(dialogItself) {
+                    dialogItself.close();
+                    window.location.replace(`https://docs.google.com/a/cs.washington.edu/forms/d/e/1FAIpQLSdX1qM91hIG7mEy-6cTIbZ3b5iiUyMkytLHG3Mh03WFsACtvA/viewform`);
+                }
+            }],
+            closable: false,
+        });
     });
 }

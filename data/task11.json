@@ -1,7 +1,7 @@
 {
    "task_id": "11",
    "type": "filesystem_change",
-   "description": "Delete all empty files under the \"content/review\" directory but do not delete anything in its subdirectories.",
+   "description": "Delete all the empty files from the directory \"content/review\", but do not delete anything in its subdirectories.",
    "file_attributes": [],
    "target_dir": "website/content/review",
    "difficulty": 2,
@@ -37,7 +37,7 @@
 
                            },
                            "type": "file",
-                           "name": "2013_hw1.md"
+                           "name": "2013_hw.md"
                        }
                      ]
                   },
