@@ -21,8 +21,8 @@ WEBSITE_DEVELOP = True
 
 # unimplemented tasks: 3, 20
 TASK_TRAINING = [21, 22]
-TASK_BLOCK_I = [5, 10, 6, 9, 19, 1, 18, 17, 16]
-TASK_BLOCK_II = [8, 7, 2, 14, 12, 4, 13, 15, 11]
+TASK_BLOCK_I = [13, 4, 7, 11, 5, 9, 17, 10, 18]
+TASK_BLOCK_II = [15, 1, 6, 8, 12, 19, 2, 14, 16]
 
 if not WEBSITE_DEVELOP:
     assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
