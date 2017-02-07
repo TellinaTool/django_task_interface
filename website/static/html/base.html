@@ -28,10 +28,10 @@
 
         <script>
             // prevent the user from navigating back and force with the browser
-            history.pushState(null, null, document.URL);
+            /* history.pushState(null, null, document.URL);
             window.addEventListener('popstate', function () {
                 history.pushState(null, null, document.URL);
-            });
+            }); */
         </script>
         {% block other-scripts %}{% endblock %}
     </body>

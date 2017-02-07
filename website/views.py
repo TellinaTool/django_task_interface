@@ -660,15 +660,21 @@ def register_user(request):
             'access_code': 'USER_EXISTS'
         })
     else:
+        # assign the new user to a group
+        num_registered_users = User.objects.all().count()
+        groups = ['group4', 'group1', 'group2', 'group3']
+        group = groups[num_registered_users % 4]
         # make access code for user
         access_code = first_name.lower() + '-' + last_name.lower()
         User.objects.create(
             first_name = first_name,
             last_name = last_name,
-            access_code = access_code
+            access_code = access_code,
+            group = group
         )
         return json_response({
-            'access_code': access_code
+            'access_code': access_code,
+            'group': group
         })
 
 def user_login(request):
@@ -856,11 +862,13 @@ def action_history(request):
     session_id = request.GET['study_session_id']
     stage = request.GET['stage']
     task_order_number = int(request.GET['task_order_number'])
+    print(task_order_number)
     study_session = StudySession.objects.get(session_id=session_id)
     i = 0
     task_session = None
     for task_session in TaskSession.objects.filter(
-            study_session=study_session, stage=stage).order_by('start_time'):
+            study_session=study_session, study_session_stage=stage,
+            is_training=False).order_by('start_time'):
         i += 1
         if i == task_order_number:
             break
