@@ -239,6 +239,9 @@ $(document).ready(function () {
                     exists_stdout_missing  = true;
             }
         }
+
+
+
         $("#task-progress-vis").empty();
         $("#fs-vis-legend").empty();
         if (exists_fs_extra || exists_fs_missing || exists_select_missing 
@@ -328,6 +331,10 @@ $(document).ready(function () {
             $("#current-tree-vis-container").css("bottom", "50%");
             $("#task-progress-vis-container").css("top", "50.5%");
 
+            console.log("!!!");
+            console.log(data.stdout_diff.lines);
+            console.log(exists_stdout_missing); 
+
             missing_legend = "";
             if (exists_stdout_missing)
                 missing_line_legend = '<li>There are lines <b>missing</b> in your print result: presented as "<span style="color:#CCCCCC">some line</span>".</li>';
@@ -336,11 +343,14 @@ $(document).ready(function () {
             if (exists_stdout_incorrect)
                 wrong_line_legend = '<li>There are lines <b>wrongly printed</b>: presented as "<span style="color: red;text-decoration:line-through">some line</span>".</li>';
 
-            $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your terminal output mismatches the solution output, see below</font>: \
+
+            if (exists_stdout_missing || exists_stdout_incorrect) {
+                $("#task-progress-report").append('<li><font style="text-decoration: underline;">Your terminal output mismatches the solution output, see below</font>: \
                                                    <ul class="legend-ul" id="std-out-diff-legend">' + missing_line_legend + wrong_line_legend +
                                                     '<li>Your output v.s. solution output: <div id="std-out-diff" style="min-height:10px;border-style: dashed; padding-left:10px;"></div></li></ul>\
                                               </li>');
-            build_stdout_vis(data.stdout_diff, "#std-out-diff");
+                build_stdout_vis(data.stdout_diff, "#std-out-diff");
+            }
         }
     }
 
