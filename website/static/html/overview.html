@@ -6,10 +6,16 @@
     <div>
         <h2>List of Studied Participants</h2>
         {% for user in user_list %}
-            <li><a href="/study_session_report?first_name={{user.first_name}}&last_name={{user.last_name}}">{{user.first_name}} {{user.last_name}}</li>
+            <span class="report_link"><a href="/study_session_report?first_name={{user.first_name}}&last_name={{user.last_name}}">{{user.first_name}} {{user.last_name}}</a></span>
         {% endfor %}
     </div>
   {% endblock %}
 
   {% block other-scripts %}
+    $(document).on('click', '.report_link', function () {
+        var names = this.text.split();
+        var first_name = names[0];
+        var last_name = names[1];
+        $.get(`/study_session_report`, {'first_name': first_name, 'last_name': last_name});
+    })
   {% endblock %}
