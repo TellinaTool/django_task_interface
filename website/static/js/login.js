@@ -52,6 +52,7 @@ $(document).ready(function () {
                                         });
                                         console.log("User already exists.");
                                     } else {
+                                        console.log(data.group);
                                         BootstrapDialog.show({
                                             title: "Login Information",
                                             message: "Your access code: <b>" + username + "</b>",

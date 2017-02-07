@@ -660,15 +660,21 @@ def register_user(request):
             'access_code': 'USER_EXISTS'
         })
     else:
+        # assign the new user to a group
+        num_registered_users = User.objects.all().count()
+        groups = ['group4', 'group1', 'group2', 'group3']
+        group = groups[num_registered_users % 4]
         # make access code for user
         access_code = first_name.lower() + '-' + last_name.lower()
         User.objects.create(
             first_name = first_name,
             last_name = last_name,
-            access_code = access_code
+            access_code = access_code,
+            group = group
         )
         return json_response({
-            'access_code': access_code
+            'access_code': access_code,
+            'group': group
         })
 
 def user_login(request):
