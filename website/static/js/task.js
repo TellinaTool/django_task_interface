@@ -142,7 +142,7 @@ $(document).ready(function () {
                     stdout += event.data;
                     // send the standard output to the backend whenever the user
                     // executes a command in the terminal
-                    if (stdout.match(/(.|\n)*me\@[0-9a-z]{12}\:[^\n]*\$ $/)) {
+                    if (stdout.match(/(.|\n)*\@[0-9a-z]{12}\:[^\n]*\$ $/)) {
                         if (stdout.split('\n').length > 1) {
                             $.post(`/on_command_execution`, {stdout: stdout},
                                 function(data) {
