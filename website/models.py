@@ -20,9 +20,10 @@ import time
 WEBSITE_DEVELOP = True
 
 # unimplemented tasks: 3, 20
+# unused tasks: 10, 18
 TASK_TRAINING = [21, 22]
-TASK_BLOCK_I = [13, 4, 7, 11, 5, 9, 17, 10, 18]
-TASK_BLOCK_II = [15, 1, 6, 8, 12, 19, 2, 14, 16]
+TASK_BLOCK_I = [13, 4, 7, 11, 5, 9, 17, 14]
+TASK_BLOCK_II = [15, 1, 6, 8, 12, 19, 2, 16]
 
 if not WEBSITE_DEVELOP:
     assert(len(TASK_BLOCK_I) == len(TASK_BLOCK_II))
