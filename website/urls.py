@@ -41,6 +41,6 @@ urlpatterns = [
 
     # admin pagedj
     url(r'^admin', admin.site.urls),
-    url(r'^study_session_report$', views.study_session_report),
+    url(r'^study_session_report?first_name=*&last_name=*', views.study_session_report),
     url(r'^overview$', views.overview)
 ]
