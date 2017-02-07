@@ -92,6 +92,10 @@ _CONTENT = 8
 ERROR_TAGS = ['extra', 'missing', 'incorrect', 'stdout_missing',
               'stdout_extra', 'ch_extra', 'ch_missing', 'ch_incorrect']
 
+directories_in_sample_filesystems = ['backup', 'content', 'css', 'js', 'lib',
+    'partials', 'assignments', 'labs', 'lessons', 'review', 'bootstrap3',
+    'fonts', 'angular', 'jquery', 'showdown', 'underscore']
+
 
 class Node(object):
     """
@@ -594,7 +598,7 @@ def annotate_stdout_errors(fs_diff, stdout_diff):
 
 # --- Other File System Utilities --- #
 
-def extract_path(input, current_dir=None):
+def extract_path(input, current_dir=None, is_ls_command=False):
     """
     Extract file paths from a line of terminal stdout, considering the current
     directory of the user. This function assumes that there is only one file
@@ -603,25 +607,35 @@ def extract_path(input, current_dir=None):
     :param input: a stdout line from which the file path is to be extracted
     :param current_dir: the directory where the user is currenly at, '.' by
         default.
+    :param is_ls_command: the user executed an "ls" command
 
     Return None if there is no path mention in the input line, otherwise the
     path object.
     """
-    path_pattern = re.compile(
-        r'((([^ ]*\/)+[^ ]*)|([a-zA-Z]+\.[a-zA-Z]+))(\:|$)')
-    match = re.search(path_pattern, input.strip())
-    if not match:
-        return None
-    path = match.group(0).strip()
-    # special path format for "grep"
-    if path.endswith(':'):
-        path = path[:-1]
-    if path == '.':
-        path = './'
-    if path.startswith('./'):
-        path = path[2:]
-    path = pathlib.Path(os.path.join(current_dir, path)) if current_dir \
-        else pathlib.Path(path)
+    tokens = input.strip().split()
+    if len(tokens) == 1:
+        if tokens[-1] in directories_in_sample_filesystems:
+            partial_path = pathlib.Path(tokens[-1])
+            return current_dir / partial_path
+    if is_ls_command:
+        partial_path = pathlib.Path(tokens[-1])
+        path = current_dir / partial_path
+    else:
+        path_pattern = re.compile(
+            r'((([^ ]*\/)+[^ ]*)|([a-zA-Z]+\.[a-zA-Z]+))(\:|$)')
+        match = re.search(path_pattern, input.strip())
+        if not match:
+            return None
+        path = match.group(0).strip()
+        # special path format for "grep"
+        if path.endswith(':'):
+            path = path[:-1]
+        if path == '.':
+            path = './'
+        if path.startswith('./'):
+            path = path[2:]
+        path = current_dir / pathlib.Path(path) if current_dir \
+            else pathlib.Path(path)
     return path
 
 def filesystem_sort(fs):

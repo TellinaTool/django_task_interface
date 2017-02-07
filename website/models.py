@@ -506,10 +506,12 @@ class ActionHistory(models.Model):
         - `__paused__` if the user paused the task session or the task session
             is interrupted
         - `__resumed__` if a paused task session is resumed
+    :member stdout: The standard output
     :member action_time: The time the action is taken.
     """
     task_session = models.ForeignKey(TaskSession, on_delete=models.CASCADE)
     action = models.TextField()
+    stdout = models.TextField(default='')
     action_time = models.DateTimeField()
 
 # --- Peripheral Data --- #

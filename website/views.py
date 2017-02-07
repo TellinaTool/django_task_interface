@@ -335,20 +335,31 @@ def on_command_execution(request, task_session):
     task = task_session.task
     stdout = request.POST['stdout']
 
-    ActionHistory.objects.create(
-        task_session=task_session,
-        action = stdout,
-        action_time = timezone.now()
-    )
-
     # check if there are file path in the stdout
     stdout_lines = stdout.split('\n')
-    current_dir = stdout_lines[-1][16:-2]
+    current_dir = pathlib.Path(stdout_lines[-1][16:-2])
+    command = stdout_lines[0]
+    tokens = command.split()
+    is_ls_command = False
+    if tokens[0] == 'ls':
+        if tokens[-1] != 'ls' and not tokens[-1].startswith('-'):
+            partial_path = pathlib.Path(tokens[-1])
+            current_dir = current_dir / partial_path
+        is_ls_command = True
+
     stdout_paths = []
     for stdout_line in stdout_lines[1:-1]:
-        path = extract_path(stdout_line, current_dir)
+        path = extract_path(stdout_line, current_dir, is_ls_command)
         if path:
             stdout_paths.append(path)
+
+    stdout = '\n'.join(stdout_lines[1:-1]) if len(stdout_lines) > 2 else ''
+    ActionHistory.objects.create(
+        task_session=task_session,
+        action = command,
+        stdout = stdout,
+        action_time = timezone.now()
+    )
 
     # compute distance between current file system and the goal file system
     container = task_session.container
@@ -359,8 +370,8 @@ def on_command_execution(request, task_session):
 
     task_completed = False
     if task.type == 'stdout':
-        stdout_diff = compute_stdout_diff('\n'.join(stdout_lines[1:-1]), task,
-                                          current_dir)
+        stdout_diff = compute_stdout_diff(
+            '\n'.join(stdout_lines[1:-1]), task, current_dir, is_ls_command)
         # check if stdout signals task completion
         # the files/directories being checked must be presented in full paths
         # the file/directory names cannot contain spaces
@@ -457,8 +468,8 @@ def compute_filesystem_diff(container, task, stdout_paths,
 
     """
     filesystem_vfs_path = '/{}/home/website'.format(container.filesystem_name)
-    current_filesystem = disk_2_dict( pathlib.Path(filesystem_vfs_path),
-            json.loads(task.file_attributes))
+    current_filesystem = disk_2_dict(pathlib.Path(filesystem_vfs_path),
+        json.loads(task.file_attributes))
     if save_initial_filesystem:
         task.initial_filesystem = json.dumps(current_filesystem)
         task.save()
@@ -487,7 +498,7 @@ def compute_filesystem_diff(container, task, stdout_paths,
                           'incorrect')
     return fs_diff
 
-def compute_stdout_diff(stdout, task, current_dir=None):
+def compute_stdout_diff(stdout, task, current_dir=None, is_ls_command=False):
     """
     Compute the difference between the user's current terminal output and the 
     goal output.
@@ -496,6 +507,7 @@ def compute_stdout_diff(stdout, task, current_dir=None):
         stdout: the user's current terminal output
         task: the task object which contains the definition of the file system
         current_dir: the user's current directory
+        is_ls_command: the user issued an "ls" command
 
     Return:
     	e.g.
@@ -518,8 +530,8 @@ def compute_stdout_diff(stdout, task, current_dir=None):
         if task_id == 16:
             # loose comparison is enough for tasks that requires date/time
             # to be outputed in a specific format
-            path1 = extract_path(l1, current_dir)
-            path2 = extract_path(l2, '~/website')
+            path1 = extract_path(l1, current_dir, is_ls_command)
+            path2 = extract_path(l2, '~/website', is_ls_command)
             if path1 == path2:
                 time_long_iso_re = re.compile(r'\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}'
                                              r'(:\d{2}(\.\d+)?)?')
@@ -530,8 +542,8 @@ def compute_stdout_diff(stdout, task, current_dir=None):
             # lines in a file
             num_of_lines, _ = l2.split()
             num_of_lines_pattern = re.compile(r'{}\s'.format(num_of_lines))
-            path1 = extract_path(l1, current_dir)
-            path2 = extract_path(l2, '~/website')
+            path1 = extract_path(l1, current_dir, is_ls_command)
+            path2 = extract_path(l2, '~/website', is_ls_command)
             if path1 == path2 and (re.search(num_of_lines_pattern, l1)):
                 return True
         else:
@@ -566,18 +578,12 @@ def compute_stdout_diff(stdout, task, current_dir=None):
                 })
             else:
                 total_pattern = re.compile(r'(total\s|\stotal)')
-                if not unmatch_detected and \
-                        (task.task_id == 19 and re.search(total_pattern, l1)):
+                if (task.task_id == 19 and re.search(total_pattern, l1) and
+                    len(l1) < 20):
                     stdout_diff.append({
                         'line': l1,
                         'tag': 'correct'
                     })
-                else:
-                    stdout_diff.append({
-                        'line': l1,
-                        'tag': 'extra'
-                    })
-                    tag = 'incorrect'
         for i in range(len(stdout2)):
             if not i in matched_stdout2:
                 l2 = stdout2[i]
