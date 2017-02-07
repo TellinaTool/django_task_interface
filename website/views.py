@@ -799,9 +799,8 @@ def study_session_report(request):
     first_name = request.GET['first_name']
     last_name = request.GET['last_name']
     user = User.objects.get(first_name=first_name, last_name=last_name)
-
     for study_session in StudySession.objects.filter(user=user,
-                                                     status='closed'):
+                                                     status='finished'):
         part_i_task_sessions = []
         part_ii_task_sessions = []
         i = 0
@@ -814,6 +813,8 @@ def study_session_report(request):
                 part_ii_task_sessions.append(task_session)
             i += 1
         context = {
+            'first_name': first_name,
+            'last_name': last_name,
             'part_i_task_sessions': part_i_task_sessions,
             'part_ii_task_sessions': part_ii_task_sessions
         }
