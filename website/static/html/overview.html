@@ -14,10 +14,12 @@
   {% endblock %}
 
   {% block other-scripts %}
-    $(document).on('click', '.report_link', function () {
-        var names = this.text.split();
-        var first_name = names[0];
-        var last_name = names[1];
-        $.get(`/study_session_report`, {'first_name': first_name, 'last_name': last_name});
-    })
+    <script>
+        $(document).on('click', '.report_link', function () {
+            var names = this.text.split();
+            var first_name = names[0];
+            var last_name = names[1];
+            $.get(`/study_session_report`, {'first_name': first_name, 'last_name': last_name});
+        })
+    </script>
   {% endblock %}
