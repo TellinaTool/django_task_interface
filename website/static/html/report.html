@@ -8,15 +8,17 @@
         <h2>Part I</h2>
         <ul>
             {% for task_session in part_i_task_sessions %}
-            <li>task {{forloop.counter}}: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.}}</li>
+            <li>task {{forloop.counter}}: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.seconds}}s</li>
             {% endfor %}
         </ul>
+        Average time per task: {{part_i_average_time_spent}}s
         <h2>Part II</h2>
         <ul>
             {% for task_session in part_ii_task_sessions %}
-            <li>task {{forloop.counter}}: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.seconds}}</li>
+            <li>task {{forloop.counter}}: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.seconds}}s</li>
             {% endfor %}
         </ul>
+        Average time per task: {{part_ii_average_time_spent}}s
     </div>
   {% endblock %}
 
