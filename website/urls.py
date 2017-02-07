@@ -35,12 +35,14 @@ urlpatterns = [
     # file system
     url(r'^reset_file_system$', views.reset_file_system),
 
-    # login & registration
-    url(r'^', TemplateView.as_view(template_name='login.html'),
-        name='home'),
-
     # admin pagedj
     url(r'^admin', admin.site.urls),
-    url(r'^study_session_report?first_name=*&last_name=*', views.study_session_report),
-    url(r'^overview$', views.overview)
+    url(r'^study_session_report$', views.study_session_report),
+    url(r'^action_history$', views.action_history),
+    url(r'^overview$', views.overview),
+
+    # login & registration
+    url(r'', TemplateView.as_view(template_name='login.html'),
+        name='home'),
 ]
+

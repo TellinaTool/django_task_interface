@@ -799,32 +799,37 @@ def study_session_report(request):
     first_name = request.GET['first_name']
     last_name = request.GET['last_name']
     user = User.objects.get(first_name=first_name, last_name=last_name)
-
-    part_i_avg_time = timezone.timedelta(seconds=0)
-    part_ii_avg_time = timezone.timedelta(seconds=0)
     for study_session in StudySession.objects.filter(user=user,
-                                                     status='closed'):
+                                                     status='finished'):
         part_i_task_sessions = []
         part_ii_task_sessions = []
+        part_i_avg_time = timezone.timedelta(seconds=0)
+        part_ii_avg_time = timezone.timedelta(seconds=0)
+        part_i_num_valid_tasks = 0
+        part_ii_num_valid_tasks = 0
         for task_session in TaskSession.objects.filter(
                 study_session=study_session, is_training=False)\
             .order_by('start_time'):
-            if task_session.status == 'aborted':
-                continue
             if task_session.study_session_stage == 'I':
                 part_i_task_sessions.append(task_session)
-                part_i_avg_time += task_session.time_spent
+                if task_session.status != 'aborted':
+                    part_i_avg_time += task_session.time_spent
+                    part_i_num_valid_tasks += 1
             elif task_session.study_session_stage == 'II':
                 part_ii_task_sessions.append(task_session)
-                part_ii_avg_time += task_session.time_spent
-        part_i_avg_time /= study_session.switch_point
-        part_ii_avg_time /= (study_session.total_num_tasks -
-                             study_session.switch_point)
+                if task_session.status != 'aborted':
+                    part_ii_avg_time += task_session.time_spent
+                    part_ii_num_valid_tasks += 1
+        part_i_avg_time /= part_i_num_valid_tasks
+        part_ii_avg_time /= part_ii_num_valid_tasks
         context = {
+            'first_name': first_name,
+            'last_name': last_name,
             'part_i_task_sessions': part_i_task_sessions,
             'part_ii_task_sessions': part_ii_task_sessions,
-            'part_i_avg_time': part_i_avg_time,
-            'part_ii_avg_time': part_ii_avg_time
+            'part_i_average_time_spent': part_i_avg_time,
+            'part_ii_average_time_spent': part_ii_avg_time,
+            'session_id': study_session.session_id
         }
         return HttpResponse(template.render(context, request))
 
@@ -838,4 +843,31 @@ def overview(request):
             # not a sudo user
             user_list.append(user)
     context = { 'user_list': user_list }
+    return HttpResponse(template.render(context, request))
+
+def action_history(request):
+    template = loader.get_template('action_history.html')
+    session_id = request.GET['study_session_id']
+    stage = request.GET['stage']
+    task_order_number = request.GET['task_order_number']
+    study_session = StudySession.objects.get(session_id=session_id)
+    i = 0
+    task_session = None
+    for task_session in TaskSession.objects.filter(
+            study_session=study_session, stage=stage).order_by('start_time'):
+        i += 1
+        if i == task_order_number:
+            break
+
+    action_history = []
+    for action in ActionHistory.objects.filter(task_session=task_session)\
+        .order_by('action_time'):
+        action_history.append(action)
+
+    context = {
+        'task_order_number': task_order_number,
+        'task_session': task_session,
+        'action_history': action_history
+    }
+
     return HttpResponse(template.render(context, request))

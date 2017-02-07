@@ -5,17 +5,18 @@
   {% block body %}
     <div>
         <h1>{{first_name}} {{last_name}}</h1>
-        <h2>Part I</h2>
+        <h2>study session: {{session_id}}</h2>
+        <h3>Part I</h3>
         <ul>
             {% for task_session in part_i_task_sessions %}
-            <li><span class="action_history_link">task {{forloop.counter}}</span>: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.seconds}}s</li>
+            <li><span class="part_i_action_history_link"><a>task {{forloop.counter}}</a></span>: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.seconds}}s</li>
             {% endfor %}
         </ul>
         Average time spent per task: {{part_i_average_time_spent}}s
-        <h2>Part II</h2>
+        <h3>Part II</h3>
         <ul>
             {% for task_session in part_ii_task_sessions %}
-            <li><span class="action_history_link">task {{forloop.counter}}</span>: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.seconds}}s</li>
+            <li><span class="part_ii_action_history_link"><a>task {{forloop.counter}}</a></span>: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.seconds}}s</li>
             {% endfor %}
         </ul>
         Average time spent per task: {{part_ii_average_time_spent}}s
@@ -24,11 +25,13 @@
 
   {% block other-scripts %}
     <script>
-        $(document).on('click', '.report_link', function () {
-            var names = this.text.split();
-            var first_name = names[0];
-            var last_name = names[1];
-            $.get(`/study_session_report`, {'first_name': first_name, 'last_name': last_name});
-        })
+        $(document).on('click', '.part_i_action_history_link', function () {
+            var task_order_number = parseInt(this.text.split()[1]);
+            $.get(`action_history`, {'study_session_id': '{{session_id}}', 'stage': 'I', 'task_order_number': task_order_number});
+        });
+        $(document).on('click', '.part_ii_action_history_link', function () {
+            var task_order_number = parseInt(this.text.split()[1]);
+            $.get(`action_history`, {'study_session_id': '{{session_id}}', 'stage': 'II', 'task_order_number': task_order_number});
+        });
     </script>
   {% endblock %}
