@@ -849,7 +849,7 @@ def action_history(request):
     template = loader.get_template('action_history.html')
     session_id = request.GET['study_session_id']
     stage = request.GET['stage']
-    task_order_number = request.GET['task_order_number']
+    task_order_number = int(request.GET['task_order_number'])
     study_session = StudySession.objects.get(session_id=session_id)
     i = 0
     task_session = None
