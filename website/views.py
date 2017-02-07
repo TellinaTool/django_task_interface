@@ -806,17 +806,17 @@ def study_session_report(request):
                                                      status='closed'):
         part_i_task_sessions = []
         part_ii_task_sessions = []
-        i = 0
         for task_session in TaskSession.objects.filter(
                 study_session=study_session, is_training=False)\
             .order_by('start_time'):
-            if i < study_session.switch_point:
+            if task_session.status == 'aborted':
+                continue
+            if task_session.study_session_stage == 'I':
                 part_i_task_sessions.append(task_session)
                 part_i_avg_time += task_session.time_spent
-            else:
+            elif task_session.study_session_stage == 'II':
                 part_ii_task_sessions.append(task_session)
                 part_ii_avg_time += task_session.time_spent
-            i += 1
         part_i_avg_time /= study_session.switch_point
         part_ii_avg_time /= (study_session.total_num_tasks -
                              study_session.switch_point)
