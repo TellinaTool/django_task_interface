@@ -5,10 +5,12 @@
   {% block body %}
     <div>
         <h2>List of Studied Participants</h2>
+        <ul>
         {% for user in user_list %}
             <span class="report_link"><a>{{user.first_name}} {{user.last_name}}</a></span>
             <br>
         {% endfor %}
+        </ul>
     </div>
   {% endblock %}
 

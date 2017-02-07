@@ -799,6 +799,8 @@ def study_session_report(request):
     first_name = request.GET['first_name']
     last_name = request.GET['last_name']
     user = User.objects.get(first_name=first_name, last_name=last_name)
+    part_i_avg_time = timezone.timedelta(seconds=0)
+    part_ii_avg_time = timezone.timedelta(seconds=0)
     for study_session in StudySession.objects.filter(user=user,
                                                      status='finished'):
         part_i_task_sessions = []
@@ -809,14 +811,21 @@ def study_session_report(request):
             .order_by('start_time'):
             if i < study_session.switch_point:
                 part_i_task_sessions.append(task_session)
+                part_i_avg_time += task_session.time_spent
             else:
                 part_ii_task_sessions.append(task_session)
+                part_ii_avg_time += task_session.time_spent
             i += 1
+        part_i_avg_time /= study_session.switch_point
+        part_ii_avg_time /= (study_session.total_num_tasks -
+                             study_session.switch_point)
         context = {
             'first_name': first_name,
             'last_name': last_name,
             'part_i_task_sessions': part_i_task_sessions,
-            'part_ii_task_sessions': part_ii_task_sessions
+            'part_ii_task_sessions': part_ii_task_sessions,
+            'part_i_avg_time': part_i_avg_time,
+            'part_ii_avg_time': part_ii_avg_time
         }
         return HttpResponse(template.render(context, request))
 
