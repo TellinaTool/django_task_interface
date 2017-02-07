@@ -824,8 +824,8 @@ def study_session_report(request):
             'last_name': last_name,
             'part_i_task_sessions': part_i_task_sessions,
             'part_ii_task_sessions': part_ii_task_sessions,
-            'part_i_avg_time': part_i_avg_time,
-            'part_ii_avg_time': part_ii_avg_time
+            'part_i_average_time_spent': part_i_avg_time,
+            'part_ii_average_time_spent': part_ii_avg_time
         }
         return HttpResponse(template.render(context, request))
 
