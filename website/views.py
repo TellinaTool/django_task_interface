@@ -850,11 +850,13 @@ def action_history(request):
     session_id = request.GET['study_session_id']
     stage = request.GET['stage']
     task_order_number = int(request.GET['task_order_number'])
+    print(task_order_number)
     study_session = StudySession.objects.get(session_id=session_id)
     i = 0
     task_session = None
     for task_session in TaskSession.objects.filter(
-            study_session=study_session, study_session_stage=stage).order_by('start_time'):
+            study_session=study_session, study_session_stage=stage,
+            is_training=False).order_by('start_time'):
         i += 1
         if i == task_order_number:
             break
