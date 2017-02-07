@@ -26,11 +26,11 @@
   {% block other-scripts %}
     <script>
         $('.part_i_action_history_link').click(function () {
-            var task_order_number = parseInt(this.text.split()[1]);
+            var task_order_number = parseInt($(this).text().split(' ')[1]);
             $.get(`action_history`, {'study_session_id': '{{session_id}}', 'stage': 'I', 'task_order_number': task_order_number});
         });
         $('.part_ii_action_history_link').click(function () {
-            var task_order_number = parseInt(this.text.split()[1]);
+            var task_order_number = parseInt($(this).text().split(' ')[1]);
             $.get(`action_history`, {'study_session_id': '{{session_id}}', 'stage': 'II', 'task_order_number': task_order_number});
         });
     </script>
