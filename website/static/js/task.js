@@ -447,7 +447,7 @@ $(document).ready(function () {
 
     /* function show_entering_stage_i_dialog(data) {
         var $stage_instruction = $('<div style="">');
-        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first 9 tasks in the user study, you may use the following tools:');
+        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first 8 tasks in the user study, you may use the following tools:');
         if (data.treatment_order == 0) {
             $stage_instruction.append('<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
             $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
