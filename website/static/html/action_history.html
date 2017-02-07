@@ -12,7 +12,7 @@
 
         <ul>
             {% for action in action_history %}
-                <li>action {{forloop.counter}}: {{action_time}} <span style="color:red">{{action.action}}</span> </li><br>
+                <li>action {{forloop.counter}} {{action.action_time}}: <span style="color:red">{{action.action}}</span> </li><br>
             {% endfor %}
         </ul>
 
