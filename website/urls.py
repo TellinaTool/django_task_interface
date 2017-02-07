@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^user_login$', views.user_login),
     url(r'^register_user$', views.register_user),
     url(r'^retrieve_access_code$', views.retrieve_access_code),
-    url(r'^resume_task_session', views.resume_task_session),
+    url(r'^resume_task_session$', views.resume_task_session),
 
     # consent & instruction
     url(r'^consent$', views.consent),
@@ -23,27 +23,24 @@ urlpatterns = [
 
     # task session
     url(r'^.*-study_session-.*-task-.*', views.get_current_task),
-    url(r'^update_task_timing', views.update_task_timing),
+    url(r'^update_task_timing$', views.update_task_timing),
     url(r'^get_current_task$', views.get_current_task),
     url(r'^get_additional_task_info$', views.get_additional_task_info),
     url(r'^go_to_next_task$', views.go_to_next_task),
-    url(r'^task_session_paused', views.task_session_paused),
+    url(r'^task_session_paused$', views.task_session_paused),
 
     # terminal I/O
     url(r'^on_command_execution$', views.on_command_execution),
 
     # file system
-    url(r'^reset_file_system', views.reset_file_system),
+    url(r'^reset_file_system$', views.reset_file_system),
 
-    # admin page
-    url(r'^admin', admin.site.urls),
-
+    # login & registration
     url(r'^', TemplateView.as_view(template_name='login.html'),
         name='home'),
 
-    # url(r'^initialize_task$', views.initialize_task),
-    # url(r'^get_filesystem$', views.get_filesystem),
-    # url(r'^check_task_state$', views.check_task_state),
-    # url(r'^update_state$', views.update_state),
-    # url(r'^append_stdin$', views.append_stdin),
+    # admin pagedj
+    url(r'^admin', admin.site.urls),
+    url(r'^study_session_report$', views.study_session_report),
+    url(r'^overview$', views.overview)
 ]

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+  {% block head %}
+  {% endblock %}
+
+  {% block body %}
+    <div>
+        <h1>{{first_name}} {{last_name}}</h1>
+        <h2>Part I</h2>
+        <ul>
+            {% for task_session in part_i_task_sessions %}
+            <li>task {{forloop.counter}}: <span style="color:red">{{task_session.status}} {{task_session.time_spent}}</li>
+            {% endfor %}
+        </ul>
+        <h2>Part II</h2>
+        <ul>
+            {% for task_session in part_ii_task_sessions %}
+            <li>task {{forloop.counter}}: <span style="color:red">{{task_session.status}} {{task_session.time_spent}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+  {% endblock %}
+
+  {% block other-scripts %}
+  {% endblock %}

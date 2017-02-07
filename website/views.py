@@ -789,3 +789,44 @@ def consent_signed(request, study_session):
     study_session.status = 'reading_instructions'
     study_session.save()
     return json_response()
+
+
+# --- Study Session Report --- #
+
+def study_session_report(request):
+    template = loader.get_template('report.html')
+    context = {}
+    first_name = request.GET['first_name']
+    last_name = request.GET['last_name']
+    user = User.objects.get(first_name=first_name, last_name=last_name)
+
+    for study_session in StudySession.objects.filter(user=user,
+                                                     status='closed'):
+        part_i_task_sessions = []
+        part_ii_task_sessions = []
+        i = 0
+        for task_session in TaskSession.objects.filter(
+                study_session=study_session, is_training=False)\
+            .order_by('start_time'):
+            if i < study_session.switch_point:
+                part_i_task_sessions.append(task_session)
+            else:
+                part_ii_task_sessions.append(task_session)
+            i += 1
+        context = {
+            'part_i_task_sessions': part_i_task_sessions,
+            'part_ii_task_sessions': part_ii_task_sessions
+        }
+        return HttpResponse(template.render(context, request))
+
+    return HttpResponse(template.render(context, request))
+
+def overview(request):
+    template = loader.get_template('overview.html')
+    user_list = []
+    for user in User.objects.all():
+        if len(user.access_code) > 3:
+            # not a sudo user
+            user_list.append(user)
+    context = { 'user_list': user_list }
+    return HttpResponse(template.render(context, request))
