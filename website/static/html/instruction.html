@@ -65,7 +65,7 @@
                                         </p>
                                         <br>
                                         <h4>1. Task Sessions</h4>
-                                        <p>You will be given <b>16 filesystem tasks</b>. Each task may require you to
+                                        <p>You will be given <b>filesystem tasks</b>. Each task may require you to
                                         <li>change the file system by deleting, adding, or modifying files, or</li>
                                         <li>produce output, such as a list of files.</li>
                                         </p>
@@ -81,20 +81,20 @@
                                                 of the study.</p>
                                             <p><div style="border: 2px solid black; padding: 6px 6px 6px 6px">
                                                 {% if treatment_order == "0" %}
-                                                <li>For the <b>first half of the study (8 tasks)</b>,
+                                                <li>For the <b>first half of the study</b>,
                                                     you will be given <b>Tellina</b>, a tool that translates the natural language
                                                     description of a command into a bash command;
                                                 </li>
-                                                <li>For the <b>second half of the study (8 tasks)</b>,
+                                                <li>For the <b>second half of the study</b>,
                                                     you will be given <b>Explainshell</b>, a tool that explains the usage a
                                                     bash command.
                                                 </li>
                                             {% elif treatment_order == "1" %}
-                                                <li>For the first half of the study (8 tasks),
+                                                <li>For the first half of the study,
                                                     you will be given Explainshell, a tool that explains the usage of
                                                     a bash command;
                                                 </li>
-                                                <li>For the second half of the study (8 tasks),
+                                                <li>For the second half of the study,
                                                     you will be given Tellina, a tool that translates the natural language
                                                     description of a task to a bash command.
                                                 </li>
@@ -107,10 +107,12 @@
                                         <p>Each task has a <b>time limit of 10 minutes</b>, after which you will proceed
                                             to the next task even if you have not yet completed the current task.
                                         </p>
+                                        <!--
                                         <p>In addition, you may spend <b>at most 40 minutes in each half of the study
                                             (8 tasks)</b>, after which you will proceed to the next step regardless of
                                             completion status.
                                         </p>
+                                        -->
                                         <br>
                                         <h4>4. Training Sessions</h4>
                                         <!-- <p>Below is a screenshot of the interface you will be using to do the bash tasks.
@@ -119,7 +121,7 @@
                                         <p>You will complete a training session before getting to each half of the study.
                                             The training session will familiarize you with the task platform as well as
                                             the assistant tools that you will use. You will not be timed in the training
-                                            session and may stay as long as necessary.
+                                            session.
                                         </p>
                                         <p>Please click on the button below to proceed to the user study.
                                         </p>
