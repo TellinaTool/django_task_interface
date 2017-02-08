@@ -849,12 +849,19 @@ def study_session_report(request):
 
 def overview(request):
     template = loader.get_template('overview.html')
-    user_list = []
+    user_groups = [[], [], [], []]
     for user in User.objects.all():
         if len(user.access_code) > 3:
             # not a sudo user
-            user_list.append(user)
-    context = { 'user_list': user_list }
+            if user.group == 'group1':
+                user_groups[0].append(user)
+            elif user.group == 'group2':
+                user_groups[1].append(user)
+            elif user.group == 'group3':
+                user_groups[2].append(user)
+            elif user.group == 'group4':
+                user_groups[3].append(user)
+    context = { 'user_groups': user_groups }
     return HttpResponse(template.render(context, request))
 
 def action_history(request):
