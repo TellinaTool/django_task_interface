@@ -436,11 +436,11 @@ $(document).ready(function () {
 
     function show_training_completion_dialog(data) {
         $training_completion_acknowledgement = '<p>Awesome! You have completed the training session.</p>';
-        $training_completion_acknowledgement += '<p><i class="glyphicon glyphicon-info-sign"></i> You are ready to start the task session. Remember that you may use ';
+        $training_completion_acknowledgement += '<p> You are ready to start the task session. Remember that you may use ';
         if (data.treatment == 'A')
-            $training_completion_acknowledgement += 'Tellina, the Internet and man pages for help at any time.<p>'
+            $training_completion_acknowledgement += '<b>Tellina</b>, the Internet, and man pages for help at any time.<p>'
         else
-            $training_completion_acknowledgement += 'Explainshell, the Internet (excluding Tellina) and man pages for help at any time.<p>'
+            $training_completion_acknowledgement += '<b>Explainshell</b>, the Internet, and man pages for help at any time.<p>'
         BootstrapDialog.show({
             title: "Training: Completed",
             message: $training_completion_acknowledgement,
@@ -458,7 +458,7 @@ $(document).ready(function () {
 
     /* function show_entering_stage_i_dialog(data) {
         var $stage_instruction = $('<div style="">');
-        $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> When solving the first 8 tasks in the user study, you may use the following tools:');
+        $stage_instruction.append('<p> When solving the first 8 tasks in the user study, you may use the following tools:');
         if (data.treatment_order == 0) {
             $stage_instruction.append('<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina</a>, the natural language to bash translator</li><li>Any resources available in your bash terminal (s.a. man pages) or online (s.a. <a href="http://explainshell.com/" target="_blank">explainshell.com</a>).</li></ul></p>');
             $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
@@ -484,11 +484,11 @@ $(document).ready(function () {
     function show_entering_stage_ii_dialog(data) {
         var $stage_instruction = $('<div style="">');
         if (data.treatment_order == 1) {
-            $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, you may use the following tool <b>in addition</b> to what you already have accessed so far:');
+            $stage_instruction.append('<p> Starting from this point, you may use the following tool <b>in addition</b> to what you already have accessed so far:');
             $stage_instruction.append('<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina</a>, the natural language to bash translator</li></ul></p>');
             $stage_instruction.append('<p>Especially, we encourage you to <b>try Tellina first</b> before accessing other tools.</p></div>');
         } else {
-            $stage_instruction.append('<p><i class="glyphicon glyphicon-info-sign"></i> Starting from this point, please <b>stop</b> using Tellina when solving a task.</p>');
+            $stage_instruction.append('<p> Starting from this point, please <b>stop</b> using Tellina when solving a task.</p>');
             $stage_instruction.append('<p>When you find yourself in need of help, please only resort to the <b>other resources</b> available online or in your bash terminal.</p></div>');
         }
         BootstrapDialog.show({
