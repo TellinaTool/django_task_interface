@@ -60,7 +60,7 @@ var task_platform_training = {
         },
         {
             element: "#img-overlay-hanger",
-            intro: '<div style=""><p>Now that you have learned about the task platform, please go on to complete the training task with Google and the assistant tool we are going to introduce next.</p></div>',
+            intro: '<div style=""><p>Now that you have learned about the task platform, please go on to complete the training task with the assistant tool we are going to introduce next and other resources.</p></div>',
             position: "bottom"
         }
     ]
