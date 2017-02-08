@@ -6,14 +6,13 @@
     <div>
         <h2>List of Studied Participants</h2>
         {% for user_list in user_groups %}
-            <h3>>Group {{forloop.counter}}</h3>
+            <h3>Group {{forloop.counter}}</h3>
             <ul>
             {% for user in user_list %}
-                <span class="report_link"><a>{{user.first_name}} {{user.last_name}}</a></span>
-                <br>
+                <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a></li>
             {% endfor %}
+            </ul>
         {% endfor %}
-        </ul>
     </div>
   {% endblock %}
 
