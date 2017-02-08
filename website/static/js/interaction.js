@@ -97,7 +97,7 @@ function show_training_task_ii_assistant_tool_dialog(data) {
     }
     $instruction += '<p><i class="glyphicon glyphicon-info-sign"></i> For the second half of the study, you may use the following assistance:';
     if (data.treatment_order == 1) {
-        $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina, a natural language to bash command translator</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online (<b>including Explainshell</b>).</li></ul></p>';
+        $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina, a natural language to bash command translator</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online (including Explainshell).</li></ul></p>';
         $instruction += '<p>Now, click on the link above to perform a tutorial that will familiarize you with Tellina.</p>';
         $instruction += '<p>For each task, we encourage you to <b>try Tellina before other resources</b>.</p>';
     } else {
