@@ -60,7 +60,7 @@ var task_platform_training = {
         },
         {
             element: "#img-overlay-hanger",
-            intro: '<div style=""><p>Now that you have learned about the task platform, please go on to complete the training task.</p><p><i class="glyphicon glyphicon-info-sign"></i> You may use any resource available in your bash terminal or online when trying to solve a task.</p><p><i class="glyphicon glyphicon-info-sign"></i> There are also additional tools you can use and you will be given further instructions about them next.</p></div>',
+            intro: '<div style=""><p>Now that you have learned about the task platform, please go on to complete the training task with Google and the assistant tool we are going to introduce next.</p></div>',
             position: "bottom"
         }
     ]
