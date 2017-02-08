@@ -811,8 +811,14 @@ def study_session_report(request):
     first_name = request.GET['first_name']
     last_name = request.GET['last_name']
     user = User.objects.get(first_name=first_name, last_name=last_name)
-    for study_session in StudySession.objects.filter(user=user,
-                                                     status='finished'):
+    for study_session in StudySession.objects.filter(
+            user=user, status='finished'):
+        if study_session.treatment_order == 0:
+            part_i_assistant_tool = 'Tellina'
+            part_ii_assistant_tool = 'Explainshell'
+        else:
+            part_i_assistant_tool = 'Explainshell'
+            part_ii_assistant_tool = 'Tellina'
         part_i_task_sessions = []
         part_ii_task_sessions = []
         part_i_avg_time = timezone.timedelta(seconds=0)
@@ -841,6 +847,8 @@ def study_session_report(request):
             'part_ii_task_sessions': part_ii_task_sessions,
             'part_i_average_time_spent': part_i_avg_time,
             'part_ii_average_time_spent': part_ii_avg_time,
+            'part_i_assistant_tool': part_i_assistant_tool,
+            'part_ii_assistant_tool': part_ii_assistant_tool,
             'session_id': study_session.session_id
         }
         return HttpResponse(template.render(context, request))
