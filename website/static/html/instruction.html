@@ -79,13 +79,14 @@
                                             <p>For all tasks, you may use Internet resources such as Google search. In
                                                 addition, you will be given different assistant tools at different points
                                                 of the study.</p>
+                                            <div style="border: 2px solid black; padding: 6px 6px 6px 6px">
                                             {% if treatment_order == "0" %}
-                                                <li>For the first half of the study (8 tasks),
-                                                    you will be given Tellina, a tool that translates the natural language
+                                                <li>For the <b>first half of the study (8 tasks)</b>,
+                                                    you will be given <b>Tellina</b>, a tool that translates the natural language
                                                     description of a command into a bash command;
                                                 </li>
-                                                <li>For the second half of the study (8 tasks),
-                                                    you will be given Explainshell, a tool that explains the usage a
+                                                <li>For the <b>second half of the study (8 tasks)</b>,
+                                                    you will be given <b>Explainshell</b>, a tool that explains the usage a
                                                     bash command.
                                                 </li>
                                             {% elif treatment_order == "1" %}
@@ -98,6 +99,7 @@
                                                     description of a task to a bash command.
                                                 </li>
                                             {% endif %}
+                                            </div>
                                         <br>
                                         <h4>3. Timing </h4>
                                         <p>Each task has a <b>time limit of 10 minutes</b>, after which you will proceed
