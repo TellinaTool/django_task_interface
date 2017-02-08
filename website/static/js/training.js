@@ -10,7 +10,7 @@ var task_platform_training = {
         },
         {
             element: "#task-description",
-            intro: "The task description specifies what your bash command should do, such as modifying files or producing output.",
+            intro: "<p>The task description specifies what your bash command should do, such as modifying files or producing output.</p> <p>You may use the given assistant tool (to be introduced) and other resources for help while working on the solution.</p>",
             position: "right"
         },
         {
