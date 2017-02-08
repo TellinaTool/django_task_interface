@@ -41,8 +41,8 @@ clean:
 	-ls / | grep 'study_session' | xargs sudo bash delete_filesystem.bash
 	# Destroy Docker containers.
 	-sudo docker rm -f `sudo docker ps -q -a`
-	# Destroy database and migrations.
-	# rm -rf db.sqlite3 website/migrations
+	# Destroy database migrations.
+	# rm -rf website/migrations
 	# Remove container log file
 	# rm -f container*.log
 	-ps aux | grep bash | awk '/[ \t]/ {print $2}' | xargs sudo kill -9
