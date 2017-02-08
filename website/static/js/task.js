@@ -438,9 +438,9 @@ $(document).ready(function () {
         $training_completion_acknowledgement = '<p>Awesome! You have completed the training session.</p>';
         $training_completion_acknowledgement += '<p><i class="glyphicon glyphicon-info-sign"></i> You are ready to start the task session. Remember that you may use ';
         if (data.treatment == 'A')
-            $training_completion_acknowledgement += 'Tellina, the Internet and man pages for help at any time.<p>'
+            $training_completion_acknowledgement += '<b>Tellina</b>, the Internet, and man pages for help at any time.<p>'
         else
-            $training_completion_acknowledgement += 'Explainshell, the Internet (excluding Tellina) and man pages for help at any time.<p>'
+            $training_completion_acknowledgement += '<b>Explainshell</b>, the Internet, and man pages for help at any time.<p>'
         BootstrapDialog.show({
             title: "Training: Completed",
             message: $training_completion_acknowledgement,
