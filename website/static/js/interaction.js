@@ -61,12 +61,12 @@ function show_training_task_i_assistant_tool_dialog(data) {
     '<p> For the first half of the study, you may use the following assistance:';
     if (data.treatment_order == 0) {
         title = 'Study Part I - Tellina';
-        $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina, a natural language to bash command translation tool</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online.</li></ul></p>';
+        $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina, a natural language to bash command translation tool</a>;</li><li>any resources available in your bash terminal (such as man pages) or online.</li></ul></p>';
         $instruction += '<p>Now, click on the link above to perform a tutorial that will familiarize you with Tellina.</p>';
         $instruction += '<p>For each task, we encourage you to <b>try Tellina before other resources</b>.</p>';
     } else {
         title = 'Study Part I - Explainshell';
-        $instruction += '<ul><li><a href="http://explainshell.com/" target="_blank">Explainshell, a bash command explanation tool</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online.</li></ul></p>';
+        $instruction += '<ul><li><a href="http://explainshell.com/" target="_blank">Explainshell, a bash command explanation tool</a>;</li><li>any resources available in your bash terminal (such as man pages) or online.</li></ul></p>';
         $instruction += '<p>We encourage you to <b>use Explainshell</b> when you encounter a bash command you do not understand. Please click on the link above to learn more about the tool.</p>';
     }
     $instruction += '<p>Once you are familiarized with the tool, please close this dialog box and complete this training task.</p></div>';
@@ -97,11 +97,11 @@ function show_training_task_ii_assistant_tool_dialog(data) {
     }
     $instruction += '<p> For the second half of the study, you may use the following assistance:';
     if (data.treatment_order == 1) {
-        $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina, a natural language to bash command translator</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online (including Explainshell).</li></ul></p>';
+        $instruction += '<ul><li><a href="' + data.research_tool_url + '" target="_blank">Tellina, a natural language to bash command translator</a>;</li><li>any resources available in your bash terminal (such as man pages) or online (including Explainshell).</li></ul></p>';
         $instruction += '<p>Now, click on the link above to perform a tutorial that will familiarize you with Tellina.</p>';
         $instruction += '<p>For each task, we encourage you to <b>try Tellina before other resources</b>.</p>';
     } else {
-        $instruction += '<ul><li><a href="http://explainshell.com/" target="_blank">Explainshell, a bash command explanation tool</a>;</li><li>Any resources available in your bash terminal (such as man pages) or online (<b>excluding Tellina</b>).</li></ul></p>';
+        $instruction += '<ul><li><a href="http://explainshell.com/" target="_blank">Explainshell, a bash command explanation tool</a>;</li><li>any resources available in your bash terminal (such as man pages) or online (<b>excluding Tellina</b>).</li></ul></p>';
         $instruction += '<p>We encourage you to <b>use Explainshell</b> when you encounter a bash command you do not understand. Please click on the link above to learn more about the tool.</p>';
     }
     $instruction += '<p>Once you are familiarized with the tool, please close this dialog box and complete this training task.</p></div>';
