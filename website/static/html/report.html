@@ -6,14 +6,14 @@
     <div>
         <h1>{{first_name}} {{last_name}}</h1>
         <h4>study session: {{session_id}}</h4>
-        <h3>Part I</h3>
+        <h3>Part I ({{part_i_assistant_tool}})</h3>
         <ul>
             {% for task_session in part_i_task_sessions %}
             <li><span class="part_i_action_history_link"><a>task {{forloop.counter}}</a></span>: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.seconds}}s</li>
             {% endfor %}
         </ul>
         Average time spent per task: {{part_i_average_time_spent}}s
-        <h3>Part II</h3>
+        <h3>Part II ({{part_ii_assistant_tool}})</h3>
         <ul>
             {% for task_session in part_ii_task_sessions %}
             <li><span class="part_ii_action_history_link"><a>task {{forloop.counter}}</a></span>: <span style="color:red">{{task_session.status}}</span> {{task_session.time_spent.seconds}}s</li>
