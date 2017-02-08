@@ -813,12 +813,16 @@ def study_session_report(request):
     user = User.objects.get(first_name=first_name, last_name=last_name)
     for study_session in StudySession.objects.filter(
             user=user, status='finished'):
-        if study_session.treatment_order == 0:
+        if study_session.treatment_order == '0':
             part_i_assistant_tool = 'Tellina'
             part_ii_assistant_tool = 'Explainshell'
-        else:
+        elif study_session.treatment_order == '1':
             part_i_assistant_tool = 'Explainshell'
             part_ii_assistant_tool = 'Tellina'
+        else:
+            raise ValueError('Unrecognized treatment_order "{}"'.format(
+                study_session.treatment_order
+            ))
         part_i_task_sessions = []
         part_ii_task_sessions = []
         part_i_avg_time = timezone.timedelta(seconds=0)
