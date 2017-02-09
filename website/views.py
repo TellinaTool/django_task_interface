@@ -526,8 +526,7 @@ def compute_stdout_diff(stdout, task, current_dir=None, is_ls_command=False):
             path1 = extract_path(l1, current_dir, is_ls_command)
             path2 = extract_path(l2, '~/website', is_ls_command)
             if path1 == path2:
-                time_long_iso_re = re.compile(r'\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}'
-                                             r'(:\d{2}(\.\d+)?)?')
+                time_long_iso_re = re.compile(r'\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2}(\.\d+)?)?')
                 if re.search(time_long_iso_re, l1):
                     return True
         elif task_id == 19:
@@ -537,7 +536,10 @@ def compute_stdout_diff(stdout, task, current_dir=None, is_ls_command=False):
             num_of_lines_pattern = re.compile(r'{}\s'.format(num_of_lines))
             path1 = extract_path(l1, current_dir, is_ls_command)
             path2 = extract_path(l2, '~/website', is_ls_command)
+            if path1 == path2:
+                print(True)
             if path1 == path2 and (re.search(num_of_lines_pattern, l1)):
+                print("hello")
                 return True
         else:
             return l1 == l2
