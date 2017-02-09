@@ -445,6 +445,28 @@ class TaskSession(models.Model):
         self.user.inc_num_completed_sessions()
         self.save()
 
+    def pause(self):
+        current_time = timezone.now()
+        ActionHistory.objects.create(
+            task_session = self,
+            action = '__paused__',
+            action_time = current_time
+        )
+        time_spent_since_last_resume = \
+                self.get_time_spent_since_last_resume(current_time)
+        self.time_left -= time_spent_since_last_resume
+        self.status = 'paused'
+        self.save()
+
+    def resume(self):
+        ActionHistory.objects.create(
+            task_session = self,
+            action = '__resumed__',
+            action_time = timezone.now()
+        )
+        self.status = 'running'
+        self.save()
+
     def create_new_container(self):
         if self.container:
             # make sure any existing container is destroyed

@@ -14,7 +14,7 @@ $(document).ready(function () {
     // prevent user from refreshing the page
     window.onbeforeunload = function() {
         if (!normal_exit) {
-            $.get(`/task_session_paused`);
+            $.get(`/task_session_pause`);
             return "Your task session has not been completed, are you sure you want to leave?";
         }
     }
