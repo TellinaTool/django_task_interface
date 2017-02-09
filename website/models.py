@@ -430,7 +430,7 @@ class TaskSession(models.Model):
 
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    time_left = models.DurationField(null=True, blank=True)
+    time_left = models.DurationField()
 
     status = models.TextField()
 
@@ -472,9 +472,9 @@ class TaskSession(models.Model):
         else:
             return current_time - self.start_time
 
-    def set_time_left(self, time_left):
-        self.time_left = time_left
-        self.save()
+    # def set_time_left(self, time_left):
+    #     self.time_left = time_left
+    #     self.save()
 
     def set_start_time(self, start_time):
         self.start_time = start_time

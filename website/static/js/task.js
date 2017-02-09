@@ -13,8 +13,10 @@ $(document).ready(function () {
     var normal_exit = false;
     // prevent user from refreshing the page
     window.onbeforeunload = function() {
-        if (!normal_exit)
+        if (!normal_exit) {
+            $.get(`/task_session_paused`);
             return "Your task session has not been completed, are you sure you want to leave?";
+        }
     }
 
     var is_training = false;

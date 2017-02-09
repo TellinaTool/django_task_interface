@@ -51,8 +51,25 @@ def task_session_id_required(f):
 
 # --- Task Management --- #
 
+@task_session_id_required
 def task_session_paused(request, task_session):
-    pass
+    current_time = timezone.now()
+    ActionHistory.objects.create(
+        task_session = task_session,
+        action = '__paused__',
+        action_time = current_time
+    )
+    time_spent_since_last_resume = \
+            task_session.get_time_spent_since_last_resume(current_time)
+    task_session.update_time_left(time_spent_since_last_resume)
+
+@task_session_id_required
+def task_session_resumed(request, task_session):
+    ActionHistory.objects.create(
+        task_session = task_session,
+        action = '__resumed__',
+        action_time = timezone.now()
+    )
 
 @task_session_id_required
 def update_task_timing(request, task_session):
@@ -71,9 +88,7 @@ def update_task_timing(request, task_session):
         # session
         # TODO: frontend should prevent a user from visiting a task URL more
         # than once
-        time_spent_since_last_resume = \
-            task_session.get_time_spent_since_last_resume(current_time)
-        task_session.update_time_left(time_spent_since_last_resume)
+        task_session_resumed(task_session)
         return json_response({
             'time_left': task_session.time_left.seconds,
             'half_session_time_left': study_session.half_session_time_left.seconds
@@ -296,11 +311,11 @@ def create_task_session(study_session):
         task = Task.objects.get(task_id=task_id)
         container = create_container(task_session_id, task)
 
-        if is_training:
-            start_time = timezone.now()
-        else:
-            start_time = None
-        task_session = TaskSession.objects.create(
+        start_time = timezone.now() if is_training else start_time = None
+        time_left = task.duration if study_session.half_session_time_left\
+            > task.duration else study_session.half_session_time_left
+
+        TaskSession.objects.create(
             study_session = study_session,
             study_session_stage = study_session.stage,
             session_id = task_session_id,
@@ -308,13 +323,9 @@ def create_task_session(study_session):
             is_training = is_training,
             task = task,
             start_time = start_time,
+            time_left = time_left,
             status = 'running'
         )
-
-        if study_session.half_session_time_left > task.duration:
-            task_session.set_time_left(task.duration)
-        else:
-            task_session.set_time_left(study_session.half_session_time_left)
 
         print('Task session {} created'.format(task_session_id))
 
