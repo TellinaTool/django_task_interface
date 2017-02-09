@@ -73,10 +73,7 @@ def update_task_timing(request, task_session):
         # than once
         time_spent_since_last_resume = \
             task_session.get_time_spent_since_last_resume(current_time)
-        print(time_spent_since_last_resume)
         task_session.update_time_left(time_spent_since_last_resume)
-        study_session.update_half_session_time_left(
-            time_spent_since_last_resume)
         return json_response({
             'time_left': task_session.time_left.seconds,
             'half_session_time_left': study_session.half_session_time_left.seconds
