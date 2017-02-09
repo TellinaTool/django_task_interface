@@ -617,7 +617,7 @@ def extract_path(input, current_dir=None, is_ls_command=False):
         if tokens[-1] in directories_in_sample_filesystems:
             partial_path = pathlib.Path(tokens[-1])
             return current_dir / partial_path
-    if is_ls_command:
+    if is_ls_command and len(tokens) > 0:
         partial_path = pathlib.Path(tokens[-1])
         path = current_dir / partial_path
     else:

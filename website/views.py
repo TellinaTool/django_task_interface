@@ -63,8 +63,7 @@ def task_session_paused(request, task_session):
             task_session.get_time_spent_since_last_resume(current_time)
     task_session.update_time_left(time_spent_since_last_resume)
 
-@task_session_id_required
-def task_session_resumed(request, task_session):
+def task_session_resumed(task_session):
     ActionHistory.objects.create(
         task_session = task_session,
         action = '__resumed__',
@@ -311,7 +310,7 @@ def create_task_session(study_session):
         task = Task.objects.get(task_id=task_id)
         container = create_container(task_session_id, task)
 
-        start_time = timezone.now() if is_training else start_time = None
+        start_time = timezone.now() if is_training else None
         time_left = task.duration if study_session.half_session_time_left\
             > task.duration else study_session.half_session_time_left
 

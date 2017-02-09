@@ -442,7 +442,6 @@ class TaskSession(models.Model):
             self.update_time_left(time_spent)
             self.study_session.update_half_session_time_left(time_spent)
         self.container.destroy()
-        self.user.inc_num_completed_sessions()
         self.save()
 
     def create_new_container(self):
