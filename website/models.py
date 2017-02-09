@@ -58,7 +58,11 @@ class User(models.Model):
     last_name = models.TextField()
     group = models.TextField(default='group1')
     status = models.TextField(default='scheduled')
-    num_sessions_completed = models.PositiveIntegerField(default=0)
+    num_sessions_completed = models.IntegerField(default=0)
+
+    def inc_num_sessions_completed(self):
+        self.num_sessions_completed += 1
+        self.save()
 
 
 class Task(models.Model):
@@ -271,6 +275,7 @@ class StudySession(models.Model):
             self.close_time = timezone.now()
             self.status = reason_for_close
             self.save()
+            self.user.inc_num_sessions_completed()
 
     def closed(self):
         return self.status in ['finished', 'closed_with_error', 'paused']
