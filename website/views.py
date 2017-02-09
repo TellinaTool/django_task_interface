@@ -73,7 +73,7 @@ def update_task_timing(request, task_session):
         # session
         # TODO: frontend should prevent a user from visiting a task URL more
         # than once
-        task_session.resume()
+        # task_session.resume()
         return json_response({
             'time_left': task_session.time_left.seconds,
             'half_session_time_left': study_session.half_session_time_left.seconds
