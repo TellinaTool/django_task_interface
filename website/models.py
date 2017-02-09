@@ -50,11 +50,15 @@ class User(models.Model):
         Group 2: task block 1 + Google / task block 2 + Tellina
         Group 3: task block 2 + Tellina / task block 1 + Google
         Group 4: task block 2 + Google / task block 1 + Tellina
+    :member num_completed_sessions: number of study sessions completed by the
+        user
     """
     access_code = models.TextField()
     first_name = models.TextField()
     last_name = models.TextField()
     group = models.TextField(default='group1')
+    status = models.TextField(default='scheduled')
+    num_sessions_completed = models.PositiveIntegerField(default=0)
 
 
 class Task(models.Model):
@@ -433,6 +437,7 @@ class TaskSession(models.Model):
             self.update_time_left(time_spent)
             self.study_session.update_half_session_time_left(time_spent)
         self.container.destroy()
+        self.user.inc_num_completed_sessions()
         self.save()
 
     def create_new_container(self):
