@@ -52,23 +52,9 @@ def task_session_id_required(f):
 # --- Task Management --- #
 
 @task_session_id_required
-def task_session_paused(request, task_session):
-    current_time = timezone.now()
-    ActionHistory.objects.create(
-        task_session = task_session,
-        action = '__paused__',
-        action_time = current_time
-    )
-    time_spent_since_last_resume = \
-            task_session.get_time_spent_since_last_resume(current_time)
-    task_session.update_time_left(time_spent_since_last_resume)
-
-def task_session_resumed(task_session):
-    ActionHistory.objects.create(
-        task_session = task_session,
-        action = '__resumed__',
-        action_time = timezone.now()
-    )
+def task_session_pause(request, task_session):
+    task_session.pause()
+    return json_response()
 
 @task_session_id_required
 def update_task_timing(request, task_session):
@@ -87,7 +73,7 @@ def update_task_timing(request, task_session):
         # session
         # TODO: frontend should prevent a user from visiting a task URL more
         # than once
-        task_session_resumed(task_session)
+        task_session.resume()
         return json_response({
             'time_left': task_session.time_left.seconds,
             'half_session_time_left': study_session.half_session_time_left.seconds
