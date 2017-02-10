@@ -535,8 +535,8 @@ def annotate_node(fs, path, tag, including_self=True, recursive=False,
                     stack.append(node)
                     node = child
             if not step_matched:
-                raise ValueError('Specified path does not exist '
-                                 'in the file system')
+                raise ValueError(
+                    'Specified path {} does not exist in the file system'.format(path.as_posix()))
 
     if recursive:
         mark(fs, tag, including_self=including_self,

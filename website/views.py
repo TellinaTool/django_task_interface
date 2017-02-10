@@ -334,7 +334,7 @@ def on_command_execution(request, task_session):
     command = stdout_lines[0]
     tokens = command.split()
     is_ls_command = False
-    if tokens[0] == 'ls':
+    if tokens and tokens[0] == 'ls':
         if tokens[-1] != 'ls' and not tokens[-1].startswith('-'):
             partial_path = pathlib.Path(tokens[-1])
             current_dir = current_dir / partial_path
@@ -860,7 +860,7 @@ def overview(request):
             # find the user's most recently finished study session
             finished_study_session = None
             for study_session in StudySession.objects.filter(user=user,
-                status='finished').order_by('start_time'):
+                status='finished').order_by('creation_time'):
                 finished_study_session = study_session
             treatment_effect = None
             if finished_study_session:
@@ -900,7 +900,7 @@ def action_history(request):
     task_session = None
     for task_session in TaskSession.objects.filter(
             study_session=study_session, study_session_stage=stage,
-            is_training=False).order_by('start_time'):
+            is_training=False).order_by('creation_time'):
         i += 1
         if i == task_order_number:
             break
