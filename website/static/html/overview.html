@@ -14,6 +14,12 @@
                 {% elif user.num_sessions_completed == -1 %}
                     <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> (invalid)</li>
                 {% else %}
+                    {% if '-' in treatment_effect  %}
+                        <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> <span style="color:green">({{treatment_effect}})</span></li>
+                    {% endif %}
+                    {% if not '-' in treatment_effect %}
+                        <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> <span style="color:red">({{treatment_effect}})</span></li>
+                    {% endif %}
                 {% endif %}
             {% endfor %}
             </ul>
