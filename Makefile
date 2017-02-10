@@ -45,4 +45,4 @@ clean:
 	# rm -rf website/migrations
 	# Remove container log file
 	# rm -f container*.log
-	-ps aux | grep bash | awk '/[ \t]/ {print $2}' | xargs sudo kill -9
+	# -ps aux | grep bash | awk '/[ \t]/ {print $2}' | xargs sudo kill -9
