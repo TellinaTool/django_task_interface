@@ -872,7 +872,8 @@ def overview(request):
                     treatment_effect = \
                         finished_study_session.part_ii_average_time_spent -\
                         finished_study_session.part_i_average_time_spent
-            if treatment_effect is not None and treatment_effect < 0:
+            if treatment_effect is not None and treatment_effect < \
+                    timezone.timedelta(seconds=0):
                 treatment_effect = '-{}'.format(timezone.timedelta(seconds=0)-
                                                 treatment_effect)
             else:
