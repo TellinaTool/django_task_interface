@@ -11,7 +11,8 @@
             {% for user, treatment_effect in user_list %}
                 {% if user.num_sessions_completed == 0 %}
                     <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> (scheduled)</li>
-                {% elif user.num_sessions_completed == -1 %}
+                {% endif %}
+                {% if user.num_sessions_completed == -1 %}
                     <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> (invalid)</li>
                 {% else %}
                     {% ifstartswith treatment_effect '-' %}
