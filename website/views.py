@@ -872,6 +872,11 @@ def overview(request):
                     treatment_effect = \
                         finished_study_session.part_ii_average_time_spent -\
                         finished_study_session.part_i_average_time_spent
+            if treatment_effect is not None and treatment_effect < 0:
+                treatment_effect = '-{}'.format(timezone.timedelta(seconds=0)-
+                                                treatment_effect)
+            else:
+                treatment_effect = '{}'.format(treatment_effect)
             # not a sudo user
             if user.group == 'group1':
                 user_groups[0].append((user, treatment_effect))

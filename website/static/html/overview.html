@@ -14,8 +14,8 @@
                 {% elif user.num_sessions_completed == -1 %}
                     <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> (invalid)</li>
                 {% else %}
-                    {% if treatment_effect.seconds < 0 %}
-                        <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> <span style="color:green">(-{{-treatment_effect}})</span></li>
+                    {% if treatment_effect.startswith('-') %}
+                        <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> <span style="color:green">({{treatment_effect}})</span></li>
                     {% elif treatment_effect.seconds >= 0 %}
                         <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> <span style="color:red">({{treatment_effect}})</span></li>
                     {% endif %}
