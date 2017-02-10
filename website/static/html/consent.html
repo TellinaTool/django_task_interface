@@ -114,9 +114,15 @@
     {% block other-scripts %}
         <script>
             $('#instruction-read').click(function () {
-                $.get(`/consent_signed`, function() {
-                    window.location.replace('instruction');
-                });
+                // get user's ip address
+                var ip_address;
+                $.get("http://ipinfo.io", function(response) {
+                    ip_address = response.ip;
+                    console.log('IP Address for study session logged: ' + ip_address);
+                    $.get(`/consent_signed`, {ip_address: ip_address}, function() {
+                        window.location.replace('instruction');
+                    });
+                }, "jsonp");
             })
         </script>
     {% endblock %}

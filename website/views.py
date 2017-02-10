@@ -791,6 +791,12 @@ def consent(request, study_session):
 
 @session_id_required
 def consent_signed(request, study_session):
+    # log user's IP address for the study session
+    ip_address = request.GET['ip_address']
+    if ip_address is None:
+        # "http://ipinfo.io failed
+        ip_address = ''
+    study_session.set_ip_address(ip_address)
     study_session.status = 'reading_instructions'
     study_session.save()
     return json_response()

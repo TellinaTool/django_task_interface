@@ -222,6 +222,8 @@ class StudySession(models.Model):
     A study session participated by a user.
 
     :member user: The participant of the session.
+    :member ip_address: The ip_address the user used to login to the study
+        session.
     :member session_id: an application-wide unique study session ID.
     :member creation_time: Time the study session is created.
     :member close_time: Time the study session is closed.
@@ -249,6 +251,7 @@ class StudySession(models.Model):
         - 'running': The user is taking the study session.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ip_address = models.TextField(default='')
     session_id = models.TextField(primary_key=True)
 
     creation_time = models.DateTimeField()
@@ -295,6 +298,10 @@ class StudySession(models.Model):
 
     def inc_num_training_tasks_completed(self):
         self.num_training_tasks_completed += 1
+        self.save()
+
+    def set_ip_address(self, ip_address):
+        self.ip_address = ip_address
         self.save()
 
     def start_half_session_timer(self):
@@ -461,7 +468,7 @@ class TaskSession(models.Model):
 
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    time_left = models.DurationField()
+    time_left = models.DurationField(null=True, blank=True)
 
     status = models.TextField()
 

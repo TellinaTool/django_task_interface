@@ -79,7 +79,7 @@ $(document).ready(function () {
     $('#user-log-in').click(function() {
         var username = $('#username').val();
         if (username.length > 0) {
-            $.get("user_login", {access_code: username, check_existing_session: true}, function(data) {
+            $.get(`user_login`, {access_code: username, check_existing_session: true}, function(data) {
                 if (data.status == "RUNNING_STUDY_SESSION_FOUND") {
                     BootstrapDialog.show({
                         title: "Running study session found",
