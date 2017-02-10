@@ -552,7 +552,6 @@ def compute_stdout_diff(stdout, task, current_dir=None, is_ls_command=False):
     if task.task_id != 10:
         # boolean variable which is used decide if the "total line" should be
         # shown as correct or as an error
-        unmatch_detected = False
         matched_stdout2 = []
         for l1 in stdout1:
             if not l1:
@@ -565,18 +564,22 @@ def compute_stdout_diff(stdout, task, current_dir=None, is_ls_command=False):
                     matched_stdout2.append(i)
                     break
             if matched:
-                stdout_diff.append({
-                    'line': l1,
-                    'tag': 'correct'
-                })
+                tag = 'correct'
             else:
                 total_pattern = re.compile(r'(total\s|\stotal)')
+                current_parent_dir_pattern = re.compile(r'\s(\.|\.\.)$')
                 if (task.task_id == 19 and re.search(total_pattern, l1) and
                     len(l1) < 20):
-                    stdout_diff.append({
-                        'line': l1,
-                        'tag': 'correct'
-                    })
+                    tag = 'correct'
+                elif re.search(current_parent_dir_pattern, l1):
+                    tag = 'correct'
+                else:
+                    tag = 'incorrect'
+            stdout_diff.append({
+                'line': l1,
+                'tag': tag
+            })
+
         for i in range(len(stdout2)):
             if not i in matched_stdout2:
                 l2 = stdout2[i]
