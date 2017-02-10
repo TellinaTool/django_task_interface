@@ -8,13 +8,17 @@
         {% for user_list in user_groups %}
             <h3>Group {{forloop.counter}}</h3>
             <ul>
-            {% for user in user_list %}
+            {% for user, treatment_effect in user_list %}
                 {% if user.num_sessions_completed == 0 %}
                     <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> (scheduled)</li>
                 {% elif user.num_sessions_completed == -1 %}
                     <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> (invalid)</li>
                 {% else %}
-                    <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> (completed {{user.num_sessions_completed}} session)</li>
+                    {% if treatment_effect < 0 %}
+                        <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> <span style="color:green">({{treatment_effect}})</span></li>
+                    {% elif treatment_effect >= 0 %}
+                        <li class="report_link"><a>{{user.first_name}} {{user.last_name}}</a> <span style="color:red">({{treatment_effect}})</span></li>
+                    {% endif %}
                 {% endif %}
             {% endfor %}
             </ul>

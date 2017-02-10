@@ -392,6 +392,37 @@ class StudySession(models.Model):
         # the treatment being used in the current half of the study
         return treatment_assignments[self.treatment_order + self.stage]
 
+    # --- Statistics --- #
+    @property
+    def part_i_average_time_spent(self):
+        if self.status != 'finished':
+            return None
+        else:
+            part_i_avg_time = timezone.timedelta(seconds=0)
+            part_i_num_valid_tasks = 0
+            for task_session in TaskSession.objects.filter(
+                    study_session=self, is_training=False,
+                    study_session_stage='I').order_by('start_time'):
+                if task_session.status != 'aborted':
+                    part_i_avg_time += task_session.time_spent_converted
+                    part_i_num_valid_tasks += 1
+            return part_i_avg_time / part_i_num_valid_tasks
+
+    @property
+    def part_ii_average_time_spent(self):
+        if self.status != 'finished':
+            return None
+        else:
+            part_ii_avg_time = timezone.timedelta(seconds=0)
+            part_ii_num_valid_tasks = 0
+            for task_session in TaskSession.objects.filter(
+                    study_session=self, is_training=False,
+                    study_session_stage='II').order_by('start_time'):
+                if task_session.status != 'aborted':
+                    part_ii_avg_time += task_session.time_spent_converted
+                    part_ii_num_valid_tasks += 1
+            return part_ii_avg_time / part_ii_num_valid_tasks
+
 
 class TaskSession(models.Model):
     """
@@ -524,6 +555,28 @@ class TaskSession(models.Model):
         else:
             time_spent += self.end_time - last_resumed_time
         return time_spent
+
+    @property
+    def time_spent_converted(self):
+        """
+        How much time the user have spent in a task session.
+
+            - If the user passed the task, return the time span between the
+                session start time and when the user issued a command that
+                completes the task.
+            - If the task session timed out, return the upper time threshold.
+            - If the user quit the task, return the upper time threshold as a
+                penalty.
+        """
+        if self.status == 'quit':
+            return timezone.timedelta(minutes=task_duration)
+        if self.status == 'time_out':
+            return timezone.timedelta(minutes=task_duration)
+        if self.status == 'passed':
+            return self.time_spent
+        raise ValueError(
+            'Wrong task session status when calling time_spent_converted "{}"'
+            .format(self.status))
 
 
 class ActionHistory(models.Model):

@@ -857,15 +857,30 @@ def overview(request):
     user_groups = [[], [], [], []]
     for user in User.objects.all():
         if len(user.access_code) > 3:
+            # find the user's most recently finished study session
+            finished_study_session = None
+            for study_session in StudySession.objects.filter(user=user,
+                status='finished').order_by('start_time'):
+                finished_study_session = study_session
+            treatment_effect = None
+            if finished_study_session:
+                if finished_study_session.treatment_order == '0':
+                    treatment_effect = \
+                        finished_study_session.part_i_average_time_spent -\
+                        finished_study_session.part_ii_average_time_spent
+                elif finished_study_session.treatment_order == '1':
+                    treatment_effect = \
+                        finished_study_session.part_ii_average_time_spent -\
+                        finished_study_session.part_i_average_time_spent
             # not a sudo user
             if user.group == 'group1':
-                user_groups[0].append(user)
+                user_groups[0].append((user, treatment_effect))
             elif user.group == 'group2':
-                user_groups[1].append(user)
+                user_groups[1].append((user, treatment_effect))
             elif user.group == 'group3':
-                user_groups[2].append(user)
+                user_groups[2].append((user, treatment_effect))
             elif user.group == 'group4':
-                user_groups[3].append(user)
+                user_groups[3].append((user, treatment_effect))
     context = { 'user_groups': user_groups }
     return HttpResponse(template.render(context, request))
 
