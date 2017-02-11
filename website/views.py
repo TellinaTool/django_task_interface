@@ -827,32 +827,22 @@ def study_session_report(request):
             ))
         part_i_task_sessions = []
         part_ii_task_sessions = []
-        part_i_avg_time = timezone.timedelta(seconds=0)
-        part_ii_avg_time = timezone.timedelta(seconds=0)
-        part_i_num_valid_tasks = 0
-        part_ii_num_valid_tasks = 0
         for task_session in TaskSession.objects.filter(
                 study_session=study_session, is_training=False)\
             .order_by('start_time'):
             if task_session.study_session_stage == 'I':
                 part_i_task_sessions.append(task_session)
-                if task_session.status != 'aborted':
-                    part_i_avg_time += task_session.time_spent
-                    part_i_num_valid_tasks += 1
             elif task_session.study_session_stage == 'II':
                 part_ii_task_sessions.append(task_session)
-                if task_session.status != 'aborted':
-                    part_ii_avg_time += task_session.time_spent
-                    part_ii_num_valid_tasks += 1
-        part_i_avg_time /= part_i_num_valid_tasks
-        part_ii_avg_time /= part_ii_num_valid_tasks
         context = {
             'first_name': first_name,
             'last_name': last_name,
             'part_i_task_sessions': part_i_task_sessions,
             'part_ii_task_sessions': part_ii_task_sessions,
-            'part_i_average_time_spent': part_i_avg_time,
-            'part_ii_average_time_spent': part_ii_avg_time,
+            'part_i_average_time_spent': study_session.
+                stage_average_time_spent('I'),
+            'part_ii_average_time_spent': study_session.
+                stage_average_time_spent('II'),
             'part_i_assistant_tool': part_i_assistant_tool,
             'part_ii_assistant_tool': part_ii_assistant_tool,
             'session_id': study_session.session_id
@@ -875,12 +865,12 @@ def overview(request):
             if finished_study_session:
                 if finished_study_session.treatment_order == '0':
                     treatment_effect = \
-                        finished_study_session.part_i_average_time_spent -\
-                        finished_study_session.part_ii_average_time_spent
+                        finished_study_session.stage_average_time_spent('I') -\
+                        finished_study_session.stage_average_time_spent('II')
                 elif finished_study_session.treatment_order == '1':
                     treatment_effect = \
-                        finished_study_session.part_ii_average_time_spent -\
-                        finished_study_session.part_i_average_time_spent
+                        finished_study_session.stage_average_time_spent('II') -\
+                        finished_study_session.stage_average_time_spent('I')
             if treatment_effect is not None and treatment_effect < \
                     timezone.timedelta(seconds=0):
                 treatment_effect = '-{}'.format(timezone.timedelta(seconds=0)-
