@@ -400,35 +400,26 @@ class StudySession(models.Model):
         return treatment_assignments[self.treatment_order + self.stage]
 
     # --- Statistics --- #
-    @property
-    def part_i_average_time_spent(self):
+    def stage_average_time_spent(self, stage):
         if self.status != 'finished':
             return None
         else:
-            part_i_avg_time = timezone.timedelta(seconds=0)
-            part_i_num_valid_tasks = 0
+            stage_avg_time = timezone.timedelta(seconds=0)
+            stage_num_valid_tasks = 0
             for task_session in TaskSession.objects.filter(
                     study_session=self, is_training=False,
-                    study_session_stage='I').order_by('start_time'):
+                    study_session_stage=stage).order_by('start_time'):
                 if task_session.status != 'aborted':
-                    part_i_avg_time += task_session.time_spent_converted
-                    part_i_num_valid_tasks += 1
-            return part_i_avg_time / part_i_num_valid_tasks
-
-    @property
-    def part_ii_average_time_spent(self):
-        if self.status != 'finished':
-            return None
-        else:
-            part_ii_avg_time = timezone.timedelta(seconds=0)
-            part_ii_num_valid_tasks = 0
-            for task_session in TaskSession.objects.filter(
-                    study_session=self, is_training=False,
-                    study_session_stage='II').order_by('start_time'):
-                if task_session.status != 'aborted':
-                    part_ii_avg_time += task_session.time_spent_converted
-                    part_ii_num_valid_tasks += 1
-            return part_ii_avg_time / part_ii_num_valid_tasks
+                    stage_avg_time += task_session.time_spent_converted
+                    stage_num_valid_tasks += 1
+            # check if the last task session is cut off in the middle due to
+            # the half-session time limit
+            if task_session.status == 'time_out':
+                if task_session.time_spent < timezone.timedelta(
+                        minutes=task_duration):
+                    stage_avg_time -= task_session.time_spent_converted
+                    stage_num_valid_tasks -= 1
+            return stage_avg_time / stage_num_valid_tasks
 
 
 class TaskSession(models.Model):
