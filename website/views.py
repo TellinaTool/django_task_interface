@@ -900,7 +900,7 @@ def action_history(request):
     task_session = None
     for task_session in TaskSession.objects.filter(
             study_session=study_session, study_session_stage=stage,
-            is_training=False).order_by('creation_time'):
+            is_training=False).order_by('start_time'):
         i += 1
         if i == task_order_number:
             break
