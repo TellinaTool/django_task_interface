@@ -255,6 +255,7 @@ def go_to_next_task(request, study_session):
                 "task_session_id": next_task_session_id,
                 "treatment_order": study_session.treatment_order
             }, status=status)
+            resp.set_cookie('study_session', study_session.session_id)
             resp.set_cookie('task_session_id', next_task_session_id)
         except ObjectDoesNotExist:
             study_session.close('closed_with_error')
@@ -335,10 +336,10 @@ def on_command_execution(request, task_session):
     tokens = command.split()
     is_ls_command = False
     if tokens and tokens[0] == 'ls':
-        if tokens[-1] != 'ls' and not tokens[-1].startswith('-'):
-            partial_path = pathlib.Path(tokens[-1])
-            current_dir = current_dir / partial_path
         is_ls_command = True
+        partial_path = extract_path_from_ls_command(command, tokens)
+        if partial_path is not None:
+            current_dir = current_dir / partial_path
 
     stdout_paths = []
     for stdout_line in stdout_lines[1:-1]:
