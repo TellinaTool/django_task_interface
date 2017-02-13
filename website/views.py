@@ -337,7 +337,7 @@ def on_command_execution(request, task_session):
     is_ls_command = False
     if tokens and tokens[0] == 'ls':
         is_ls_command = True
-        partial_path = extract_path_from_ls_command(input, tokens)
+        partial_path = extract_path_from_ls_command(command, tokens)
         if partial_path is not None:
             current_dir = current_dir / partial_path
 
