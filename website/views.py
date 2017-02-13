@@ -565,20 +565,20 @@ def compute_stdout_diff(stdout, task, current_dir=None, is_ls_command=False):
                     matched_stdout2.append(i)
                     break
             if matched:
-                tag = 'correct'
+                line_tag = 'correct'
             else:
                 total_pattern = re.compile(r'(total\s|\stotal)')
                 current_parent_dir_pattern = re.compile(r'\s(\.|\.\.)$')
                 if (task.task_id == 19 and re.search(total_pattern, l1) and
                     len(l1) < 20):
-                    tag = 'correct'
+                    line_tag = 'correct'
                 elif re.search(current_parent_dir_pattern, l1):
-                    tag = 'correct'
+                    line_tag = 'correct'
                 else:
-                    tag = 'incorrect'
+                    line_tag = 'extra'
             stdout_diff.append({
                 'line': l1,
-                'tag': tag
+                'tag': line_tag
             })
 
         for i in range(len(stdout2)):
