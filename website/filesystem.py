@@ -598,6 +598,25 @@ def annotate_stdout_errors(fs_diff, stdout_diff):
 
 # --- Other File System Utilities --- #
 
+def extract_path_from_ls_command(input, tokens):
+    path_pattern = re.compile(
+        r'((([^ ]*\/)+[^ ]*)|([a-zA-Z]+\.[a-zA-Z]+))(\:|$)')
+    match = re.search(path_pattern, input.strip())
+    if not match:
+        if tokens[-1] == 'ls':
+            return None
+        else:
+            partial_path = None
+            for i in range(len(tokens)-1, 0, -1):
+                if not tokens[i].startswith('-'):
+                    partial_path = pathlib.Path(tokens[i])
+                    break
+            if partial_path is None:
+                return None
+    else:
+        partial_path = pathlib.Path(match.group(0).strip())
+    return partial_path
+
 def extract_path(input, current_dir=None, is_ls_command=False):
     """
     Extract file paths from a line of terminal stdout, considering the current
