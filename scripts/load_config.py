@@ -95,7 +95,7 @@ def run():
     for software in config['softwares']:
         name = software['name']
         url = software['url']
-        if not Software.objects.filter(url=url).exists():
+        if not Software.objects.filter(name=name).exists():
             Software.objects.create(
                 name=name, url=url
             )
