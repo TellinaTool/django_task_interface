@@ -255,6 +255,7 @@ def go_to_next_task(request, study_session):
                 "task_session_id": next_task_session_id,
                 "treatment_order": study_session.treatment_order
             }, status=status)
+            resp.set_cookie('study_session', study_session.session_id)
             resp.set_cookie('task_session_id', next_task_session_id)
         except ObjectDoesNotExist:
             study_session.close('closed_with_error')
