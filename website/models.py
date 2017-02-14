@@ -138,7 +138,7 @@ def create_container(filesystem_name, task):
     client = docker.Client(base_url='unix://var/run/docker.sock')
     docker_container = client.create_container(
         image='backend_container',
-        ports=[10413],
+        ports=[10411],
         volumes=['/home/' + USER_NAME],
         host_config=client.create_host_config(
             binds={
@@ -147,7 +147,7 @@ def create_container(filesystem_name, task):
                     'mode': 'rw',
                 },
             },
-            port_bindings={10413: ('0.0.0.0',)},
+            port_bindings={10411: ('0.0.0.0',)},
         ),
     )
 
@@ -205,7 +205,7 @@ def create_container(filesystem_name, task):
 
     # Find what port the container was mapped to
     info = client.inspect_container(container_id)
-    port = int(info['NetworkSettings']['Ports']['10413/tcp'][0]['HostPort'])
+    port = int(info['NetworkSettings']['Ports']['10411/tcp'][0]['HostPort'])
 
     # Create container model object
     container = Container.objects.create(

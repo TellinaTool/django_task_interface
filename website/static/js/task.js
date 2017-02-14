@@ -114,7 +114,7 @@ $(document).ready(function () {
 
     function set_websocket(container_port)  {
         protocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
-        socketURL = protocol + location.hostname + `:10414/${container_port}`;
+        socketURL = protocol + location.hostname + `:10412/${container_port}`;
 
         /* var initialGeometry = term.proposeGeometry(),
           cols = initialGeometry.cols,
@@ -476,7 +476,7 @@ $(document).ready(function () {
                 cssClass: "btn-primary",
                 action: function(dialogItself) {
                     dialogItself.close();
-                    window.location.replace(`http:\/\/${location.hostname}:10413/${data.task_session_id}`);
+                    window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                 }
             }],
             closable: false,
@@ -501,7 +501,7 @@ $(document).ready(function () {
                 cssClass: "btn-primary",
                 action: function(dialogItself) {
                     dialogItself.close();
-                    window.location.replace(`http:\/\/${location.hostname}:10413/${data.task_session_id}`);
+                    window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
                 }
             }],
             closable: false,
@@ -537,7 +537,7 @@ $(document).ready(function () {
                 console.log("Study session completed.");
             } else {
                 normal_exit = true;
-                window.location.replace(`http:\/\/${location.hostname}:10413/${data.task_session_id}`);
+                window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
             }
         });
     }
