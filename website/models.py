@@ -421,6 +421,42 @@ class StudySession(models.Model):
                     stage_num_valid_tasks -= 1
             return stage_avg_time / stage_num_valid_tasks
 
+    def stage_total_time_spent(self, stage):
+        if self.status != 'finished':
+            return None
+        else:
+            stage_total_time = timezone.timedelta(seconds=0)
+            for task_session in TaskSession.objects.filter(
+                    study_session=self, is_training=False,
+                    study_session_stage=stage).order_by('start_time'):
+                if task_session.status != 'aborted':
+                    stage_total_time += task_session.time_spent
+            return stage_total_time
+
+    def stage_completion_rate(self, stage):
+        if self.status != 'finished':
+            return None
+        else:
+            num_tasks_completed = 0.0
+            for task_session in TaskSession.objects.filter(
+                study_session=self, is_training=False,
+                study_session_stage=stage).order_by('start_time'):
+                if task_session.status == 'passed':
+                    num_tasks_completed += 1
+            return num_tasks_completed / self.stage_total_num_tasks(stage)
+
+    def stage_total_num_tasks(self, stage):
+        if stage == 'I':
+            if self.task_block_order == '0':
+                return len(TASK_BLOCK_I)
+            else:
+                return len(TASK_BLOCK_II)
+        else:
+            if self.task_block_order == '0':
+                return len(TASK_BLOCK_II)
+            else:
+                return len(TASK_BLOCK_I)
+
 
 class TaskSession(models.Model):
     """
