@@ -9,8 +9,8 @@ def get_column_names(table):
     return (list(map(lambda x: x[0], table.description)))
 
 if __name__ == '__main__':
-    input_db_path = os.path.join('..', 'db-lucy-dylan-yue.sqlite3')
-    target_db_path = os.path.join('..', 'db.sqlite3')
+    input_db_path = os.path.join('..', '')
+    target_db_path = os.path.join('..', '')
 
     input_db = sqlite3.connect(input_db_path)
     target_db = sqlite3.connect(target_db_path)
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     target_db.commit()
     """
 
-    table_name = 'website_user'
+    """table_name = 'website_user'
     container_cur = input_db.execute('SELECT * FROM {}'.format(table_name))
     column_names = get_column_names(container_cur)
     print(column_names)
@@ -86,4 +86,5 @@ if __name__ == '__main__':
         except sqlite3.IntegrityError:
             print(row[0])
     target_db.commit()
+    """
    
