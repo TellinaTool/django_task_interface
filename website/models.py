@@ -421,6 +421,18 @@ class StudySession(models.Model):
                     stage_num_valid_tasks -= 1
             return stage_avg_time / stage_num_valid_tasks
 
+    def stage_total_time_spent(self, stage):
+        if self.status != 'finished':
+            return None
+        else:
+            stage_total_time = timezone.timedelta(seconds=0)
+            for task_session in TaskSession.objects.filter(
+                    study_session=self, is_training=False,
+                    study_session_stage=stage).order_by('start_time'):
+                if task_session.status != 'aborted':
+                    stage_total_time += task_session.time_spent
+            return stage_total_time
+
 
 class TaskSession(models.Model):
     """
