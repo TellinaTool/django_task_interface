@@ -161,7 +161,7 @@
                     $.get(`/go_to_next_task`, {reason_for_close: ''}, function(data) {
                         if (wait_dialog != null)
                             wait_dialog.close();
-                        window.location.replace(`http:\/\/${location.hostname}:10411/${data.task_session_id}`);
+                        window.location.replace(`http:\/\/${location.hostname}:10413/${data.task_session_id}`);
                     });
                 });
             })
