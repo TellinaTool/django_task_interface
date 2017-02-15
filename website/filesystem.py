@@ -631,6 +631,9 @@ def extract_path(input, current_dir=None, is_ls_command=False):
     Return None if there is no path mention in the input line, otherwise the
     path object.
     """
+    path_pattern = re.compile(
+        r'((([^ ]*\/)+[^ ]*)|([a-zA-Z]+\.[a-zA-Z]+))(\:|$)')
+
     tokens = input.strip().split()
     if len(tokens) == 1:
         if tokens[-1] in directories_in_sample_filesystems:
@@ -638,10 +641,12 @@ def extract_path(input, current_dir=None, is_ls_command=False):
             return current_dir / partial_path
     if is_ls_command and len(tokens) > 0:
         partial_path = pathlib.Path(tokens[-1])
-        path = current_dir / partial_path
+        match = re.search(path_pattern, tokens[-1])
+        if not match:
+            path = current_dir / partial_path
+        else:
+            path = partial_path
     else:
-        path_pattern = re.compile(
-            r'((([^ ]*\/)+[^ ]*)|([a-zA-Z]+\.[a-zA-Z]+))(\:|$)')
         match = re.search(path_pattern, input.strip())
         if not match:
             return None
