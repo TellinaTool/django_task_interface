@@ -224,6 +224,10 @@ def create_container(filesystem_name, task):
     return container
 
 
+class StudySessionAdmin(admin.ModelAdmin):
+    list_display = ('session_id',)
+
+
 class StudySession(models.Model):
     """
     A study session participated by a user.
