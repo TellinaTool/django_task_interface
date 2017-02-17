@@ -11,9 +11,9 @@ from .models import *
 # Register your models here.
 admin.site.register(Researcher)
 admin.site.register(Software)
-admin.site.register(User)
+admin.site.register(User, UserAdmin)
 admin.site.register(Task)
 admin.site.register(Container)
 admin.site.register(StudySession)
-admin.site.register(TaskSession)
+admin.site.register(TaskSession, TaskSessionAdmin)
 admin.site.register(ActionHistory)

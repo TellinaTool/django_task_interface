@@ -10,6 +10,8 @@ python3 manage.py migrate
 
 from django.db import models
 from django.utils import timezone
+from django.contrib import admin
+
 from .constants import *
 
 import docker
@@ -36,6 +38,11 @@ treatment_assignments = {
     '1I': 'B',
     '1II': 'A'
 }
+
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name')
+
 
 class User(models.Model):
     """
@@ -456,6 +463,10 @@ class StudySession(models.Model):
                 return len(TASK_BLOCK_II)
             else:
                 return len(TASK_BLOCK_I)
+
+
+class TaskSessionAdmin(admin.ModelAdmin):
+    list_display = ('session_id',)
 
 
 class TaskSession(models.Model):
