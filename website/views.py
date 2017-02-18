@@ -488,7 +488,7 @@ def compute_filesystem_diff(container, task, stdout_paths,
             pass
         if files_in_tar != {'index.html', 'home.html', 'labs.html',
                             'lesson.html', 'menu.html', 'navigation.html'}:
-            annotate_node(fs_diff, pathlib.Path('website/html.tar'),
+            annotate_node(fs_diff, pathlib.Path('html.tar'),
                           'incorrect')
     return fs_diff
 
