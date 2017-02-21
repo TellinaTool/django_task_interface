@@ -21,7 +21,7 @@ def create_stat_table(output_path):
                 task = '0' if finished_study_session.task_block_order == '0' else '1'
                 treatment = 'A' if finished_study_session.treatment_order == '0' else 'B'
                 order = 'I'
-                o_f.write('{},{},{},{},{}\n'.format(stage_i_total_time.seconds,
+                o_f.write('{},{},{},{},{},{}\n'.format(stage_i_total_time.seconds,
                                                     completion_rate,
                                                     user.access_code,
                                                     task, treatment, order))
@@ -30,7 +30,7 @@ def create_stat_table(output_path):
                 task = '1' if finished_study_session.task_block_order == '0' else '0'
                 treatment = 'B' if finished_study_session.treatment_order == '0' else 'A'
                 order = 'II'
-                o_f.write('{},{},{},{},{}\n'.format(stage_ii_total_time.seconds,
+                o_f.write('{},{},{},{},{},{}\n'.format(stage_ii_total_time.seconds,
                                                     completion_rate,
                                                     user.access_code,
                                                     task, treatment, order))

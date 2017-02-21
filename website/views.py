@@ -863,6 +863,7 @@ def overview(request):
                 finished_study_session = study_session
             treatment_effect = None
             if finished_study_session:
+                print(finished_study_session.session_id)
                 if finished_study_session.treatment_order == '0':
                     treatment_effect = \
                         finished_study_session.stage_average_time_spent('I') -\
